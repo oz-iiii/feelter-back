@@ -1,5 +1,5 @@
 import React from "react";
-//import Image from "next/image";
+import Image from "next/image";
 import { BiHeart, BiMessageRounded } from "react-icons/bi";
 import { ContentItem } from "@/lib/data";
 
@@ -17,9 +17,12 @@ const ContentCard: React.FC<ContentCardProps> = ({ content }) => {
     <div className="group relative w-[240px] h-[340px] bg-[#141A28] rounded-2xl overflow-hidden shadow-lg transform transition-transform duration-300 hover:scale-105 cursor-pointer">
       {/* Thumbnail */}
       <div className="relative w-full h-[70%]">
-        <img
+        <Image
           src={content.imageUrl}
           alt={content.title}
+          width={240}
+          height={340}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           style={{ objectFit: "cover" }}
           className="transition-opacity duration-300 group-hover:opacity-50"
         />

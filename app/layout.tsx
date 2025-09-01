@@ -6,8 +6,8 @@ import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 
 export const metadata: Metadata = {
-  title: "Feelter",
-  description: "당신의 지금, 그 순간에",
+  title: "Feelter - 당신의 지금, 그 순간에",
+  description: "OTT 플랫폼 컨텐츠 추천 서비스",
 };
 
 export default function RootLayout({

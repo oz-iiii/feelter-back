@@ -52,7 +52,7 @@ export default function Header({ onMySidebarToggle }: NavbarProps) {
   };
 
   return (
-    <header className="border-b border-gray-200 bg-black p-4 sticky top-0 z-50">
+    <header className="border-b border-neutral-500 bg-black p-4 sticky top-0 z-50">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
         {/* 1. 로고 - 클릭 시 메인 화면으로 이동 */}
         <Link href="/home" className="text-xl font-bold text-white">
@@ -183,23 +183,26 @@ export default function Header({ onMySidebarToggle }: NavbarProps) {
         <div className="md:hidden pt-4 pb-2 space-y-2 border-t border-gray-700 mt-4 flex flex-col items-center">
           <Link
             href="/home"
-            className="text-white w-full text-center py-2 hover:bg-gray-800 rounded-md"
+            className="text-white w-full text-center py-2 hover:bg-neutral-800 rounded-md"
           >
             Home
           </Link>
           <Link
             href="/search"
-            className="text-white w-full text-center py-2 hover:bg-gray-800 rounded-md"
+            className="text-white w-full text-center py-2 hover:bg-neutral-800 rounded-md"
           >
             Search
           </Link>
           <Link
             href="/community"
-            className="text-white w-full text-center py-2 hover:bg-gray-800 rounded-md"
+            className="text-white w-full text-center py-2 hover:bg-neutral-800 rounded-md"
           >
             Community
           </Link>
-          <Link href="/my" className="text-gray-300 hover:text-[#ccff00]">
+          <Link
+            href="/my"
+            className="text-white w-full text-center py-2 hover:bg-neutral-800 rounded-md"
+          >
             My
           </Link>
         </div>
