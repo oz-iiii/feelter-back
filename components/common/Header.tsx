@@ -14,6 +14,7 @@ export default function Header({ onMySidebarToggle }: NavbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const pathname = usePathname();
   const isMyPage = pathname.startsWith("/my");
+  const isSearchPage = pathname.startsWith("/search");
 
   // 검색을 실행하고 해당 작품 페이지로 이동하는 함수
   const performSearch = () => {
@@ -55,41 +56,43 @@ export default function Header({ onMySidebarToggle }: NavbarProps) {
     <header className="border-b border-neutral-500 bg-black p-4 sticky top-0 z-50">
       <div className="flex justify-between items-center max-w-7xl mx-auto">
         {/* 1. 로고 - 클릭 시 메인 화면으로 이동 */}
-        <Link href="/home" className="text-xl font-bold text-white">
+        <Link href="/" className="text-xl font-bold text-white">
           Feelter
         </Link>
 
-        {/* 2. 검색창 (항상 보임) */}
-        <div className="flex-grow flex justify-center mx-4">
-          <div className="relative w-full max-w-[500px] flex items-center">
-            <input
-              type="text"
-              placeholder="검색어를 입력하세요."
-              className="w-full px-4 py-2 pr-10 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            {/* 돋보기 버튼 */}
-            <button
-              onClick={performSearch}
-              className="absolute right-0 pr-3 focus:outline-none"
-              aria-label="Search"
-            >
-              <svg
-                className="h-5 w-5 text-gray-400"
-                fill="currentColor"
-                viewBox="0 0 20 20"
+        {/* 2. 검색창 (/search 에서는 숨김) */}
+        {!isSearchPage && (
+          <div className="flex-grow flex justify-center mx-4">
+            <div className="relative w-full max-w-[500px] flex items-center">
+              <input
+                type="text"
+                placeholder="검색어를 입력하세요."
+                className="w-full px-4 py-2 pr-10 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+              {/* 돋보기 버튼 */}
+              <button
+                onClick={performSearch}
+                className="absolute right-0 pr-3 focus:outline-none"
+                aria-label="Search"
               >
-                <path
-                  fillRule="evenodd"
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
+                <svg
+                  className="h-5 w-5 text-gray-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 3. 데스크톱 내비게이션 링크 */}
         <nav className="hidden md:flex text-sm space-x-4">

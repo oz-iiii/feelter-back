@@ -50,7 +50,10 @@ const ContentCard: React.FC<ContentCardProps> = ({ content, onOpen }) => {
             <BiMessageRounded size={24} />
           </button>
         </div>
-        <button className="text-white text-lg font-bold" onClick={handleOpenClick}>
+        <button
+          className="text-white text-lg font-bold"
+          onClick={handleOpenClick}
+        >
           ▶ 상세보기
         </button>
       </div>

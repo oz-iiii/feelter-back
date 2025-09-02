@@ -7,6 +7,7 @@ export interface ContentItem {
   imageUrl: string;
   rating?: number;
   popularity?: number;
+  description?: string;
 }
 
 export const sampleContent: ContentItem[] = [
