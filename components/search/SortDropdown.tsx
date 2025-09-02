@@ -14,8 +14,8 @@ const SortDropdown: React.FC<SortDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const sortOptions = [
-    { key: "latest", label: "최신순" },
     { key: "popular", label: "인기순" },
+    { key: "latest", label: "최신순" },
     { key: "rating", label: "평점순" },
     { key: "title", label: "제목순" },
   ];

@@ -43,4 +43,13 @@ body {
     scrollbar-width: thin; /* 스크롤바 너비를 얇게 만듭니다. */
     scrollbar-color: #fff #000; /* 손잡이 색상 트랙 색상 */
   }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
 }

@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import SearchBar from "@/components/search/SearchBar";
-import ContentGrid from "@/components/search/ContentGrid";
-import Sidebar from "@/components/search/Sidebar";
-import MovieModal from "@/components/search/MovieModal";
+import SearchBar from "./SearchBar";
+import ContentGrid from "./ContentGrid";
+import Footer from "./Footer";
+import Sidebar from "./Sidebar";
 import { sampleContent, ContentItem, MASTER_DATA } from "@/lib/data";
 
 export default function Home() {
@@ -12,9 +12,6 @@ export default function Home() {
   const [currentSort, setCurrentSort] = useState("latest");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(
-    null
-  );
   const pageSize = 8;
 
   const buildLargeDataset = (times: number = 10): ContentItem[] => {
@@ -65,21 +62,13 @@ export default function Home() {
     setLargeDataset((prevDataset) => sortDataset(prevDataset, currentSort));
   }, [currentSort, sortDataset]);
 
-  const handleOpenModal = (content: ContentItem) => {
-    setSelectedContent(content);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedContent(null);
-  };
-
   useEffect(() => {
-    if (isSidebarOpen || selectedContent) {
+    if (isSidebarOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }
-  }, [isSidebarOpen, selectedContent]);
+  }, [isSidebarOpen]);
 
   const filteredData = searchQuery
     ? largeDataset.filter((item) =>
@@ -130,11 +119,13 @@ export default function Home() {
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={handlePageChange}
-            onCardClick={handleOpenModal}
+            onCardClick={function (): void {
+              throw new Error("Function not implemented.");
+            }}
           />
         </div>
       </main>
-      <MovieModal content={selectedContent} onClose={handleCloseModal} />
+      <Footer />
     </div>
   );
 }

@@ -13,7 +13,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, masterData }) => {
   return (
     <aside
-      className={`fixed top-0 left-0 w-72 h-screen bg-black/80 backdrop-blur-sm text-white transform transition-transform duration-300 z-[1000] thin-scrollbar ${
+      className={`fixed top-0 left-0 w-72 h-screen bg-black/80 backdrop-blur-sm text-white transform transition-transform duration-300 z-[1000] no-scrollbar ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, masterData }) => {
           <IoCloseOutline size={28} />
         </button>
       </div>
-      <div className="p-4 overflow-y-auto h-[calc(100vh-65px)] thin-scrollbar">
+      <div className="p-4 overflow-y-auto h-[calc(100vh-65px)] no-scrollbar">
         <div className="space-y-6">
           <FilterSection
             title="플랫폼별"

@@ -5,12 +5,18 @@ import { ContentItem } from "@/lib/data";
 
 interface ContentCardProps {
   content: ContentItem;
+  onOpen: (content: ContentItem) => void;
 }
 
-const ContentCard: React.FC<ContentCardProps> = ({ content }) => {
+const ContentCard: React.FC<ContentCardProps> = ({ content, onOpen }) => {
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click event
     alert(`'${content.title}'을(를) 찜 목록에 추가했습니다!`);
+  };
+
+  const handleOpenClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onOpen(content);
   };
 
   return (
@@ -20,8 +26,7 @@ const ContentCard: React.FC<ContentCardProps> = ({ content }) => {
         <Image
           src={content.imageUrl}
           alt={content.title}
-          width={240}
-          height={340}
+          fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           style={{ objectFit: "cover" }}
           className="transition-opacity duration-300 group-hover:opacity-50"
@@ -45,7 +50,9 @@ const ContentCard: React.FC<ContentCardProps> = ({ content }) => {
             <BiMessageRounded size={24} />
           </button>
         </div>
-        <button className="text-white text-lg font-bold">▶ 상세보기</button>
+        <button className="text-white text-lg font-bold" onClick={handleOpenClick}>
+          ▶ 상세보기
+        </button>
       </div>
 
       {/* Meta Info */}

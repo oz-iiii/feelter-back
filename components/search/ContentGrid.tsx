@@ -10,10 +10,11 @@ interface ContentGridProps {
   content: ContentItem[];
   totalItems: number;
   currentSort: string;
-  setCurrentSort: (sortKey: string) => void;
+  setCurrentSort: React.Dispatch<React.SetStateAction<string>>;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  onCardClick: (content: ContentItem) => void;
 }
 
 const ContentGrid: React.FC<ContentGridProps> = ({
@@ -24,6 +25,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
   currentPage,
   totalPages,
   onPageChange,
+  onCardClick,
 }) => {
   return (
     <section className="bg-[#141A28] rounded-2xl p-6">
@@ -35,7 +37,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {content.map((item) => (
-          <ContentCard key={item.title} content={item} />
+          <ContentCard key={item.title} content={item} onOpen={onCardClick} />
         ))}
       </div>
       {totalPages > 1 && (
