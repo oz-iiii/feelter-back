@@ -15,6 +15,13 @@ export default function Ranking() {
     fetchMovies();
   }, []);
 
+  // 영화 데이터가 로드되면 첫 번째 영화를 자동 선택
+  useEffect(() => {
+    if (movies.length > 0 && !selectedMovie) {
+      setSelectedMovie(movies[0]);
+    }
+  }, [movies, selectedMovie]);
+
   const handleMovieClick = (movie: Movie) => {
     setSelectedMovie(movie);
   };
