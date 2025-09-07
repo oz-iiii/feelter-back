@@ -16,7 +16,7 @@ export default function FeelterGrid() {
 
 	useEffect(() => {
 		fetchMovies();
-	}, [fetchMovies]);
+	}, []);
 
 	// 영화 클릭 이벤트 핸들러
 	const handleMovieClick = (id: string) => {

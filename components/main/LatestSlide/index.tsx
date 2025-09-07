@@ -13,7 +13,7 @@ export default function LatestSlide() {
   // 첫 번째 useEffect - 항상 실행되어야 함
   useEffect(() => {
     fetchMovies();
-  }, [fetchMovies]);
+  }, []);
 
   // 두 번째 useEffect - 항상 실행되어야 함 (조건부 return 이전에 배치)
   useEffect(() => {
