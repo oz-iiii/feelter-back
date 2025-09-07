@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { IoPlayCircleOutline } from "@react-icons/all-files/io5/IoPlayCircleOutline";
 import { IoHeartOutline } from "@react-icons/all-files/io5/IoHeartOutline";
 import { IoChatbubbleOutline } from "@react-icons/all-files/io5/IoChatbubbleOutline";
@@ -103,10 +104,12 @@ export default function LatestSlide() {
       <div className="relative h-96 bg-gray-900 rounded-lg overflow-hidden">
         {/* 배경 이미지 */}
         <div className="absolute inset-0">
-          <img
+          <Image
             src={selectedMovie.bgUrl}
             alt={selectedMovie.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
           />
           <div className="absolute inset-0 bg-black/50"></div>
         </div>
@@ -165,11 +168,12 @@ export default function LatestSlide() {
 
           {/* 오른쪽: 포스터 */}
           <div className="w-64 flex items-center justify-center p-8">
-            <div className="w-48 h-72 bg-gray-300 rounded-lg overflow-hidden shadow-2xl">
-              <img
+            <div className="w-48 h-72 bg-gray-300 rounded-lg overflow-hidden shadow-2xl relative">
+              <Image
                 src={selectedMovie.imgUrl}
                 alt={selectedMovie.title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
               />
             </div>
           </div>

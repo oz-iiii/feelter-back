@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { IoPlayCircleOutline } from "@react-icons/all-files/io5/IoPlayCircleOutline";
 import { IoHeartOutline } from "@react-icons/all-files/io5/IoHeartOutline";
 import { IoChatbubbleOutline } from "@react-icons/all-files/io5/IoChatbubbleOutline";
@@ -78,11 +79,12 @@ function DetailsPanel({
     <div className="bg-gray-100 rounded-lg p-6 h-80">
       <div className="flex gap-4 h-full">
         {/* 포스터 */}
-        <div className="w-32 h-48 bg-gray-300 rounded overflow-hidden flex-shrink-0">
-          <img
+        <div className="w-32 h-48 bg-gray-300 rounded overflow-hidden flex-shrink-0 relative">
+          <Image
             src={movie.imgUrl}
             alt={movie.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
           />
         </div>
 
@@ -152,8 +154,8 @@ function RankingList({
           </div>
 
           {/* 포스터 */}
-          <div className="w-16 h-20 bg-gray-300 rounded overflow-hidden flex-shrink-0">
-            <img
+          <div className="w-16 h-20 bg-gray-300 rounded overflow-hidden flex-shrink-0 relative">
+            <Image
               src={
                 movie.imgUrl ||
                 `https://placehold.co/64x80/333/FFF?text=${
@@ -161,7 +163,8 @@ function RankingList({
                 }`
               }
               alt={movie.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
             />
           </div>
 

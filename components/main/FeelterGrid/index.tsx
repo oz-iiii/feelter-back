@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { IoFilmOutline } from "@react-icons/all-files/io5/IoFilmOutline";
 import { IoHeartOutline } from "@react-icons/all-files/io5/IoHeartOutline";
 import { IoHeart } from "@react-icons/all-files/io5/IoHeart";
@@ -58,10 +59,11 @@ export default function FeelterGrid() {
 							className="bg-gray-300 aspect-[2/3] rounded cursor-pointer relative group"
 							onClick={() => handleMovieClick(movie.id)}
 						>
-							<img
+							<Image
 								src={movie.imgUrl}
 								alt={`${movie.title} Poster`}
-								className="w-full h-full object-cover rounded"
+								fill
+								className="object-cover rounded"
 							/>
 
 							{/* 오버레이를 호버 또는 클릭(터치) 시 보이게 함 */}
