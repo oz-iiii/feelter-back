@@ -18,6 +18,11 @@ const nextConfig = {
         port: "",
         pathname: "/id/**",
       },
+      {
+        protocol: "https",
+        hostname: "image.tmdb.org",
+        pathname: "/t/p/**",
+      },
     ],
   },
 };

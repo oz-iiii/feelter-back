@@ -1,3 +1,4 @@
+import { supabase } from "../lib/supabase";
 import {
 	movieService,
 	movieRankingService,
@@ -7,7 +8,7 @@ import { Movie } from "../lib/types/movie";
 // JSON 파일에서 크롤링된 데이터 직접 임포트
 import crawledData from "../crawled-upcoming-movies-2025-09-03T12-38-29-648Z.json";
 
-// 크롤링된 데이터의 타입 정의
+// 크롤링된 데이터의 타입 정의 (실제 JSON 구조에 맞게 수정)
 interface CrawledMovie {
 	tmdbId: number;
 	title: string;
@@ -21,57 +22,35 @@ interface CrawledMovie {
 	overview: string;
 	streamingProviders: string[];
 	posterUrl: string;
-	videos: {
-		trailers: string[];
-		teasers: string[];
-		clips: string[];
-		other: string[];
-	};
 }
 
-// 크롤링된 데이터를 lib/types/Movie 형식으로 변환
-const mockMovies: Omit<Movie, "id" | "createdAt" | "updatedAt">[] =
-	crawledData.map((movie: CrawledMovie) => ({
-		tmdbid: movie.tmdbId,
-		title: movie.title,
-		// [수정] releaseDate 문자열을 Date 객체로 변환
-		release: new Date(movie.releaseDate),
-		age: movie.certification,
-		genre: movie.genres.join(", "),
-		// [수정] runningTime을 숫자(number) 타입 그대로 사용
-		runningTime: String(movie.runtime),
-		country: movie.countries.join(", "),
-		director: movie.directors.join(", "),
-		actor: movie.cast.slice(0, 5).join(", "),
-		overview: movie.overview,
-		streaming:
-			movie.streamingProviders.length > 0
-				? movie.streamingProviders[0]
-				: "Netflix",
-		streamingUrl: "https://netflix.com",
-		youtubeUrl:
-			movie.videos.trailers.length > 0
-				? movie.videos.trailers[0]
-				: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-		imgUrl: movie.posterUrl,
-		bgUrl: movie.posterUrl,
-		feelterTime: "저녁",
-		feelterPurpose: movie.genres.includes("공포")
-			? "스릴"
-			: movie.genres.includes("로맨스")
-			? "감동"
-			: "휴식",
-		feelterOccasion: movie.genres.includes("가족")
-			? "가족"
-			: movie.genres.includes("로맨스")
-			? "연인"
-			: "혼자",
-	}));
+// 크롤링된 데이터를 현재 테이블 구조에 맞게 변환 (모든 필수 컬럼 포함)
+const mockMovies = crawledData.map((movie: CrawledMovie) => ({
+	tmdbid: movie.tmdbId,
+	title: movie.title,
+	release: new Date(movie.releaseDate).toISOString(),
+	age: movie.certification || "전체",
+	genre: movie.genres.join(", ") || "일반",
+	runningtime: movie.runtime ? `${movie.runtime}분` : "120분",
+	country: movie.countries.join(", ") || "미국",
+	director: movie.directors.join(", ") || "미상",
+	actor: movie.cast.slice(0, 5).join(", ") || "미상",
+	overview: movie.overview || "줄거리 정보 없음",
+	// 추가 필수 컬럼들
+	streaming: movie.streamingProviders.length > 0 ? movie.streamingProviders[0] : "Netflix",
+	streamingurl: "https://netflix.com",
+	youtubeurl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // 기본값 사용
+	imgurl: movie.posterUrl || "https://via.placeholder.com/500x750",
+	bgurl: movie.posterUrl || "https://via.placeholder.com/1920x1080",
+	feeltertime: "저녁",
+	feelterpurpose: movie.genres.includes("공포") ? "스릴" : movie.genres.includes("로맨스") ? "감동" : "휴식",
+	feelteroccasion: movie.genres.includes("가족") ? "가족" : movie.genres.includes("로맨스") ? "연인" : "혼자"
+}));
 
-// 영화 데이터를 Firebase에 입력하는 함수
+// 영화 데이터를 Supabase에 입력하는 함수
 async function seedMovies() {
 	try {
-		console.log("영화 데이터를 Firebase에 입력하는 중...");
+		console.log("영화 데이터를 Supabase에 입력하는 중...");
 		console.log(`변환된 영화 데이터 수: ${mockMovies.length}개`);
 
 		// 첫 번째 데이터 확인
@@ -95,8 +74,18 @@ async function seedMovies() {
 			console.log(`TMDB ID: ${mockMovies[i].tmdbid}`);
 
 			try {
-				console.log(`Firebase에 ${mockMovies[i].title} 추가 시도 중...`);
-				await movieService.addMoviesBatch([mockMovies[i]]);
+				console.log(`Supabase에 ${mockMovies[i].title} 추가 시도 중...`);
+				
+				// movieService 대신 직접 Supabase API 호출
+				const { error } = await supabase
+					.from('movies')
+					.insert(mockMovies[i])
+					.select();
+					
+				if (error) {
+					throw new Error(`Supabase 삽입 실패: ${error.message}`);
+				}
+				
 				console.log(`✅ ${mockMovies[i].title} 성공적으로 추가됨`);
 			} catch (error) {
 				console.error(`❌ ${mockMovies[i].title} 추가 실패:`, error);
@@ -108,7 +97,7 @@ async function seedMovies() {
 
 			console.log(`=== ${i + 1}번째 영화 처리 완료 ===\n`);
 
-			// 각 영화 처리 후 잠시 대기 (Firebase 제한 방지)
+			// 각 영화 처리 후 잠시 대기
 			if (i < mockMovies.length - 1) {
 				console.log("다음 영화 처리 전 1초 대기...");
 				await new Promise((resolve) => setTimeout(resolve, 1000));

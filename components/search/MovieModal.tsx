@@ -65,7 +65,7 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
               <div className="relative h-full flex flex-col justify-end">
                 <div className="absolute inset-0">
                   <Image
-                    src={content.imageUrl}
+                    src={content.poster || "/images/placeholder.jpg"}
                     alt={content.title}
                     fill
                     style={{ objectFit: 'cover' }}

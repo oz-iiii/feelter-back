@@ -27,7 +27,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ title, data }) => {
     <section>
       <h3 className="text-lg font-bold text-gray-200 mb-3 px-2">{title}</h3>
       <div className="space-y-1">
-        {data.map((label, index) => (
+        {data?.map((label, index) => (
           <label
             key={index}
             className="flex items-center gap-3 px-3 py-2 text-gray-300 rounded-md cursor-pointer hover:bg-gray-800 transition-colors duration-200"
@@ -40,7 +40,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ title, data }) => {
             />
             <span>{label}</span>
           </label>
-        ))}
+        )) || <div className="text-gray-500 px-3 py-2">데이터가 없습니다.</div>}
       </div>
     </section>
   );

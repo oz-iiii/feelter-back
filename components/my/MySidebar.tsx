@@ -96,7 +96,7 @@ export default function MySidebar({ isOpen, onClose }: MySidebarProps) {
     },
     {
       title: "나의 카테고리",
-      href: "/my/category",
+      href: "/my/categories",
       icon: (
         <svg
           className="w-5 h-5"

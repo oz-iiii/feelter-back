@@ -5,9 +5,28 @@ import SearchBar from "@/components/search/SearchBar";
 import ContentGrid from "@/components/search/ContentGrid";
 import Sidebar from "@/components/search/Sidebar";
 import MovieModal from "@/components/search/MovieModal";
-import { sampleContent, ContentItem, MASTER_DATA } from "@/lib/data";
+import { ContentItem, MASTER_DATA } from "@/lib/data";
+import { useMovieStore } from "@/lib/stores";
+import { Movie } from "@/lib/types/movie";
 
-export default function Home() {
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
+// Helper function to convert Movie to ContentItem
+const movieToContentItem = (movie: Movie): ContentItem => ({
+  title: movie.title,
+  year: movie.release instanceof Date 
+    ? movie.release.getFullYear() 
+    : new Date(movie.release).getFullYear(),
+  genre: movie.genre,
+  rating: 8.5, // Default rating since Movie doesn't have rating
+  poster: movie.imgUrl,
+  popularity: 85, // Default popularity
+  description: movie.overview,
+});
+
+export default function SearchPage() {
+  const { movies, loading, fetchMovies } = useMovieStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState("latest");
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,22 +36,26 @@ export default function Home() {
   );
   const pageSize = 8;
 
-  const buildLargeDataset = (times: number = 10): ContentItem[] => {
-    const arr: ContentItem[] = [];
-    for (let i = 0; i < times; i += 1) {
-      arr.push(
-        ...sampleContent.map((x, idx) => ({
-          ...x,
-          title: `${x.title} ${i + 1}-${idx + 1}`,
-        }))
-      );
-    }
-    return arr;
-  };
+  // Convert movies to ContentItem format for compatibility
+  const contentDataset = movies.map(movieToContentItem);
 
-  const [largeDataset, setLargeDataset] = useState<ContentItem[]>(() =>
-    buildLargeDataset(8)
-  );
+  // Test if useEffect works at all
+  useEffect(() => {
+    console.log("🔄 Search page: Basic useEffect running!");
+  }, []);
+
+  useEffect(() => {
+    console.log("🔄 Search page: fetchMovies useEffect running, calling API directly");
+    
+    fetch('/api/movies')
+      .then(res => res.json())
+      .then(data => {
+        console.log("🔄 Search page: Got API response:", data.success, data.data?.length);
+      })
+      .catch(err => {
+        console.error("🔄 Search page: API error:", err);
+      });
+  }, []); // Remove fetchMovies from dependency array
 
   const sortDataset = useCallback(
     (dataset: ContentItem[], sortKey: string): ContentItem[] => {
@@ -61,9 +84,8 @@ export default function Home() {
     []
   );
 
-  useEffect(() => {
-    setLargeDataset((prevDataset) => sortDataset(prevDataset, currentSort));
-  }, [currentSort, sortDataset]);
+  // Apply sorting to dataset
+  const sortedDataset = sortDataset(contentDataset, currentSort);
 
   const handleOpenModal = (content: ContentItem) => {
     setSelectedContent(content);
@@ -82,10 +104,10 @@ export default function Home() {
   }, [isSidebarOpen, selectedContent]);
 
   const filteredData = searchQuery
-    ? largeDataset.filter((item) =>
+    ? sortedDataset?.filter((item) =>
         item.title.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : largeDataset;
+      ) || []
+    : sortedDataset || [];
 
   const currentContent = filteredData.slice(
     (currentPage - 1) * pageSize,
@@ -122,16 +144,22 @@ export default function Home() {
           onSearch={handleSearch}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <ContentGrid
-            content={currentContent}
-            totalItems={filteredData.length}
-            currentSort={currentSort}
-            setCurrentSort={setCurrentSort}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            onCardClick={handleOpenModal}
-          />
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="text-lg text-white">영화 데이터를 불러오는 중...</div>
+            </div>
+          ) : (
+            <ContentGrid
+              content={currentContent}
+              totalItems={filteredData.length}
+              currentSort={currentSort}
+              setCurrentSort={setCurrentSort}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              onCardClick={handleOpenModal}
+            />
+          )}
         </div>
       </main>
       <MovieModal content={selectedContent} onClose={handleCloseModal} />

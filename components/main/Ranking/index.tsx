@@ -4,20 +4,22 @@ import { IoPlayCircleOutline } from "@react-icons/all-files/io5/IoPlayCircleOutl
 import { IoHeartOutline } from "@react-icons/all-files/io5/IoHeartOutline";
 import { IoChatbubbleOutline } from "@react-icons/all-files/io5/IoChatbubbleOutline";
 import { useMovieStore } from "@/lib/stores";
+import { Movie } from '@/lib/types/movie';
 
 export default function Ranking() {
   const { movies, loading, fetchMovies } = useMovieStore();
-  const [selectedMovie, setSelectedMovie] = useState<any>(null);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
   useEffect(() => {
     fetchMovies();
-  }, [fetchMovies]);
+  }, []);
 
-  const handleMovieClick = (movie: any) => {
+  const handleMovieClick = (movie: Movie) => {
     setSelectedMovie(movie);
   };
 
   const handlePlayClick = () => {
+    if (!selectedMovie) return;
     console.log(`플레이 버튼 클릭: ${selectedMovie.title}`);
     window.open(selectedMovie.streamingUrl, "_blank");
   };
@@ -69,7 +71,7 @@ function DetailsPanel({
   movie,
   onPlayClick,
 }: {
-  movie: any;
+  movie: Movie;
   onPlayClick: () => void;
 }) {
   return (
@@ -89,7 +91,7 @@ function DetailsPanel({
           <h3 className="text-xl font-bold mb-2">{movie.title}</h3>
           <div className="text-sm text-gray-600 mb-4">
             <p>
-              {movie.release} • {movie.age} • {movie.runningTime}
+              {new Date(movie.release).getFullYear()} • {movie.age} • {movie.runningTime}
             </p>
             <p>
               {movie.genre} • {movie.country}
@@ -128,9 +130,9 @@ function RankingList({
   selectedMovie,
   onMovieClick,
 }: {
-  movies: any[];
-  selectedMovie: any;
-  onMovieClick: (movie: any) => void;
+  movies: Movie[];
+  selectedMovie: Movie | null;
+  onMovieClick: (movie: Movie) => void;
 }) {
   return (
     <div className="space-y-2">

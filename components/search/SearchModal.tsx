@@ -106,7 +106,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ onClose, content }) => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-4 max-h-[65vh] overflow-y-auto">
           {filteredContent.length > 0 ? (
             filteredContent.map((item) => (
-              <ContentCard key={item.title} content={item} />
+              <ContentCard key={item.title} content={item} onOpen={() => {}} />
             ))
           ) : (
             <p className="text-center text-gray-400 col-span-full">

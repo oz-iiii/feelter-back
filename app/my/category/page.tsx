@@ -3,11 +3,10 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
-import { Category } from "@/components/common/model/types";
-import { defaultCategories } from "@/components/common/model/data/categories";
+import { useCategoryStore } from "@/lib/stores";
 
 export default function MyCatPage() {
-  const [categories, setCategories] = useState<Category[]>(defaultCategories);
+  const { categories, createCategory, deleteCategory, updateCategory, testAddMovie } = useCategoryStore();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newCategory, setNewCategory] = useState({
@@ -16,38 +15,20 @@ export default function MyCatPage() {
     isPublic: true,
   });
 
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const handleCreateCategory = () => {
     if (!newCategory.name) return;
 
-    const category: Category = {
-      id: categories.length + 1,
-      name: newCategory.name,
-      description: newCategory.description,
-      movieCount: 0,
-      isPublic: newCategory.isPublic,
-      createdDate: new Date().toISOString().split("T")[0].replace(/-/g, "."),
-      movies: [],
-    };
-
-    setCategories([...categories, category]);
+    createCategory(newCategory.name, newCategory.description);
     setNewCategory({ name: "", description: "", isPublic: true });
     setShowCreateModal(false);
   };
 
-  const deleteCategory = (id: number) => {
+  const handleDeleteCategory = (id: string) => {
     if (confirm("정말로 이 카테고리를 삭제하시겠습니까?")) {
-      setCategories(categories.filter((cat) => cat.id !== id));
+      deleteCategory(id);
     }
-  };
-
-  const togglePublic = (id: number) => {
-    setCategories(
-      categories.map((cat) =>
-        cat.id === id ? { ...cat, isPublic: !cat.isPublic } : cat
-      )
-    );
   };
 
   return (
@@ -62,25 +43,33 @@ export default function MyCatPage() {
             </span>
           </div>
 
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-[#ccff00] hover:bg-[#b8e600] text-black rounded-lg transition-colors flex items-center"
-          >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex space-x-3">
+            <button
+              onClick={testAddMovie}
+              className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-            새 카테고리
-          </button>
+              테스트
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2 bg-[#ccff00] hover:bg-[#b8e600] text-black rounded-lg transition-colors flex items-center"
+            >
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              새 카테고리
+            </button>
+          </div>
         </div>
 
         {/* Category List */}
@@ -98,58 +87,20 @@ export default function MyCatPage() {
                       <h3 className="text-lg font-semibold text-white mr-3">
                         {category.name}
                       </h3>
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          category.isPublic
-                            ? "bg-green-900 text-green-300"
-                            : "bg-gray-900 text-gray-300"
-                        }`}
-                      >
-                        {category.isPublic ? "공개" : "비공개"}
-                      </span>
                     </div>
-                    <p className="text-gray-400 text-sm mb-2">
-                      {category.description}
-                    </p>
+                    {category.description && (
+                      <p className="text-gray-400 text-sm mb-2">
+                        {category.description}
+                      </p>
+                    )}
                     <div className="flex items-center text-sm text-gray-500 space-x-4">
-                      <span>영화 {category.movieCount}편</span>
-                      <span>생성일: {category.createdDate}</span>
+                      <span>영화 {category.movies.length}편</span>
+                      <span>생성일: {category.createdAt instanceof Date ? category.createdAt.toLocaleDateString() : new Date(category.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
 
                   {/* Actions */}
                   <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => togglePublic(category.id)}
-                      className="p-2 text-gray-400 hover:text-gray-300 rounded-lg hover:bg-gray-700"
-                      title={
-                        category.isPublic ? "비공개로 변경" : "공개로 변경"
-                      }
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        {category.isPublic ? (
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        ) : (
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
-                          />
-                        )}
-                      </svg>
-                    </button>
-
                     <button
                       onClick={() =>
                         setSelectedCategory(
@@ -175,7 +126,7 @@ export default function MyCatPage() {
                     </button>
 
                     <button
-                      onClick={() => deleteCategory(category.id)}
+                      onClick={() => handleDeleteCategory(category.id)}
                       className="p-2 text-red-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
                       title="삭제"
                     >
@@ -201,10 +152,10 @@ export default function MyCatPage() {
               <div className="p-4">
                 {category.movies.length > 0 ? (
                   <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
-                    {category.movies.map((movie) => (
+                    {category.movies.slice(0, 10).map((movie) => (
                       <div key={movie.id} className="aspect-[2/3]">
                         <Image
-                          src={movie.poster}
+                          src={movie.imgUrl}
                           alt={movie.title}
                           width={64}
                           height={96}
@@ -212,11 +163,10 @@ export default function MyCatPage() {
                         />
                       </div>
                     ))}
-                    {/* Show remaining count if there are more movies than displayed */}
-                    {category.movieCount > category.movies.length && (
+                    {category.movies.length > 10 && (
                       <div className="aspect-[2/3] bg-gray-700 rounded flex items-center justify-center">
                         <span className="text-gray-400 text-xs text-center">
-                          +{category.movieCount - category.movies.length}
+                          +{category.movies.length - 10}
                         </span>
                       </div>
                     )}

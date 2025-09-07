@@ -27,6 +27,7 @@ export default function Home() {
             <button
               onClick={handleStartClick}
               className="inline-block bg-[#ccff00] text-black py-5 px-12 text-2xl font-bold rounded transition-all duration-300 hover:scale-105 hover:shadow-lg transform hover:-translate-y-1 mt-10"
+              suppressHydrationWarning
             >
               지금 바로 보러가기
             </button>
@@ -46,7 +47,7 @@ export default function Home() {
             <div className="problem-item bg-[#222] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08]">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-10">
                 <Image
-                  src="/img/icon-frustrated.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=😟"
                   alt="고민하는 이모티콘"
                   width={144}
                   height={144}
@@ -60,7 +61,7 @@ export default function Home() {
             <div className="problem-item bg-[#222] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08]">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-10">
                 <Image
-                  src="/img/icon-money.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=💰"
                   alt="돈 이모티콘"
                   width={144}
                   height={144}
@@ -74,7 +75,7 @@ export default function Home() {
             <div className="problem-item bg-[#222] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08]">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-10">
                 <Image
-                  src="/img/icon-shrug.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=🤷"
                   alt="모르겠는 이모티콘"
                   width={144}
                   height={144}
@@ -99,7 +100,7 @@ export default function Home() {
             <div className="value-item bg-[#222] border border-white/[0.08] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="/img/icon-ai.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=🤖"
                   alt="아이디어 전구"
                   width={144}
                   height={144}
@@ -262,6 +263,7 @@ export default function Home() {
           <button
             onClick={handleStartClick}
             className="inline-block bg-[#ccff00] text-black py-5 px-12 text-3xl font-bold rounded transition-all duration-300 hover:scale-105 hover:shadow-lg transform hover:-translate-y-1 mb-6"
+            suppressHydrationWarning
           >
             무료로 시작하기
           </button>

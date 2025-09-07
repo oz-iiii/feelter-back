@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { movieService, movieRankingService } from "@/lib/services/movieService";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { Movie } from "@/lib/types/movie";
 
 // JSON 파일에서 크롤링된 데이터 직접 임포트
@@ -19,11 +20,11 @@ interface CrawledMovie {
 	overview: string;
 	streamingProviders: string[];
 	posterUrl: string;
-	videos: {
-		trailers: string[];
-		teasers: string[];
-		clips: string[];
-		other: string[];
+	videos?: {
+		trailers?: string[];
+		teasers?: string[];
+		clips?: string[];
+		other?: string[];
 	};
 }
 
@@ -49,7 +50,7 @@ const mockMovies: Omit<Movie, "id" | "createdAt" | "updatedAt">[] = crawled.map(
 				: "Netflix",
 		streamingUrl: "https://netflix.com",
 		youtubeUrl:
-			movie.videos.trailers.length > 0
+			movie.videos?.trailers?.length && movie.videos.trailers.length > 0
 				? movie.videos.trailers[0]
 				: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 		imgUrl: movie.posterUrl,
@@ -70,10 +71,34 @@ const mockMovies: Omit<Movie, "id" | "createdAt" | "updatedAt">[] = crawled.map(
 
 export async function POST() {
 	try {
-		console.log("영화 데이터를 Firebase에 입력하는 중...");
+		console.log("영화 데이터를 Supabase에 입력하는 중...");
 
-		// 배치로 영화 데이터 추가
-		await movieService.addMoviesBatch(mockMovies);
+		// 스키마에 맞춘 정확 매핑 (snake_case) + admin 클라이언트 사용
+		const inserts = mockMovies.map((m) => ({
+			tmdb_id: m.tmdbid,
+			title: m.title,
+			release_date:
+				typeof m.release === "string"
+					? m.release
+					: m.release.toISOString().slice(0, 10),
+			certification: m.age,
+			genres: m.genre ? m.genre.split(", ") : [],
+			runtime: parseInt((m.runningTime || "0").replace(/[^0-9]/g, ""), 10) || 0,
+			countries: m.country ? m.country.split(", ") : [],
+			directors: m.director ? m.director.split(", ") : [],
+			actors: m.actor ? m.actor.split(", ") : [],
+			overview: m.overview,
+			streaming_providers: m.streaming ? [m.streaming] : [],
+			poster_url: m.imgUrl || m.bgUrl,
+		}));
+
+		const client = supabaseAdmin ?? supabase;
+		const { error: insertError } = await client.from("movies").insert(inserts);
+
+		if (insertError) {
+			console.error("시드 삽입 오류:", insertError);
+			throw new Error(`영화 배치 추가 실패: ${insertError.message}`);
+		}
 
 		console.log("✅ 영화 데이터 입력 완료!");
 
@@ -81,21 +106,12 @@ export async function POST() {
 		const movies = await movieService.getAllMovies();
 		console.log(`총 ${movies.length}개의 영화가 입력되었습니다.`);
 
-		// 영화 순위 데이터도 추가
-		const rankings = movies.slice(0, 10).map((movie, index) => ({
-			rank: index + 1,
-			movieId: movie.id,
-			bestComment: `${movie.title} 정말 재미있어요!`,
-		}));
-
-		await movieRankingService.addRankingsBatch(rankings);
-		console.log("✅ 영화 순위 데이터 입력 완료!");
+		// rankings 테이블은 현재 스키마에 없으므로 건너뜀
 
 		return NextResponse.json({
 			success: true,
 			message: "영화 데이터가 성공적으로 입력되었습니다.",
 			moviesCount: movies.length,
-			rankingsCount: rankings.length,
 		});
 	} catch (error) {
 		console.error("❌ 영화 데이터 입력 중 오류 발생:", error);

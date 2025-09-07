@@ -1,224 +1,312 @@
 [
-  {
-    "tmdbId": 1242011,
-    "title": "투게더",
-    "releaseDate": "2025-07-23",
-    "certification": "15",
-    "genres": [
-      "공포",
-      "로맨스"
-    ],
-    "runtime": 102,
-    "countries": [
-      "United States of America",
-      "Australia"
-    ],
-    "directors": [
-      "Michael Shanks"
-    ],
-    "cast": [
-      "데이브 프랭코",
-      "앨리슨 브리",
-      "데이먼 헤리먼",
-      "Mia Morrissey",
-      "Karl Richmond",
-      "Jack Kenny",
-      "Francesca Waters",
-      "Aljin Abella",
-      "Sarah Lang",
-      "Rob Brown"
-    ],
-    "overview": "관계의 한계에 부딪힌 오래된 커플 팀과 밀리. 어느 날 서로의 몸이 점점 붙어버리기 시작하는데…",
-    "streamingProviders": [],
-    "posterUrl": "https://image.tmdb.org/t/p/w500/ivWOD2MiC1HywIPBF2Ei2CN3ywY.jpg",
-    "videos": {
-      "trailers": [
-        "https://www.youtube.com/watch?v=6bS3RvkR9Wo",
-        "https://www.youtube.com/watch?v=MRqoHqB5Umk"
-      ],
-      "teasers": [],
-      "clips": [],
-      "other": [
-        "https://www.youtube.com/watch?v=5cWn2Zn5-rA"
-      ]
-    }
-  },
-  {
-    "tmdbId": 1311031,
-    "title": "극장판 귀멸의 칼날: 무한성편",
-    "releaseDate": "2025-07-18",
-    "certification": "15",
-    "genres": [
-      "애니메이션",
-      "액션",
-      "판타지",
-      "스릴러"
-    ],
-    "runtime": 155,
-    "countries": [
-      "Japan"
-    ],
-    "directors": [
-      "소토자키 하루오"
-    ],
-    "cast": [
-      "하나에 나츠키",
-      "키토 아카리",
-      "마츠오카 요시츠구",
-      "시모노 히로",
-      "세키 토시히코",
-      "우에다 레이나",
-      "오카모토 노부히코",
-      "사쿠라이 타카히로",
-      "코니시 카츠유키",
-      "카와니시 켄고"
-    ],
-    "overview": "혈귀로 변해버린 여동생 네즈코를 인간으로 되돌리기 위해 혈귀를 사냥하는 조직인 《귀살대》에 입대한 카마도 탄지로. 입대 후 동료인 아가츠마 젠이츠, 하시비라 이노스케와 함께 많은 혈귀와 싸우고, 성장하면서 세 사람의 우정과 유대는 깊어진다. 탄지로는 《귀살대》 최고위 검사인 《주》와도 함께 싸웠다. 「무한열차」에서는 염주・렌고쿠 쿄쥬로, 「유곽」에서는 음주・우즈이 텐겐, 「도공 마을」에서는 하주・토키토 무이치로, 연주・칸로지 미츠리와 함께 혈귀를 상대로 격렬한 전투를 벌였다. 그 후 다가올 혈귀와의 결전에 대비해 귀살대원들과 함께 《주》가 주도하는 합동 강화 훈련에 참가해 훈련을 받던 도중 《귀살대》의 본부인 우부야시키 저택에 나타난 키부츠지 무잔. 어르신의 위기에 달려온 《주》들과 탄지로였지만, 무잔의 술수로 의문의 공간으로 떨어지고 말았는데. 탄지로 일행이 떨어진 곳, 그곳은 혈귀의 본거지 《무한성》─ “귀살대”와 “혈귀”의 최종 결전의 포문이 열린다.",
-    "streamingProviders": [],
-    "posterUrl": "https://image.tmdb.org/t/p/w500/m6Dho6hDCcL5KI8mOQNemZAedFI.jpg",
-    "videos": {
-      "trailers": [
-        "https://www.youtube.com/watch?v=ZlH9Y6Kpjg4",
-        "https://www.youtube.com/watch?v=n2L5UcLMs3A",
-        "https://www.youtube.com/watch?v=zN8K_uE1LYg"
-      ],
-      "teasers": [
-        "https://www.youtube.com/watch?v=fO65XXoUa1Y"
-      ],
-      "clips": [],
-      "other": []
-    }
-  },
-  {
-    "tmdbId": 1175942,
-    "title": "배드 가이즈 2",
-    "releaseDate": "2025-07-24",
-    "certification": "ALL",
-    "genres": [
-      "애니메이션",
-      "가족",
-      "코미디",
-      "범죄",
-      "모험"
-    ],
-    "runtime": 104,
-    "countries": [
-      "United States of America"
-    ],
-    "directors": [
-      "Pierre Perifel"
-    ],
-    "cast": [
-      "샘 록웰",
-      "마크 매런",
-      "아콰피나",
-      "크레이그 로빈슨",
-      "안소니 라모스",
-      "재지 비츠",
-      "대니엘 브룩스",
-      "나타샤 리온",
-      "마리아 바칼로바",
-      "앨릭스 보스틴"
-    ],
-    "overview": "착하게 살기 위해 무지하게 애쓰는 자타공인 최고의 나쁜 녀석들이 새롭게 등장한 '배드 걸즈'로 인해 일생일대의 글로벌 범죄 작전에 휘말리며 벌어지는 범죄오락액션 블록버스터",
-    "streamingProviders": [],
-    "posterUrl": "https://image.tmdb.org/t/p/w500/1oG69MtmZGovhho0pPgRY9d1qrU.jpg",
-    "videos": {
-      "trailers": [
-        "https://www.youtube.com/watch?v=D7YhZBy9XAs",
-        "https://www.youtube.com/watch?v=InNDJgdsUiY"
-      ],
-      "teasers": [],
-      "clips": [],
-      "other": []
-    }
-  },
-  {
-    "tmdbId": 980477,
-    "title": "나타지마동요해",
-    "releaseDate": "2025-01-29",
-    "certification": "전체관람가",
-    "genres": [
-      "애니메이션",
-      "판타지",
-      "모험",
-      "액션"
-    ],
-    "runtime": 144,
-    "countries": [
-      "China"
-    ],
-    "directors": [
-      "饺子"
-    ],
-    "cast": [
-      "吕艳婷",
-      "囧森瑟夫",
-      "瀚墨",
-      "陈浩",
-      "绿绮",
-      "张珈铭",
-      "Yang Wei",
-      "왕덕순",
-      "雨辰",
-      "Zhou Yongxi"
-    ],
-    "overview": "\"그가 돌아왔다, 더욱 강력해진 영웅의 전설\"\r 천계의 시련 이후, 혼은 유지했으나 육신이 소멸 위기에 처한 나타와 오병. 태을진인은 일곱 빛깔의 보련으로 그들의 육신을 재건하려 하지만, 과정은 순탄치 않다. 신공표는 심해에 갇혀 있던 사룡왕을 해방시키고, 동해의 용왕 오광은 \"내가 전쟁에 나서면, 천당관은 남김없이 파괴될 것이다\"라고 선언한다. 나타는 천당관을 지키기 위해 사해의 용왕들과 맞서 싸우게 되는데...",
-    "streamingProviders": [],
-    "posterUrl": "https://image.tmdb.org/t/p/w500/bTMf8M7rZ21fChGdtsZtJj4Dfqh.jpg",
-    "videos": {
-      "trailers": [],
-      "teasers": [],
-      "clips": [],
-      "other": []
-    }
-  },
-  {
-    "tmdbId": 1038392,
-    "title": "컨저링: 마지막 의식",
-    "releaseDate": "2025-09-03",
-    "certification": "15",
-    "genres": [
-      "공포"
-    ],
-    "runtime": 136,
-    "countries": [
-      "United States of America"
-    ],
-    "directors": [
-      "Michael Chaves"
-    ],
-    "cast": [
-      "베라 파미가",
-      "패트릭 윌슨",
-      "Mia Tomlinson",
-      "벤 하디",
-      "Rebecca Calder",
-      "Elliot Cowan",
-      "Shannon Kook",
-      "Steve Coulter",
-      "Kíla Lord Cassidy",
-      "Beau Gadsdon"
-    ],
-    "overview": "1986년 펜실베니아, 자신의 집에 사악한 존재가 들어왔다고 주장하는 스멀 일가를 조사하던 '워렌' 부부가 지금껏 마주한 적 없는 가장 위험하고 강력한 악령에 맞서는 '컨저링' 시리즈의 마지막 이야기",
-    "streamingProviders": [],
-    "posterUrl": "https://image.tmdb.org/t/p/w500/y9jKDJuf5WCDjSPsqkt1cb0JHGm.jpg",
-    "videos": {
-      "trailers": [
-        "https://www.youtube.com/watch?v=prxo8AHWnmE",
-        "https://www.youtube.com/watch?v=rykCQ56lmdA"
-      ],
-      "teasers": [
-        "https://www.youtube.com/watch?v=CExn8I1Z6OY",
-        "https://www.youtube.com/watch?v=tCFkQwP9OJY",
-        "https://www.youtube.com/watch?v=67ff-E6obkk",
-        "https://www.youtube.com/watch?v=gglDWMCqqTo"
-      ],
-      "clips": [],
-      "other": [
-        "https://www.youtube.com/watch?v=paDLhd3W_-E",
-        "https://www.youtube.com/watch?v=fTRsNZLL_2o"
-      ]
-    }
-  }
+	{
+		"tmdbId": 1242011,
+		"title": "투게더",
+		"releaseDate": "2025-07-23",
+		"certification": "15",
+		"genres": ["공포", "로맨스"],
+		"runtime": 102,
+		"countries": ["United States of America", "Australia"],
+		"directors": ["Michael Shanks"],
+		"cast": [
+			"데이브 프랭코",
+			"앨리슨 브리",
+			"데이먼 헤리먼",
+			"Mia Morrissey",
+			"Karl Richmond",
+			"Jack Kenny",
+			"Francesca Waters",
+			"Aljin Abella",
+			"Sarah Lang",
+			"Rob Brown"
+		],
+		"overview": "관계의 한계에 부딪힌 오래된 커플 팀과 밀리. 어느 날 서로의 몸이 점점 붙어버리기 시작하는데…",
+		"streamingProviders": [],
+		"posterUrl": "https://image.tmdb.org/t/p/w500/ivWOD2MiC1HywIPBF2Ei2CN3ywY.jpg"
+	},
+	{
+		"tmdbId": 1311031,
+		"title": "극장판 귀멸의 칼날: 무한성편",
+		"releaseDate": "2025-07-18",
+		"certification": "15",
+		"genres": ["애니메이션", "액션", "판타지", "스릴러"],
+		"runtime": 155,
+		"countries": ["Japan"],
+		"directors": ["소토자키 하루오"],
+		"cast": [
+			"하나에 나츠키",
+			"키토 아카리",
+			"마츠오카 요시츠구",
+			"시모노 히로",
+			"세키 토시히코",
+			"우에다 레이나",
+			"오카모토 노부히코",
+			"사쿠라이 타카히로",
+			"코니시 카츠유키",
+			"카와니시 켄고"
+		],
+		"overview": "혈귀로 변해버린 여동생 네즈코를 인간으로 되돌리기 위해 혈귀를 사냥하는 조직인 《귀살대》에 입대한 카마도 탄지로. 입대 후 동료인 아가츠마 젠이츠, 하시비라 이노스케와 함께 많은 혈귀와 싸우고, 성장하면서 세 사람의 우정과 유대는 깊어진다. 탄지로는 《귀살대》 최고위 검사인 《주》와도 함께 싸웠다. 「무한열차」에서는 염주・렌고쿠 쿄쥬로, 「유곽」에서는 음주・우즈이 텐겐, 「도공 마을」에서는 하주・토키토 무이치로, 연주・칸로지 미츠리와 함께 혈귀를 상대로 격렬한 전투를 벌였다. 그 후 다가올 혈귀와의 결전에 대비해 귀살대원들과 함께 《주》가 주도하는 합동 강화 훈련에 참가해 훈련을 받던 도중 《귀살대》의 본부인 우부야시키 저택에 나타난 키부츠지 무잔. 어르신의 위기에 달려온 《주》들과 탄지로였지만, 무잔의 술수로 의문의 공간으로 떨어지고 말았는데. 탄지로 일행이 떨어진 곳, 그곳은 혈귀의 본거지 《무한성》─ “귀살대”와 “혈귀”의 최종 결전의 포문이 열린다.",
+		"streamingProviders": [],
+		"posterUrl": "https://image.tmdb.org/t/p/w500/m6Dho6hDCcL5KI8mOQNemZAedFI.jpg"
+	},
+	{
+		"tmdbId": 1175942,
+		"title": "배드 가이즈 2",
+		"releaseDate": "2025-07-24",
+		"certification": "ALL",
+		"genres": ["애니메이션", "가족", "코미디", "범죄", "모험"],
+		"runtime": 104,
+		"countries": ["United States of America"],
+		"directors": ["Pierre Perifel"],
+		"cast": [
+			"샘 록웰",
+			"마크 매런",
+			"아콰피나",
+			"크레이그 로빈슨",
+			"안소니 라모스",
+			"재지 비츠",
+			"대니엘 브룩스",
+			"나타샤 리온",
+			"마리아 바칼로바",
+			"앨릭스 보스틴"
+		],
+		"overview": "착하게 살기 위해 무지하게 애쓰는 자타공인 최고의 나쁜 녀석들이 새롭게 등장한 '배드 걸즈'로 인해 일생일대의 글로벌 범죄 작전에 휘말리며 벌어지는 범죄오락액션 블록버스터",
+		"streamingProviders": [],
+		"posterUrl": "https://image.tmdb.org/t/p/w500/1oG69MtmZGovhho0pPgRY9d1qrU.jpg",
+		"videos": {
+			"trailers": [
+				"https://www.youtube.com/watch?v=D7YhZBy9XAs",
+				"https://www.youtube.com/watch?v=InNDJgdsUiY"
+			],
+			"teasers": [],
+			"clips": [],
+			"other": []
+		}
+	},
+	{
+		"tmdbId": 980477,
+		"title": "나타지마동요해",
+		"releaseDate": "2025-01-29",
+		"certification": "전체관람가",
+		"genres": ["애니메이션", "판타지", "모험", "액션"],
+		"runtime": 144,
+		"countries": ["China"],
+		"directors": ["饺子"],
+		"cast": [
+			"吕艳婷",
+			"囧森瑟夫",
+			"瀚墨",
+			"陈浩",
+			"绿绮",
+			"张珈铭",
+			"Yang Wei",
+			"왕덕순",
+			"雨辰",
+			"Zhou Yongxi"
+		],
+		"overview": "\"그가 돌아왔다, 더욱 강력해진 영웅의 전설\"\r 천계의 시련 이후, 혼은 유지했으나 육신이 소멸 위기에 처한 나타와 오병. 태을진인은 일곱 빛깔의 보련으로 그들의 육신을 재건하려 하지만, 과정은 순탄치 않다. 신공표는 심해에 갇혀 있던 사룡왕을 해방시키고, 동해의 용왕 오광은 \"내가 전쟁에 나서면, 천당관은 남김없이 파괴될 것이다\"라고 선언한다. 나타는 천당관을 지키기 위해 사해의 용왕들과 맞서 싸우게 되는데...",
+		"streamingProviders": [],
+		"posterUrl": "https://image.tmdb.org/t/p/w500/bTMf8M7rZ21fChGdtsZtJj4Dfqh.jpg",
+		"videos": {
+			"trailers": [],
+			"teasers": [],
+			"clips": [],
+			"other": []
+		}
+	},
+	{
+		"tmdbId": 1038392,
+		"title": "컨저링: 마지막 의식",
+		"releaseDate": "2025-09-03",
+		"certification": "15",
+		"genres": ["공포"],
+		"runtime": 136,
+		"countries": ["United States of America"],
+		"directors": ["Michael Chaves"],
+		"cast": [
+			"베라 파미가",
+			"패트릭 윌슨",
+			"Mia Tomlinson",
+			"벤 하디",
+			"Rebecca Calder",
+			"Elliot Cowan",
+			"Shannon Kook",
+			"Steve Coulter",
+			"Kíla Lord Cassidy",
+			"Beau Gadsdon"
+		],
+		"overview": "1986년 펜실베니아, 자신의 집에 사악한 존재가 들어왔다고 주장하는 스멀 일가를 조사하던 '워렌' 부부가 지금껏 마주한 적 없는 가장 위험하고 강력한 악령에 맞서는 '컨저링' 시리즈의 마지막 이야기",
+		"streamingProviders": [],
+		"posterUrl": "https://image.tmdb.org/t/p/w500/y9jKDJuf5WCDjSPsqkt1cb0JHGm.jpg",
+		"videos": {
+			"trailers": [
+				"https://www.youtube.com/watch?v=prxo8AHWnmE",
+				"https://www.youtube.com/watch?v=rykCQ56lmdA"
+			],
+			"teasers": [
+				"https://www.youtube.com/watch?v=CExn8I1Z6OY",
+				"https://www.youtube.com/watch?v=tCFkQwP9OJY",
+				"https://www.youtube.com/watch?v=67ff-E6obkk",
+				"https://www.youtube.com/watch?v=gglDWMCqqTo"
+			],
+			"clips": [],
+			"other": [
+				"https://www.youtube.com/watch?v=paDLhd3W_-E",
+				"https://www.youtube.com/watch?v=fTRsNZLL_2o"
+			]
+		}
+	},
+	{
+		"tmdbId": 1319969,
+		"title": "스케치",
+		"releaseDate": "2025-08-06",
+		"certification": "전체관람가",
+		"genres": ["모험", "판타지", "코미디", "가족"],
+		"runtime": 93,
+		"countries": ["United States of America"],
+		"directors": ["Seth Worley"],
+		"cast": [
+			"토니 헤일",
+			"달시 카르던",
+			"Bianca Belle",
+			"Kue Lawrence",
+			"Kalon Cox",
+			"Jaxen Kenner",
+			"Genesis Rose Brown",
+			"Randa Newman",
+			"Allie McCulloch",
+			"Nadia Benavides"
+		],
+		"overview": "",
+		"streamingProviders": [],
+		"posterUrl": "https://image.tmdb.org/t/p/w500/sxiDj3dTgZuCPkx30Jvyq8K9QUV.jpg",
+		"videos": {
+			"trailers": [],
+			"teasers": [],
+			"clips": [],
+			"other": []
+		}
+	},
+	{
+		"tmdbId": 1419406,
+		"title": "포풍추영",
+		"releaseDate": "2025-08-16",
+		"certification": "15",
+		"genres": ["액션", "범죄", "스릴러"],
+		"runtime": 142,
+		"countries": ["China", "Hong Kong"],
+		"directors": ["Larry Yang"],
+		"cast": [
+			"성룡",
+			"张子枫",
+			"양가휘",
+			"차사",
+			"준",
+			"周政杰",
+			"王紫逸",
+			"郎月婷",
+			"Lin Qiunan",
+			"李哲坤"
+		],
+		"overview": "첨단 감시 시스템과 삼엄한 보안망을 무력화하고, 수십억을 탈취한 정체불명의 범죄 조직. 통제 불능의 범죄에 마카오 경찰은 결국 은퇴한 전설의 범죄 추적 전문가 ‘황더중’에게 도움을 요청한다. 황더중은 신입 경찰 ‘허추궈’와 함께 최정예 감시반을 구성해, 범죄 조직의 수장 ‘푸룽성’을 추적하기 시작한다. 하지만 수사망이 조여올수록 상대의 덫과 함정은 더욱 교묘해지고, 예상치 못한 반격 속에 황더중 역시 추적당하기 시작하는데…",
+		"streamingProviders": [],
+		"posterUrl": "https://image.tmdb.org/t/p/w500/pUCkdO40PWHdvU1GEYV6ywY7li2.jpg",
+		"videos": {
+			"trailers": ["https://www.youtube.com/watch?v=7xvYAeD6I4c"],
+			"teasers": [],
+			"clips": [],
+			"other": ["https://www.youtube.com/watch?v=F4IZsPqHazU"]
+		}
+	},
+	{
+		"tmdbId": 936108,
+		"title": "스머프",
+		"releaseDate": "2025-07-05",
+		"certification": "ALL",
+		"genres": ["애니메이션", "가족", "판타지"],
+		"runtime": 91,
+		"countries": ["United States of America", "Belgium"],
+		"directors": ["크리스 밀러"],
+		"cast": [
+			"리한나",
+			"제임스 코든",
+			"닉 오퍼먼",
+			"JP Karliak",
+			"댄 레비",
+			"Amy Sedaris",
+			"나타샤 리온",
+			"산드라 오",
+			"지미 키멜",
+			"옥타비아 스펜서"
+		],
+		"overview": "언제나 노래와 춤, 흥으로 가득한 해피 스머프 마을. 그러던 어느 날, 마을을 이끄는 ‘파파 스머프’가 거대한 소용돌이에 휘말려 납치된다. 특별한 재능도, 좋아하는 것도 없이 아직 이름조차 없는 ‘그냥 스머프’는 세상 힙한 스머프 ‘스머페트’와 함께 온갖 위험이 도사리는 인간 세상으로 ‘파파 스머프’ 구출 작전에 나선다.  한편, 오랜 세월 스머프를 노려온 마법사 '가가멜’과 새롭게 등장한 그의 동생 ‘라자멜’까지 더욱 강력해진 악당들에 맞서기 위해 스머프 친구들은 도시부터 사막, 우주를 넘나들며 진정한 모험을 시작하는데...",
+		"streamingProviders": [],
+		"posterUrl": "https://image.tmdb.org/t/p/w500/1lQHA18T32JyIonQUkSWhMwinjm.jpg",
+		"videos": {
+			"trailers": ["https://www.youtube.com/watch?v=J2VE51U3Bf8"],
+			"teasers": ["https://www.youtube.com/watch?v=CfyI1KMI88Q"],
+			"clips": [],
+			"other": []
+		}
+	},
+	{
+		"tmdbId": 1020822,
+		"title": "아니말",
+		"releaseDate": "2024-09-20",
+		"certification": "12",
+		"genres": ["판타지", "드라마", "공포"],
+		"runtime": 98,
+		"countries": ["Belgium", "France"],
+		"directors": ["Emma Benestan"],
+		"cast": [
+			"울라야 아맘라",
+			"Damien Rebattel",
+			"Vivien Rodriguez",
+			"Claude Chaballier",
+			"Elies-Morgan Admi-Bensellam",
+			"Pierre Roux",
+			"Marinette Rafai",
+			"Renaud Vinuesa"
+		],
+		"overview": "전통적인 황소 경주로 유명한 지역인 프랑스 카마르그에서는 인간과 짐승 사이의 날렵함과 상호 존중이 숨 막히는 장관을 이룬다. 이 남성 중심 세계에서, 스물두 살 네지마가 매년 열리는 권위 있는 대회에서 우승하는 자신의 꿈을 이루기 위해 끈질기게 훈련에 매진한다. 그러나 제멋대로인 사나운 황소가 탈출했다는 소문이 퍼지자 두려움이 지역 사회를 휘감고, 네지마가 일궈온 모든 것이 위협받는다.",
+		"streamingProviders": [],
+		"posterUrl": "https://image.tmdb.org/t/p/w500/htOG0XTgTLTSIraMvc468XZsUKP.jpg",
+		"videos": {
+			"trailers": [],
+			"teasers": [],
+			"clips": [],
+			"other": []
+		}
+	},
+	{
+		"tmdbId": 1245993,
+		"title": "Caught Stealing",
+		"releaseDate": "2025-08-26",
+		"certification": "전체관람가",
+		"genres": ["범죄", "스릴러", "코미디"],
+		"runtime": 107,
+		"countries": ["United States of America"],
+		"directors": ["대런 아로노프스키"],
+		"cast": [
+			"오스틴 버틀러",
+			"조이 크래비츠",
+			"레지나 킹",
+			"맷 스미스",
+			"리에브 슈라이버",
+			"빈센트 도노프리오",
+			"Griffin Dunne",
+			"Никита Кукушкин",
+			"Юрий Колокольников",
+			"배드 바니"
+		],
+		"overview": "",
+		"streamingProviders": [],
+		"posterUrl": "https://image.tmdb.org/t/p/w500/cvda8s5J8YaHjTyEyXQpvD6f3iV.jpg",
+		"videos": {
+			"trailers": [],
+			"teasers": [],
+			"clips": [],
+			"other": []
+		}
+	}
 ]

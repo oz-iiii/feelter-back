@@ -14,10 +14,10 @@ export default function Home() {
       <div className="w-full max-w-7xl mt-4">
         <FeelterGrid />
       </div>
-      <div className="w-full max-w-7x1">
+      <div className="w-full max-w-7xl">
         <LatestSlide />
       </div>
-      <div className="w-full max-w-7x1">
+      <div className="w-full max-w-7xl">
         <h2 className="text-2xl font-semibold mt-8">
           | 인기순위&nbsp;&nbsp;&nbsp;
           <span className="text-sm">일별 주별 월별</span>

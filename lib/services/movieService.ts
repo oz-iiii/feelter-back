@@ -1,182 +1,284 @@
-import {
-	collection,
-	doc,
-	getDocs,
-	getDoc,
-	addDoc,
-	updateDoc,
-	deleteDoc,
-	query,
-	where,
-	orderBy,
-	limit,
-	startAfter,
-	QueryDocumentSnapshot,
-	DocumentData,
-	writeBatch,
-	onSnapshot,
-	Unsubscribe,
-} from "firebase/firestore";
-import { db } from "../firebase";
+import { supabase, supabaseAdmin, type Database } from "../supabase";
 import { Movie, MovieFilters, MovieRanking } from "../types/movie";
+
+type MovieRow = Database["public"]["Tables"]["movies"]["Row"];
+type MovieInsert = Database["public"]["Tables"]["movies"]["Insert"];
+type RankingRow = Database["public"]["Tables"]["rankings"]["Row"];
+type RankingInsert = Database["public"]["Tables"]["rankings"]["Insert"];
+
+// Centralized error logger for Supabase responses
+const logSupabaseError = (label: string, error: unknown) => {
+	// Attempt to surface useful fields commonly present on Supabase errors
+	const anyErr = error as {
+		code?: string;
+		message?: string;
+		details?: string;
+		hint?: string;
+		status?: number;
+	} | null;
+
+	const safeStringify = (value: unknown) => {
+		try {
+			return JSON.stringify(value);
+		} catch {
+			return String(value);
+		}
+	};
+
+	console.error(label, {
+		code: anyErr?.code,
+		status: anyErr?.status,
+		message: anyErr?.message,
+		details: anyErr?.details,
+		hint: anyErr?.hint,
+	});
+	console.error(`${label} (string):`, anyErr?.message ?? String(error));
+	console.error(`${label} (json):`, safeStringify(error));
+};
+
+// Helper function to convert Supabase row to Movie type (updated for actual DB schema)
+const convertRowToMovie = (row: MovieRow): Movie => {
+	const r = row as unknown as Record<string, unknown>;
+	
+	return {
+		id: String(r["id"])!,
+		tmdbid: (r["tmdb_id"] as number) ?? 0,
+		title: (r["title"] as string) ?? "",
+		release: r["release_date"] ? new Date(r["release_date"] as string) : new Date(),
+		age: (r["certification"] as string) ?? "전체관람가",
+		genre: (r["genres"] as string) ?? "",
+		runningTime: (r["runtime"] as string) ?? "120분",
+		country: (r["countries"] as string) ?? "",
+		director: (r["directors"] as string) ?? "",
+		actor: (r["actors"] as string) ?? "",
+		overview: (r["overview"] as string) ?? "",
+		streaming: (() => {
+			const providers = r["streaming_providers"] as string[] | string | null;
+			if (Array.isArray(providers) && providers.length > 0) {
+				return providers[0]; // Take first streaming provider
+			}
+			if (typeof providers === "string" && providers.length > 0) {
+				return providers;
+			}
+			return "Netflix"; // Default fallback for display
+		})(),
+		streamingUrl: "", // Not in current schema
+		youtubeUrl: (r["videos"] as string) ?? "",
+		imgUrl: (r["poster_url"] as string) ?? "",
+		bgUrl: (r["poster_url"] as string) ?? "", // Use poster as background for now
+		feelterTime: "저녁", // Default values for feelter fields
+		feelterPurpose: "휴식",
+		feelterOccasion: "혼자",
+		createdAt: new Date(),
+		updatedAt: new Date(),
+	};
+};
+
+// Helper function to convert Movie to Supabase insert type
+const convertMovieToInsert = (
+	movie: Omit<Movie, "id" | "createdAt" | "updatedAt">
+): MovieInsert => ({
+	tmdbid: movie.tmdbid,
+	title: movie.title,
+	release:
+		typeof movie.release === "string"
+			? movie.release
+			: movie.release.toISOString(),
+	age: movie.age,
+	genre: movie.genre,
+	runningTime: movie.runningTime,
+	country: movie.country,
+	director: movie.director,
+	actor: movie.actor,
+	overview: movie.overview,
+	streaming: movie.streaming,
+	streamingUrl: movie.streamingUrl,
+	youtubeUrl: movie.youtubeUrl,
+	imgUrl: movie.imgUrl,
+	bgUrl: movie.bgUrl,
+	feelterTime: movie.feelterTime,
+	feelterPurpose: movie.feelterPurpose,
+	feelterOccasion: movie.feelterOccasion,
+});
 
 // 영화 관련 서비스
 export const movieService = {
 	// 모든 영화 가져오기
 	async getAllMovies(): Promise<Movie[]> {
-		const querySnapshot = await getDocs(collection(db, "movies"));
-		return querySnapshot.docs.map((doc) => ({
-			id: doc.id,
-			...doc.data(),
-			createdAt: doc.data().createdAt?.toDate(),
-			updatedAt: doc.data().updatedAt?.toDate(),
-		})) as Movie[];
+		const client = supabaseAdmin ?? supabase;
+		const { data, error } = await client
+			.from("movies")
+			.select("*");
+
+		if (error) {
+			logSupabaseError("영화 데이터 조회 오류:", error);
+			throw new Error(`영화 데이터 조회 실패: ${error.message}`);
+		}
+
+
+		return data.map(convertRowToMovie);
 	},
 
 	// 영화 ID로 가져오기
 	async getMovieById(id: string): Promise<Movie | null> {
-		const docRef = doc(db, "movies", id);
-		const docSnap = await getDoc(docRef);
+		const { data, error } = await supabase
+			.from("movies")
+			.select("*")
+			.eq("id", id)
+			.single();
 
-		if (docSnap.exists()) {
-			const data = docSnap.data();
-			return {
-				id: docSnap.id,
-				...data,
-				createdAt: data.createdAt?.toDate(),
-				updatedAt: data.updatedAt?.toDate(),
-			} as Movie;
+		if (error) {
+			if (error.code === "PGRST116") {
+				return null; // 데이터가 없음
+			}
+			console.error("영화 조회 오류:", error);
+			throw new Error(`영화 조회 실패: ${error.message}`);
 		}
-		return null;
+
+		return convertRowToMovie(data);
 	},
 
 	// 필터링된 영화 가져오기
 	async getFilteredMovies(
 		filters: MovieFilters,
 		pageSize: number = 20,
-		lastDoc?: QueryDocumentSnapshot<DocumentData>
+		page: number = 0
 	): Promise<{
 		movies: Movie[];
-		lastDoc: QueryDocumentSnapshot<DocumentData> | null;
+		hasMore: boolean;
+		total: number;
 	}> {
-		let q = collection(db, "movies");
-		const constraints: any[] = [];
+		let query = supabase.from("movies").select("*", { count: "exact" });
 
+		// 필터 적용
 		if (filters.genre) {
-			constraints.push(where("genre", "==", filters.genre));
+			query = query.ilike("genre", `%${filters.genre}%`);
 		}
-
 		if (filters.streaming) {
-			constraints.push(where("streaming", "==", filters.streaming));
+			query = query.eq("streaming", filters.streaming);
 		}
-
 		if (filters.age) {
-			constraints.push(where("age", "==", filters.age));
+			query = query.eq("age", filters.age);
 		}
-
 		if (filters.country) {
-			constraints.push(where("country", "==", filters.country));
+			query = query.ilike("country", `%${filters.country}%`);
 		}
-
 		if (filters.feelterTime) {
-			constraints.push(where("feelterTime", "==", filters.feelterTime));
+			// Support both camelCase and snake_case columns
+			query = query.or(
+				`feelterTime.eq.${filters.feelterTime},feelter_time.eq.${filters.feelterTime}`
+			);
 		}
-
 		if (filters.feelterPurpose) {
-			constraints.push(where("feelterPurpose", "==", filters.feelterPurpose));
+			query = query.or(
+				`feelterPurpose.eq.${filters.feelterPurpose},feelter_purpose.eq.${filters.feelterPurpose}`
+			);
 		}
-
 		if (filters.feelterOccasion) {
-			constraints.push(where("feelterOccasion", "==", filters.feelterOccasion));
+			query = query.or(
+				`feelterOccasion.eq.${filters.feelterOccasion},feelter_occasion.eq.${filters.feelterOccasion}`
+			);
 		}
 
 		// 정렬
-		if (filters.sortBy) {
-			constraints.push(orderBy(filters.sortBy, filters.sortOrder || "desc"));
-		} else {
-			constraints.push(orderBy("release", "desc"));
-		}
+		const sortColumn = filters.sortBy || "release";
+		const sortOrder = filters.sortOrder || "desc";
+		const dbSortColumn = sortColumn === "release" ? "release_date" : sortColumn;
+		query = query.order(dbSortColumn, { ascending: sortOrder === "asc" });
 
 		// 페이지네이션
-		if (lastDoc) {
-			constraints.push(startAfter(lastDoc));
+		const from = page * pageSize;
+		const to = from + pageSize - 1;
+		query = query.range(from, to);
+
+		const { data, error, count } = await query;
+
+		if (error) {
+			console.error("필터링된 영화 조회 오류:", error);
+			throw new Error(`필터링된 영화 조회 실패: ${error.message}`);
 		}
 
-		constraints.push(limit(pageSize));
+		const movies = (data as MovieRow[]).map(convertRowToMovie);
+		const total = count || 0;
+		const hasMore = from + pageSize < total;
 
-		const querySnapshot = await getDocs(query(q, ...constraints));
-		const movies = querySnapshot.docs.map((doc) => ({
-			id: doc.id,
-			...doc.data(),
-			createdAt: doc.data().createdAt?.toDate(),
-			updatedAt: doc.data().updatedAt?.toDate(),
-		})) as Movie[];
-
-		const lastVisible =
-			querySnapshot.docs[querySnapshot.docs.length - 1] || null;
-
-		return { movies, lastDoc: lastVisible };
+		return { movies, hasMore, total };
 	},
 
 	// 영화 추가
 	async addMovie(
 		movie: Omit<Movie, "id" | "createdAt" | "updatedAt">
 	): Promise<string> {
-		const docRef = await addDoc(collection(db, "movies"), {
-			...movie,
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
-		return docRef.id;
+		const movieInsert = convertMovieToInsert(movie);
+
+		const { data, error } = await supabase
+			.from("movies")
+			.insert(movieInsert)
+			.select("id")
+			.single();
+
+		if (error) {
+			console.error("영화 추가 오류:", error);
+			throw new Error(`영화 추가 실패: ${error.message}`);
+		}
+
+		return data.id;
 	},
 
 	// 영화 업데이트
 	async updateMovie(id: string, updates: Partial<Movie>): Promise<void> {
-		const docRef = doc(db, "movies", id);
-		await updateDoc(docRef, {
-			...updates,
-			updatedAt: new Date(),
-		});
+		const updateData: Record<string, unknown> = { ...updates };
+
+		// Date 객체를 ISO 문자열로 변환
+		if (updateData.release && updateData.release instanceof Date) {
+			updateData.release = updateData.release.toISOString();
+		}
+
+		// ID, createdAt, updatedAt 제거
+		delete updateData.id;
+		delete updateData.createdAt;
+		delete updateData.updatedAt;
+
+		const { error } = await supabase
+			.from("movies")
+			.update(updateData)
+			.eq("id", id);
+
+		if (error) {
+			console.error("영화 업데이트 오류:", error);
+			throw new Error(`영화 업데이트 실패: ${error.message}`);
+		}
 	},
 
 	// 영화 삭제
 	async deleteMovie(id: string): Promise<void> {
-		const docRef = doc(db, "movies", id);
-		await deleteDoc(docRef);
-	},
+		const { error } = await supabase.from("movies").delete().eq("id", id);
 
-	// 실시간 영화 구독
-	subscribeToMovies(callback: (movies: Movie[]) => void): Unsubscribe {
-		return onSnapshot(collection(db, "movies"), (snapshot) => {
-			const movies = snapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-				createdAt: doc.data().createdAt?.toDate(),
-				updatedAt: doc.data().updatedAt?.toDate(),
-			})) as Movie[];
-			callback(movies);
-		});
+		if (error) {
+			console.error("영화 삭제 오류:", error);
+			throw new Error(`영화 삭제 실패: ${error.message}`);
+		}
 	},
 
 	// 배치로 영화 추가 (초기 데이터 입력용)
 	async addMoviesBatch(
 		movies: Omit<Movie, "id" | "createdAt" | "updatedAt">[]
 	): Promise<void> {
-		const batch = writeBatch(db);
+		console.log(`Supabase에 ${movies.length}개 영화 배치 추가 시작...`);
 
-		movies.forEach((movie) => {
-			const docRef = doc(collection(db, "movies"));
-			console.log("batch start-------");
-			console.log(movie);
-			batch.set(docRef, {
-				...movie,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			});
-			console.log("batch End-------");
-		});
+		const movieInserts: MovieInsert[] = movies.map(convertMovieToInsert);
 
-		await batch.commit();
+		const { data, error } = await supabase
+			.from("movies")
+			.insert(movieInserts)
+			.select("id");
+
+		if (error) {
+			console.error("영화 배치 추가 오류:", error);
+			throw new Error(`영화 배치 추가 실패: ${error.message}`);
+		}
+
+		console.log(`✅ ${data?.length || 0}개 영화가 성공적으로 추가되었습니다.`);
 	},
 };
 
@@ -184,52 +286,75 @@ export const movieService = {
 export const movieRankingService = {
 	// 모든 순위 가져오기
 	async getAllRankings(): Promise<MovieRanking[]> {
-		const querySnapshot = await getDocs(collection(db, "rankings"));
-		const rankings = querySnapshot.docs.map((doc) => ({
-			id: doc.id,
-			...doc.data(),
-			createdAt: doc.data().createdAt?.toDate(),
-		})) as MovieRanking[];
+		const { data, error } = await supabase
+			.from("rankings")
+			.select(
+				`
+        *,
+        movies (*)
+      `
+			)
+			.order("rank", { ascending: true });
 
-		// 영화 정보도 함께 가져오기
-		const rankingsWithMovies = await Promise.all(
-			rankings.map(async (ranking) => {
-				const movie = await movieService.getMovieById(ranking.movieId);
-				return {
-					...ranking,
-					movie: movie!,
-				};
-			})
-		);
+		if (error) {
+			console.error("순위 데이터 조회 오류:", error);
+			throw new Error(`순위 데이터 조회 실패: ${error.message}`);
+		}
 
-		return rankingsWithMovies;
+		return (data as (RankingRow & { movies: MovieRow })[]).map((row) => ({
+			id: row.id,
+			rank: row.rank,
+			movieId: row.movieId,
+			movie: convertRowToMovie(row.movies),
+			bestComment: row.bestComment,
+			createdAt: new Date(row.createdAt),
+		}));
 	},
 
 	// 순위 추가
 	async addRanking(
 		ranking: Omit<MovieRanking, "id" | "createdAt" | "movie">
 	): Promise<string> {
-		const docRef = await addDoc(collection(db, "rankings"), {
-			...ranking,
-			createdAt: new Date(),
-		});
-		return docRef.id;
+		const { data, error } = await supabase
+			.from("rankings")
+			.insert({
+				rank: ranking.rank,
+				movieId: ranking.movieId,
+				bestComment: ranking.bestComment,
+			} as RankingInsert)
+			.select("id")
+			.single();
+
+		if (error) {
+			console.error("순위 추가 오류:", error);
+			throw new Error(`순위 추가 실패: ${error.message}`);
+		}
+
+		return data.id;
 	},
 
 	// 배치로 순위 추가
 	async addRankingsBatch(
 		rankings: Omit<MovieRanking, "id" | "createdAt" | "movie">[]
 	): Promise<void> {
-		const batch = writeBatch(db);
+		console.log(`Supabase에 ${rankings.length}개 순위 배치 추가 시작...`);
 
-		rankings.forEach((ranking) => {
-			const docRef = doc(collection(db, "rankings"));
-			batch.set(docRef, {
-				...ranking,
-				createdAt: new Date(),
-			});
-		});
+		const rankingInserts: RankingInsert[] = rankings.map((ranking) => ({
+			rank: ranking.rank,
+			movieId: ranking.movieId,
+			bestComment: ranking.bestComment,
+		}));
 
-		await batch.commit();
+		const { data, error } = await supabase
+			.from("rankings")
+			.insert(rankingInserts)
+			.select("id");
+
+		if (error) {
+			console.error("순위 배치 추가 오류:", error);
+			throw new Error(`순위 배치 추가 실패: ${error.message}`);
+		}
+
+		console.log(`✅ ${data?.length || 0}개 순위가 성공적으로 추가되었습니다.`);
 	},
 };

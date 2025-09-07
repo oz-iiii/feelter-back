@@ -3,28 +3,57 @@ import React, { useState, useEffect } from "react";
 import { IoPlayCircleOutline } from "@react-icons/all-files/io5/IoPlayCircleOutline";
 import { IoHeartOutline } from "@react-icons/all-files/io5/IoHeartOutline";
 import { IoChatbubbleOutline } from "@react-icons/all-files/io5/IoChatbubbleOutline";
-import { IoCaretForwardCircleOutline } from "@react-icons/all-files/io5/IoCaretForwardCircleOutline";
 import { useMovieStore } from "@/lib/stores";
 
 export default function LatestSlide() {
   const { movies, loading, fetchMovies } = useMovieStore();
   const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
 
+  // 첫 번째 useEffect - 항상 실행되어야 함
   useEffect(() => {
+    console.log("🔄 LatestSlide: useEffect running, calling fetchMovies");
     fetchMovies();
-  }, [fetchMovies]);
+  }, []); // Remove fetchMovies from dependency array
 
+  // 두 번째 useEffect - 항상 실행되어야 함 (조건부 return 이전에 배치)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentGroupIndex((prev) => (prev + 1) % 3);
-    }, 5000);
+    // loading 중이면 실행하지 않음
+    if (loading || movies.length === 0) {
+      return;
+    }
 
-    return () => clearInterval(interval);
-  }, []);
+    // 스트리밍 플랫폼별로 영화 그룹화
+    const netflixMovies = movies.filter((movie) => movie.streaming === "Netflix");
+    const disneyMovies = movies.filter((movie) => movie.streaming === "Disney+");
+    const tvingMovies = movies.filter((movie) => movie.streaming === "Tving");
 
-  const handlePlayClick = () => {
-    console.log(`플레이 버튼 클릭: ${selectedMovie.title}`);
-    window.open(selectedMovie.streamingUrl, "_blank");
+    const streamingGroups = [
+      { name: "Netflix", movies: netflixMovies, color: "bg-red-600" },
+      { name: "Disney+", movies: disneyMovies, color: "bg-blue-600" },
+      { name: "Tving", movies: tvingMovies, color: "bg-green-600" },
+    ].filter(group => group.movies.length > 0);
+
+    const groupCount = streamingGroups.length;
+    
+    // Always reset currentGroupIndex if it's out of bounds
+    if (groupCount > 0 && currentGroupIndex >= groupCount) {
+      setCurrentGroupIndex(0);
+      return;
+    }
+    
+    // Only set up interval if we have more than one group
+    if (groupCount > 1) {
+      const interval = setInterval(() => {
+        setCurrentGroupIndex((prev) => (prev + 1) % groupCount);
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }
+  }, [movies.length, loading, currentGroupIndex]);
+
+  const handlePlayClick = (movie: any) => {
+    console.log(`플레이 버튼 클릭: ${movie.title}`);
+    window.open(movie.streamingUrl, "_blank");
   };
 
   if (loading) {
@@ -38,6 +67,11 @@ export default function LatestSlide() {
     );
   }
 
+  // Debug logging
+  console.log("🎬 LatestSlide - movies.length:", movies.length);
+  console.log("🎬 LatestSlide - loading:", loading);
+  console.log("🎬 LatestSlide - first movie:", movies[0]);
+
   // 스트리밍 플랫폼별로 영화 그룹화
   const netflixMovies = movies.filter((movie) => movie.streaming === "Netflix");
   const disneyMovies = movies.filter((movie) => movie.streaming === "Disney+");
@@ -47,12 +81,12 @@ export default function LatestSlide() {
     { name: "Netflix", movies: netflixMovies, color: "bg-red-600" },
     { name: "Disney+", movies: disneyMovies, color: "bg-blue-600" },
     { name: "Tving", movies: tvingMovies, color: "bg-green-600" },
-  ];
+  ].filter(group => group.movies.length > 0);
 
-  const currentGroup = streamingGroups[currentGroupIndex];
-  const selectedMovie = currentGroup.movies[0];
+  const currentGroup = streamingGroups[currentGroupIndex] || streamingGroups[0];
+  const selectedMovie = currentGroup?.movies?.[0];
 
-  if (!selectedMovie) {
+  if (!selectedMovie || streamingGroups.length === 0) {
     return (
       <section>
         <h2 className="text-lg font-semibold mb-4">최신 업데이트</h2>
@@ -89,7 +123,7 @@ export default function LatestSlide() {
                   {currentGroup.name}
                 </div>
                 <span className="text-sm text-gray-300">
-                  {selectedMovie.release}
+                  {new Date(selectedMovie.release).getFullYear()}
                 </span>
               </div>
 
@@ -112,7 +146,7 @@ export default function LatestSlide() {
               {/* 액션 버튼들 */}
               <div className="flex gap-3">
                 <button
-                  onClick={handlePlayClick}
+                  onClick={() => handlePlayClick(selectedMovie)}
                   className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
                 >
                   <IoPlayCircleOutline size={20} />

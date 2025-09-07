@@ -9,7 +9,6 @@ interface MovieState {
   loading: boolean;
   error: string | null;
   filters: MovieFilters;
-  lastDoc: any;
   hasMore: boolean;
 
   // Actions
@@ -20,34 +19,41 @@ interface MovieState {
   setCurrentMovie: (movie: Movie | null) => void;
   setFilters: (filters: MovieFilters) => void;
   clearError: () => void;
-  subscribeToMovies: () => void;
-  unsubscribeFromMovies: () => void;
 }
 
 export const useMovieStore = create<MovieState>()(
   devtools(
-    (set, get) => ({
-      movies: [],
-      currentMovie: null,
-      loading: false,
-      error: null,
-      filters: {},
-      lastDoc: null,
-      hasMore: true,
-      unsubscribe: null as any,
+    (set, get) => {
+      console.log("🏪 MovieStore: Store initialized");
+      return {
+        movies: [],
+        currentMovie: null,
+        loading: false,
+        error: null,
+        filters: {},
+        hasMore: true,
 
       fetchMovies: async () => {
+        console.log("🎯 MovieStore: fetchMovies called");
         set({ loading: true, error: null });
         try {
-          const movies = await movieService.getAllMovies();
-          set({ movies, loading: false });
+          console.log("🎯 MovieStore: calling API endpoint /api/movies");
+          const response = await fetch('/api/movies');
+          const result = await response.json();
+          
+          if (result.success) {
+            console.log("🎯 MovieStore: got movies from API:", result.data.length);
+            set({ movies: result.data, loading: false });
+          } else {
+            throw new Error(result.error || "Failed to fetch movies");
+          }
         } catch (error) {
+          console.error("🚨 Failed to fetch movies:", error);
+          console.error("🚨 Error details:", error instanceof Error ? error.message : error);
           set({
-            error:
-              error instanceof Error
-                ? error.message
-                : "영화를 불러오는데 실패했습니다.",
+            movies: [],
             loading: false,
+            error: error instanceof Error ? error.message : "영화 데이터를 불러오는데 실패했습니다.",
           });
         }
       },
@@ -71,22 +77,22 @@ export const useMovieStore = create<MovieState>()(
       searchMovies: async (filters: MovieFilters, reset: boolean = true) => {
         set({ loading: true, error: null });
         try {
-          const { movies, lastDoc } = await movieService.getFilteredMovies(
-            filters
+          const { movies, hasMore: newHasMore } = await movieService.getFilteredMovies(
+            filters,
+            20,
+            0
           );
 
           if (reset) {
             set({
               movies,
-              lastDoc,
-              hasMore: movies.length === 20, // pageSize가 20
+              hasMore: newHasMore,
               loading: false,
             });
           } else {
             set((state) => ({
               movies: [...state.movies, ...movies],
-              lastDoc,
-              hasMore: movies.length === 20,
+              hasMore: newHasMore,
               loading: false,
             }));
           }
@@ -100,18 +106,19 @@ export const useMovieStore = create<MovieState>()(
       },
 
       loadMoreMovies: async () => {
-        const { lastDoc, hasMore, filters } = get();
-        if (!hasMore || !lastDoc) return;
+        const { hasMore, filters, movies } = get();
+        if (!hasMore) return;
 
+        const currentPage = Math.floor(movies.length / 20);
+        
         set({ loading: true });
         try {
-          const { movies, lastDoc: newLastDoc } =
-            await movieService.getFilteredMovies(filters, 20, lastDoc);
+          const { movies: newMovies, hasMore: newHasMore } =
+            await movieService.getFilteredMovies(filters, 20, currentPage + 1);
 
           set((state) => ({
-            movies: [...state.movies, ...movies],
-            lastDoc: newLastDoc,
-            hasMore: movies.length === 20,
+            movies: [...state.movies, ...newMovies],
+            hasMore: newHasMore,
             loading: false,
           }));
         } catch (error) {
@@ -137,21 +144,8 @@ export const useMovieStore = create<MovieState>()(
         set({ error: null });
       },
 
-      subscribeToMovies: () => {
-        const unsubscribe = movieService.subscribeToMovies((movies) => {
-          set({ movies });
-        });
-        set({ unsubscribe });
-      },
-
-      unsubscribeFromMovies: () => {
-        const { unsubscribe } = get();
-        if (unsubscribe) {
-          unsubscribe();
-          set({ unsubscribe: null });
-        }
-      },
-    }),
+      };
+    },
     {
       name: "movie-store",
     }
