@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
 import { useFavoriteStore, useCategoryStore } from "@/lib/stores";
@@ -15,6 +15,12 @@ export default function FavoritesPage() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  // 클라이언트 사이드 렌더링 확인
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const removeFavorite = (id: string) => {
     removeFromFavorites(id);
@@ -63,16 +69,26 @@ export default function FavoritesPage() {
     setNewCategoryName("");
   };
 
-  const sortedFavorites = [...favorites].sort((a, b) => {
-    if (sortBy === "recent")
-      return (
-        b.createdAt.getTime() - a.createdAt.getTime()
-      );
-    if (sortBy === "rating") return 8.5 - 8.5; // Default rating since Movie type doesn't have rating
-    if (sortBy === "title") return a.title.localeCompare(b.title);
-    if (sortBy === "year") return (b.release instanceof Date ? b.release.getFullYear() : new Date(b.release).getFullYear()) - (a.release instanceof Date ? a.release.getFullYear() : new Date(a.release).getFullYear());
-    return 0;
-  });
+  const sortedFavorites = mounted ? [...favorites].sort((a, b) => {
+    try {
+      if (sortBy === "recent") {
+        const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
+        const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
+        return bTime - aTime;
+      }
+      if (sortBy === "rating") return 0; // Default rating since Movie type doesn't have rating
+      if (sortBy === "title") return a.title.localeCompare(b.title);
+      if (sortBy === "year") {
+        const aYear = a.release instanceof Date ? a.release.getFullYear() : new Date(a.release).getFullYear();
+        const bYear = b.release instanceof Date ? b.release.getFullYear() : new Date(b.release).getFullYear();
+        return bYear - aYear;
+      }
+      return 0;
+    } catch (error) {
+      console.warn('Sorting error:', error);
+      return 0;
+    }
+  }) : [];
 
   return (
     <MyLayout>
@@ -241,7 +257,13 @@ export default function FavoritesPage() {
                     {movie.title}
                   </h3>
                   <p className="text-sm text-gray-400 mb-2">
-                    {movie.release instanceof Date ? movie.release.getFullYear() : new Date(movie.release).getFullYear()} • {movie.genre}
+                    {(() => {
+                      try {
+                        return (movie.release instanceof Date ? movie.release.getFullYear() : new Date(movie.release).getFullYear()) + ' • ' + movie.genre;
+                      } catch {
+                        return movie.genre;
+                      }
+                    })()}
                   </p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -301,11 +323,23 @@ export default function FavoritesPage() {
                         {movie.title}
                       </h3>
                       <p className="text-gray-400 mb-1">
-                        감독: {movie.director} • {movie.release instanceof Date ? movie.release.getFullYear() : new Date(movie.release).getFullYear()}
+                        감독: {movie.director} • {(() => {
+                          try {
+                            return movie.release instanceof Date ? movie.release.getFullYear() : new Date(movie.release).getFullYear();
+                          } catch {
+                            return '알 수 없음';
+                          }
+                        })()}
                       </p>
                       <p className="text-gray-400 mb-2">장르: {movie.genre}</p>
                       <p className="text-sm text-gray-500">
-                        추가일: {movie.createdAt instanceof Date ? movie.createdAt.toLocaleDateString() : new Date(movie.createdAt).toLocaleDateString()}
+                        추가일: {(() => {
+                          try {
+                            return movie.createdAt instanceof Date ? movie.createdAt.toLocaleDateString() : new Date(movie.createdAt).toLocaleDateString();
+                          } catch {
+                            return '알 수 없음';
+                          }
+                        })()}
                       </p>
                     </div>
                     <div className="text-right">
