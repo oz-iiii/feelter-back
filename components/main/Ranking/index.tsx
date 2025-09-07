@@ -21,7 +21,6 @@ export default function Ranking() {
 
   const handlePlayClick = () => {
     if (!selectedMovie) return;
-    console.log(`플레이 버튼 클릭: ${selectedMovie.title}`);
     window.open(selectedMovie.streamingUrl, "_blank");
   };
 

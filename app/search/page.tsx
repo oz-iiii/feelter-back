@@ -26,7 +26,7 @@ const movieToContentItem = (movie: Movie): ContentItem => ({
 });
 
 export default function SearchPage() {
-  const { movies, loading, fetchMovies } = useMovieStore();
+  const { movies, loading } = useMovieStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState("latest");
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,23 +39,6 @@ export default function SearchPage() {
   // Convert movies to ContentItem format for compatibility
   const contentDataset = movies.map(movieToContentItem);
 
-  // Test if useEffect works at all
-  useEffect(() => {
-    console.log("🔄 Search page: Basic useEffect running!");
-  }, []);
-
-  useEffect(() => {
-    console.log("🔄 Search page: fetchMovies useEffect running, calling API directly");
-    
-    fetch('/api/movies')
-      .then(res => res.json())
-      .then(data => {
-        console.log("🔄 Search page: Got API response:", data.success, data.data?.length);
-      })
-      .catch(err => {
-        console.error("🔄 Search page: API error:", err);
-      });
-  }, []); // Remove fetchMovies from dependency array
 
   const sortDataset = useCallback(
     (dataset: ContentItem[], sortKey: string): ContentItem[] => {

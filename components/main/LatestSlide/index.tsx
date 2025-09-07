@@ -12,9 +12,8 @@ export default function LatestSlide() {
 
   // 첫 번째 useEffect - 항상 실행되어야 함
   useEffect(() => {
-    console.log("🔄 LatestSlide: useEffect running, calling fetchMovies");
     fetchMovies();
-  }, []); // Remove fetchMovies from dependency array
+  }, [fetchMovies]);
 
   // 두 번째 useEffect - 항상 실행되어야 함 (조건부 return 이전에 배치)
   useEffect(() => {
@@ -50,10 +49,9 @@ export default function LatestSlide() {
 
       return () => clearInterval(interval);
     }
-  }, [movies.length, loading, currentGroupIndex]);
+  }, [movies, loading, currentGroupIndex]);
 
-  const handlePlayClick = (movie: any) => {
-    console.log(`플레이 버튼 클릭: ${movie.title}`);
+  const handlePlayClick = (movie: { title: string; streamingUrl: string }) => {
     window.open(movie.streamingUrl, "_blank");
   };
 
@@ -68,10 +66,6 @@ export default function LatestSlide() {
     );
   }
 
-  // Debug logging
-  console.log("🎬 LatestSlide - movies.length:", movies.length);
-  console.log("🎬 LatestSlide - loading:", loading);
-  console.log("🎬 LatestSlide - first movie:", movies[0]);
 
   // 스트리밍 플랫폼별로 영화 그룹화
   const netflixMovies = movies.filter((movie) => movie.streaming === "Netflix");

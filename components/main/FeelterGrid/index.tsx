@@ -7,6 +7,7 @@ import { IoHeart } from "@react-icons/all-files/io5/IoHeart";
 import { IoChatbubbleOutline } from "@react-icons/all-files/io5/IoChatbubbleOutline";
 import { IoCaretForwardCircleOutline } from "@react-icons/all-files/io5/IoCaretForwardCircleOutline";
 import { useMovieStore, useFavoriteStore } from "@/lib/stores";
+import { Movie } from "@/lib/types/movie";
 
 export default function FeelterGrid() {
 	const { movies, loading, fetchMovies } = useMovieStore();
@@ -15,7 +16,7 @@ export default function FeelterGrid() {
 
 	useEffect(() => {
 		fetchMovies();
-	}, []);
+	}, [fetchMovies]);
 
 	// 영화 클릭 이벤트 핸들러
 	const handleMovieClick = (id: string) => {
@@ -25,7 +26,7 @@ export default function FeelterGrid() {
 	};
 
 	// 즐겨찾기 토글 핸들러
-	const handleFavoriteClick = (movie: any, e: React.MouseEvent) => {
+	const handleFavoriteClick = (movie: Movie, e: React.MouseEvent) => {
 		e.stopPropagation(); // 부모 클릭 이벤트 방지
 		toggleFavorite(movie);
 	};
