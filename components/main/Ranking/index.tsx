@@ -90,7 +90,11 @@ function DetailsPanel({
 						src={movie.imgUrl}
 						alt={movie.title}
 						fill
+						sizes="128px"
 						className="object-cover"
+						onError={(e) => {
+							e.currentTarget.style.display = 'none';
+						}}
 					/>
 				</div>
 
@@ -171,7 +175,11 @@ function RankingList({
 							}
 							alt={movie.title}
 							fill
+							sizes="64px"
 							className="object-cover"
+							onError={(e) => {
+								e.currentTarget.style.display = 'none';
+							}}
 						/>
 					</div>
 

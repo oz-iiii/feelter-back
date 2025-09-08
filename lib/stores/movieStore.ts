@@ -32,22 +32,24 @@ export const useMovieStore = create<MovieState>()(
         hasMore: true,
 
       fetchMovies: async () => {
-        console.log("🎯 MovieStore: fetchMovies called");
+        const { movies, loading } = get();
+        
+        // 이미 로딩 중이거나 영화 데이터가 있으면 다시 fetch하지 않음
+        if (loading || movies.length > 0) {
+          return;
+        }
+        
         set({ loading: true, error: null });
         try {
-          console.log("🎯 MovieStore: calling API endpoint /api/movies");
           const response = await fetch('/api/movies');
           const result = await response.json();
           
           if (result.success) {
-            console.log("🎯 MovieStore: got movies from API:", result.data.length);
             set({ movies: result.data, loading: false });
           } else {
             throw new Error(result.error || "Failed to fetch movies");
           }
         } catch (error) {
-          console.error("🚨 Failed to fetch movies:", error);
-          console.error("🚨 Error details:", error instanceof Error ? error.message : error);
           set({
             movies: [],
             loading: false,

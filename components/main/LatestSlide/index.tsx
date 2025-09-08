@@ -104,6 +104,9 @@ export default function LatestSlide() {
             fill
             className="object-cover"
             priority
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
           />
           <div className="absolute inset-0 bg-black/50"></div>
         </div>
@@ -167,7 +170,11 @@ export default function LatestSlide() {
                 src={selectedMovie.imgUrl}
                 alt={selectedMovie.title}
                 fill
+                sizes="192px"
                 className="object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             </div>
           </div>
