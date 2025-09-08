@@ -6,7 +6,11 @@ import { IoHeartOutline } from "@react-icons/all-files/io5/IoHeartOutline";
 import { IoHeart } from "@react-icons/all-files/io5/IoHeart";
 import { IoChatbubbleOutline } from "@react-icons/all-files/io5/IoChatbubbleOutline";
 import { IoCaretForwardCircleOutline } from "@react-icons/all-files/io5/IoCaretForwardCircleOutline";
-import { useMovieStore, useFavoriteStore } from "@/lib/stores";
+import {
+  useMovieStore,
+  useFavoriteStore,
+  useWatchHistoryStore,
+} from "@/lib/stores";
 import { Movie } from "@/lib/types/movie";
 
 export default function FeelterGrid() {
