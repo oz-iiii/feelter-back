@@ -52,7 +52,7 @@ export const useMovieStore = create<MovieState>()(
         } catch (error) {
           set({
             movies: [],
-            loading: false,헤ㅑ
+            loading: false,
             error:
               error instanceof Error
                 ? error.message

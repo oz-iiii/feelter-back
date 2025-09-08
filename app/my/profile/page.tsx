@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
-
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import SignInModal from "@/components/auth/SignInModal";
