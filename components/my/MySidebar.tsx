@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import SignInModal from "@/components/auth/SignInModal";
+import SignUpModal from "@/components/auth/SignUpModal";
 
 interface MySidebarProps {
   isOpen: boolean;
@@ -10,6 +14,11 @@ interface MySidebarProps {
 
 export default function MySidebar({ isOpen, onClose }: MySidebarProps) {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
+  
+  // 모달 상태 관리
+  const [showSignInModal, setShowSignInModal] = useState(false);
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
 
   const menuItems = [
     {
@@ -191,15 +200,53 @@ export default function MySidebar({ isOpen, onClose }: MySidebarProps) {
         <div className="h-ful lpb-4">
           {/* User Info Section */}
           <div className="p-4 border-gray-200 rounded-lg">
-            <div className="flex items-center border-b border-gray-200 pb-5 space-x-3">
-              <div className="w-10 h-10 bg-[#b8e600] rounded-full flex items-center justify-center">
-                <span className="text-black font-medium">영</span>
+            {user ? (
+              // 로그인된 사용자 정보
+              <div className="flex items-center border-b border-gray-200 pb-5 space-x-3">
+                <div className="w-10 h-10 bg-[#b8e600] rounded-full flex items-center justify-center">
+                  <span className="text-black font-medium">{user.nickname?.charAt(0) || user.email?.charAt(0) || "U"}</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">{user.nickname || user.email?.split('@')[0] || "사용자"}</p>
+                  <p className="text-xs text-gray-400">{user.points?.toLocaleString() || 0} 포인트</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-white">영화매니아</p>
-                <p className="text-xs text-gray-400">2,450 포인트</p>
+            ) : (
+              // 비회원 상태
+              <div className="border-b border-gray-200 pb-5">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">비회원</p>
+                    <p className="text-xs text-gray-400">로그인이 필요합니다</p>
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => {
+                      setShowSignInModal(true);
+                      onClose();
+                    }}
+                    className="flex-1 px-3 py-1.5 bg-[#DDE66E] hover:bg-[#b8e600] text-black text-xs rounded transition-colors"
+                  >
+                    로그인
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowSignUpModal(true);
+                      onClose();
+                    }}
+                    className="flex-1 px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-white text-xs rounded transition-colors"
+                  >
+                    회원가입
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Navigation Menu */}
@@ -222,9 +269,50 @@ export default function MySidebar({ isOpen, onClose }: MySidebarProps) {
                 {item.title}
               </Link>
             ))}
+            
+            {/* 로그아웃 버튼 - 로그인된 사용자에게만 표시 */}
+            {user && (
+              <button
+                onClick={async () => {
+                  try {
+                    await signOut();
+                    onClose();
+                  } catch (error) {
+                    console.error('로그아웃 오류:', error);
+                    alert('로그아웃 중 오류가 발생했습니다.');
+                  }
+                }}
+                className="w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors text-red-400 hover:text-red-300 hover:bg-red-900/20 mt-4"
+              >
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                로그아웃
+              </button>
+            )}
           </nav>
         </div>
       </aside>
+
+      {/* 로그인 모달 */}
+      <SignInModal
+        isOpen={showSignInModal}
+        onClose={() => setShowSignInModal(false)}
+        onSwitchToSignUp={() => {
+          setShowSignInModal(false);
+          setShowSignUpModal(true);
+        }}
+      />
+
+      {/* 회원가입 모달 */}
+      <SignUpModal
+        isOpen={showSignUpModal}
+        onClose={() => setShowSignUpModal(false)}
+        onSwitchToSignIn={() => {
+          setShowSignUpModal(false);
+          setShowSignInModal(true);
+        }}
+      />
     </>
   );
 }

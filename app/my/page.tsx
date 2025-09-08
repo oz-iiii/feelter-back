@@ -1,35 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
 import { useFavoriteStore } from "@/lib/stores";
+import { useAuth } from "@/hooks/useAuth";
+import SignInModal from "@/components/auth/SignInModal";
+import SignUpModal from "@/components/auth/SignUpModal";
+import SupabaseTest from "@/components/debug/SupabaseTest";
 
 export default function MyPage() {
 	const { favorites, removeFromFavorites } = useFavoriteStore();
-	const [user, setUser] = useState({
-		profileImage: "/api/placeholder/120/120",
-		nickname: "영화매니아",
-		joinDate: "2024.01.15",
-		points: 2450,
-	});
+	const { user } = useAuth();
+	
+	// 모달 상태 관리
+	const [showSignInModal, setShowSignInModal] = useState(false);
+	const [showSignUpModal, setShowSignUpModal] = useState(false);
 
-	useEffect(() => {
-		if (typeof window !== "undefined") {
-			const savedProfile = localStorage.getItem("userProfile");
-			if (savedProfile) {
-				const profile = JSON.parse(savedProfile);
-				setUser((prev) => ({
-					...prev,
-					profileImage: profile.profileImage,
-					nickname: profile.nickname,
-				}));
-			}
-		}
-	}, []);
-
-	const [watchHistory] = useState([
+	const [watchHistory] = useState(user ? [
 		{
 			id: 1,
 			title: "인터스텔라",
@@ -51,14 +40,61 @@ export default function MyPage() {
 			watchDate: "2024.08.05",
 			rating: 4.0,
 		},
-	]);
+	] : []);
 
 	// 대시보드에서 보여줄 최근 즐겨찾기 3개만 가져오기
 	const recentFavorites = favorites.slice(0, 3);
 
+	// 비회원 상태일 때 로그인 안내 화면 표시
+	if (!user) {
+		return (
+			<MyLayout>
+				<div className="w-full max-w-4xl mx-auto px-4 pb-8">
+					{/* Debug Panel */}
+					<SupabaseTest />
+					
+					<div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 p-8 text-center">
+						<svg
+							className="w-16 h-16 text-gray-400 mx-auto mb-4"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth={2}
+								d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+							/>
+						</svg>
+						<h2 className="text-2xl font-bold text-white mb-4">로그인이 필요합니다</h2>
+						<p className="text-gray-400 mb-6">
+							마이페이지를 이용하려면 로그인해주세요.
+						</p>
+						<div className="flex flex-col sm:flex-row gap-4 justify-center">
+							<button 
+								onClick={() => setShowSignInModal(true)}
+								className="px-6 py-3 bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded-lg transition-colors font-medium"
+							>
+								로그인
+							</button>
+							<button 
+								onClick={() => setShowSignUpModal(true)}
+								className="px-6 py-3 bg-neutral-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium"
+							>
+								회원가입
+							</button>
+						</div>
+					</div>
+				</div>
+			</MyLayout>
+		);
+	}
+
 	return (
-		<MyLayout>
-			<div className="w-full max-w-4xl mx-auto px-4 pb-8">
+		<>
+			<MyLayout>
+				<div className="w-full max-w-4xl mx-auto px-4 pb-8">
 				{/* Profile Section */}
 				<div
 					className="bg-neutral-900 rounded-lg 
@@ -69,7 +105,7 @@ export default function MyPage() {
 						{/* Profile Image */}
 						<div>
 							<Image
-								src={user.profileImage}
+								src={user.profile_image || "/api/placeholder/120/120"}
 								alt="프로필 이미지"
 								width={96}
 								height={96}
@@ -80,9 +116,9 @@ export default function MyPage() {
 						{/* Profile Info */}
 						<div className="text-center md:text-left flex-1">
 							<h1 className="text-2xl font-bold text-white mb-2">
-								{user.nickname}
+								{user.nickname || user.email?.split('@')[0] || "사용자"}
 							</h1>
-							<p className="text-gray-400 mb-4">가입일: {user.joinDate}</p>
+							<p className="text-gray-400 mb-4">이메일: {user.email}</p>
 							<Link
 								href="/my/profile"
 								className="inline-flex items-center px-4 py-2 bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded-lg transition-colors"
@@ -117,7 +153,7 @@ export default function MyPage() {
 								내 포인트
 							</h2>
 							<p className="text-3xl font-bold text-[#b8e600]">
-								{user.points.toLocaleString()} P
+								{user.points?.toLocaleString() || 0} P
 							</p>
 						</div>
 						<div className="flex space-x-3">
@@ -270,7 +306,28 @@ export default function MyPage() {
 						</div>
 					</div>
 				</div>
-			</div>
-		</MyLayout>
+				</div>
+			</MyLayout>
+
+			{/* 로그인 모달 */}
+			<SignInModal
+				isOpen={showSignInModal}
+				onClose={() => setShowSignInModal(false)}
+				onSwitchToSignUp={() => {
+					setShowSignInModal(false);
+					setShowSignUpModal(true);
+				}}
+			/>
+
+			{/* 회원가입 모달 */}
+			<SignUpModal
+				isOpen={showSignUpModal}
+				onClose={() => setShowSignUpModal(false)}
+				onSwitchToSignIn={() => {
+					setShowSignUpModal(false);
+					setShowSignInModal(true);
+				}}
+			/>
+		</>
 	);
 }

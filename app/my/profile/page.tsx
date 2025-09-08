@@ -7,40 +7,47 @@ import { User } from "@/components/common/model/types";
 import { defaultUser } from "@/lib/data/users";
 
 export default function ProfilePage() {
-  const getInitialProfile = (): User => {
+  const getInitialProfile = (): User | null => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("userProfile");
       if (saved) {
         return JSON.parse(saved);
       }
     }
-    return defaultUser;
+    // 비회원 상태 - defaultUser 대신 null 반환
+    return null;
   };
 
-  const [profile, setProfile] = useState<User>(getInitialProfile);
+  const [profile, setProfile] = useState<User | null>(getInitialProfile);
   const [isEditing, setIsEditing] = useState(false);
-  const [tempProfile, setTempProfile] = useState<User>({ ...profile });
+  const [tempProfile, setTempProfile] = useState<User | null>(profile);
 
   useEffect(() => {
-    setTempProfile({ ...profile });
+    if (profile) {
+      setTempProfile({ ...profile });
+    }
   }, [profile]);
 
   const handleSave = () => {
-    setProfile({ ...tempProfile });
-    if (typeof window !== "undefined") {
-      localStorage.setItem("userProfile", JSON.stringify(tempProfile));
+    if (tempProfile) {
+      setProfile({ ...tempProfile });
+      if (typeof window !== "undefined") {
+        localStorage.setItem("userProfile", JSON.stringify(tempProfile));
+      }
+      setIsEditing(false);
     }
-    setIsEditing(false);
   };
 
   const handleCancel = () => {
-    setTempProfile({ ...profile });
+    if (profile) {
+      setTempProfile({ ...profile });
+    }
     setIsEditing(false);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && tempProfile) {
       const reader = new FileReader();
       reader.onload = () => {
         setTempProfile({
@@ -51,6 +58,55 @@ export default function ProfilePage() {
       reader.readAsDataURL(file);
     }
   };
+
+  // 비회원 상태일 때 로그인 안내 화면 표시
+  if (!profile) {
+    return (
+      <MyLayout>
+        <div className="w-full max-w-4xl mx-auto px-4 pb-8">
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 p-8 text-center">
+            <svg
+              className="w-16 h-16 text-gray-400 mx-auto mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+            <h2 className="text-2xl font-bold text-white mb-4">로그인이 필요합니다</h2>
+            <p className="text-gray-400 mb-6">
+              프로필을 편집하려면 로그인해주세요.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={() => {
+                  // TODO: Supabase 로그인 페이지로 이동하거나 모달 열기
+                  alert('로그인 기능은 Supabase 연동 후 구현예정입니다.');
+                }}
+                className="px-6 py-3 bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded-lg transition-colors font-medium"
+              >
+                로그인
+              </button>
+              <button 
+                onClick={() => {
+                  // TODO: Supabase 회원가입 페이지로 이동하거나 모달 열기
+                  alert('회원가입 기능은 Supabase 연동 후 구현예정입니다.');
+                }}
+                className="px-6 py-3 bg-neutral-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium"
+              >
+                회원가입
+              </button>
+            </div>
+          </div>
+        </div>
+      </MyLayout>
+    );
+  }
 
   return (
     <MyLayout>
@@ -102,9 +158,9 @@ export default function ProfilePage() {
                 <div className="relative inline-block">
                   <Image
                     src={
-                      isEditing
+                      isEditing && tempProfile
                         ? tempProfile.profileImage
-                        : profile.profileImage
+                        : profile?.profileImage || "/api/placeholder/120/120"
                     }
                     alt="프로필 이미지"
                     width={128}
@@ -142,7 +198,7 @@ export default function ProfilePage() {
                   )}
                 </div>
                 <p className="text-sm text-gray-400">
-                  가입일: {profile.joinDate}
+                  가입일: {profile?.joinDate || "-"}
                 </p>
               </div>
             </div>
@@ -164,7 +220,7 @@ export default function ProfilePage() {
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     닉네임
                   </label>
-                  {isEditing ? (
+                  {isEditing && tempProfile ? (
                     <input
                       type="text"
                       value={tempProfile.nickname}
@@ -177,7 +233,7 @@ export default function ProfilePage() {
                       className="w-full px-3 py-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
                     />
                   ) : (
-                    <p className="text-white py-2">{profile.nickname}</p>
+                    <p className="text-white py-2">{profile?.nickname || "-"}</p>
                   )}
                 </div>
 
@@ -186,7 +242,7 @@ export default function ProfilePage() {
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     이메일
                   </label>
-                  {isEditing ? (
+                  {isEditing && tempProfile ? (
                     <input
                       type="email"
                       value={tempProfile.email}
@@ -199,7 +255,7 @@ export default function ProfilePage() {
                       className="w-full px-3 py-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
                     />
                   ) : (
-                    <p className="text-white py-2">{profile.email}</p>
+                    <p className="text-white py-2">{profile?.email || "-"}</p>
                   )}
                 </div>
 
@@ -208,7 +264,7 @@ export default function ProfilePage() {
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     자기소개
                   </label>
-                  {isEditing ? (
+                  {isEditing && tempProfile ? (
                     <textarea
                       value={tempProfile.bio}
                       onChange={(e) =>
@@ -218,7 +274,7 @@ export default function ProfilePage() {
                       className="w-full px-3 py-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
                     />
                   ) : (
-                    <p className="text-white py-2">{profile.bio}</p>
+                    <p className="text-white py-2">{profile?.bio || "-"}</p>
                   )}
                 </div>
 
@@ -228,7 +284,7 @@ export default function ProfilePage() {
                     선호 장르
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {profile.favoriteGenres.map((genre, index) => (
+                    {profile?.favoriteGenres?.map((genre, index) => (
                       <span
                         key={index}
                         className="px-3 py-1 border border-[#404400] text-[#e6ff4d] text-sm rounded-full"
@@ -245,7 +301,7 @@ export default function ProfilePage() {
                     선호 감독
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {profile.favoriteDirectors.map((director, index) => (
+                    {profile?.favoriteDirectors?.map((director, index) => (
                       <span
                         key={index}
                         className="px-3 py-1 border border-green-900 text-green-300 text-sm rounded-full"
