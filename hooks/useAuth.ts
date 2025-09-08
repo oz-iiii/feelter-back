@@ -146,12 +146,26 @@ export const useAuth = () => {
   }
 
   const signIn = async (email: string, password: string) => {
+    console.log('🚀 Starting signin process for:', email)
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     })
 
-    if (error) throw error
+    if (error) {
+      console.error('❌ SignIn error:', error.message, error)
+      throw error
+    }
+
+    console.log('✅ SignIn successful:', data)
+    
+    // 로그인 성공 시 즉시 사용자 프로필 가져오기
+    if (data.user) {
+      console.log('👤 Fetching user profile after signin...')
+      await fetchUserProfile(data.user)
+    }
+    
     return data
   }
 

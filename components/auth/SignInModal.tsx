@@ -24,8 +24,8 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignI
 
     try {
       await signIn(email, password)
-      onClose()
       resetForm()
+      onClose() // 로그인 성공 시 모달 닫기
     } catch (err: any) {
       console.error('로그인 에러:', err)
       

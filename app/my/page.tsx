@@ -4,43 +4,22 @@ import Link from "next/link";
 import { useState } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
-import { useFavoriteStore } from "@/lib/stores";
+import { useFavoriteStore, useWatchHistoryStore } from "@/lib/stores";
 import { useAuth } from "@/hooks/useAuth";
 import SignInModal from "@/components/auth/SignInModal";
 import SignUpModal from "@/components/auth/SignUpModal";
-import SupabaseTest from "@/components/debug/SupabaseTest";
 
 export default function MyPage() {
 	const { favorites, removeFromFavorites } = useFavoriteStore();
+	const { getRecentHistory } = useWatchHistoryStore();
 	const { user } = useAuth();
 	
 	// 모달 상태 관리
 	const [showSignInModal, setShowSignInModal] = useState(false);
 	const [showSignUpModal, setShowSignUpModal] = useState(false);
 
-	const [watchHistory] = useState(user ? [
-		{
-			id: 1,
-			title: "인터스텔라",
-			poster: "/among-us-poster.png",
-			watchDate: "2024.08.10",
-			rating: 4.5,
-		},
-		{
-			id: 2,
-			title: "기생충",
-			poster: "/among-us-poster.png",
-			watchDate: "2024.08.08",
-			rating: 5.0,
-		},
-		{
-			id: 3,
-			title: "타이타닉",
-			poster: "/among-us-poster.png",
-			watchDate: "2024.08.05",
-			rating: 4.0,
-		},
-	] : []);
+	// 최근 시청 이력 3개 가져오기
+	const watchHistory = user ? getRecentHistory(3) : [];
 
 	// 대시보드에서 보여줄 최근 즐겨찾기 3개만 가져오기
 	const recentFavorites = favorites.slice(0, 3);
@@ -48,46 +27,65 @@ export default function MyPage() {
 	// 비회원 상태일 때 로그인 안내 화면 표시
 	if (!user) {
 		return (
-			<MyLayout>
-				<div className="w-full max-w-4xl mx-auto px-4 pb-8">
-					{/* Debug Panel */}
-					<SupabaseTest />
-					
-					<div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 p-8 text-center">
-						<svg
-							className="w-16 h-16 text-gray-400 mx-auto mb-4"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth={2}
-								d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-							/>
-						</svg>
-						<h2 className="text-2xl font-bold text-white mb-4">로그인이 필요합니다</h2>
-						<p className="text-gray-400 mb-6">
-							마이페이지를 이용하려면 로그인해주세요.
-						</p>
-						<div className="flex flex-col sm:flex-row gap-4 justify-center">
-							<button 
-								onClick={() => setShowSignInModal(true)}
-								className="px-6 py-3 bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded-lg transition-colors font-medium"
+			<>
+				<MyLayout>
+					<div className="w-full max-w-4xl mx-auto px-4 pb-8">
+						<div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 p-8 text-center">
+							<svg
+								className="w-16 h-16 text-gray-400 mx-auto mb-4"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
 							>
-								로그인
-							</button>
-							<button 
-								onClick={() => setShowSignUpModal(true)}
-								className="px-6 py-3 bg-neutral-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium"
-							>
-								회원가입
-							</button>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+								/>
+							</svg>
+							<h2 className="text-2xl font-bold text-white mb-4">로그인이 필요합니다</h2>
+							<p className="text-gray-400 mb-6">
+								마이페이지를 이용하려면 로그인해주세요.
+							</p>
+							<div className="flex flex-col sm:flex-row gap-4 justify-center">
+								<button 
+									onClick={() => setShowSignInModal(true)}
+									className="px-6 py-3 bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded-lg transition-colors font-medium"
+								>
+									로그인
+								</button>
+								<button 
+									onClick={() => setShowSignUpModal(true)}
+									className="px-6 py-3 bg-neutral-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium"
+								>
+									회원가입
+								</button>
+							</div>
 						</div>
 					</div>
-				</div>
-			</MyLayout>
+				</MyLayout>
+
+				{/* 로그인 모달 */}
+				<SignInModal
+					isOpen={showSignInModal}
+					onClose={() => setShowSignInModal(false)}
+					onSwitchToSignUp={() => {
+						setShowSignInModal(false);
+						setShowSignUpModal(true);
+					}}
+				/>
+
+				{/* 회원가입 모달 */}
+				<SignUpModal
+					isOpen={showSignUpModal}
+					onClose={() => setShowSignUpModal(false)}
+					onSwitchToSignIn={() => {
+						setShowSignUpModal(false);
+						setShowSignInModal(true);
+					}}
+				/>
+			</>
 		);
 	}
 
@@ -190,40 +188,63 @@ export default function MyPage() {
 							</Link>
 						</div>
 						<div className="space-y-4">
-							{watchHistory.map((movie) => (
-								<div
-									key={movie.id}
-									className="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-lg transition-colors"
-								>
-									<Image
-										src={movie.poster}
-										alt={movie.title}
-										width={48}
-										height={72}
-										className="w-12 h-18 object-cover rounded"
-									/>
-									<div className="flex-1">
-										<h3 className="font-medium text-white">{movie.title}</h3>
-										<p className="text-sm text-gray-400">{movie.watchDate}</p>
-										<div className="flex items-center mt-1">
-											{[...Array(5)].map((_, i) => (
-												<svg
-													key={i}
-													className={`w-4 h-4 ${
-														i < movie.rating
-															? "text-yellow-400"
-															: "text-gray-300"
-													}`}
-													fill="currentColor"
-													viewBox="0 0 20 20"
-												>
-													<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-												</svg>
-											))}
+							{watchHistory.length > 0 ? (
+								watchHistory.map((item) => (
+									<div
+										key={item.id}
+										className="flex items-center space-x-4 p-3 hover:bg-neutral-800 rounded-lg transition-colors"
+									>
+										<Image
+											src={item.poster}
+											alt={item.title}
+											width={48}
+											height={72}
+											className="w-12 h-18 object-cover rounded"
+										/>
+										<div className="flex-1">
+											<h3 className="font-medium text-white">{item.title}</h3>
+											<p className="text-sm text-gray-400">{item.watchDate}</p>
+											{item.rating && (
+												<div className="flex items-center mt-1">
+													{[...Array(5)].map((_, i) => (
+														<svg
+															key={i}
+															className={`w-4 h-4 ${
+																i < item.rating!
+																	? "text-yellow-400"
+																	: "text-gray-300"
+															}`}
+															fill="currentColor"
+															viewBox="0 0 20 20"
+														>
+															<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+														</svg>
+													))}
+												</div>
+											)}
 										</div>
 									</div>
+								))
+							) : (
+								<div className="text-center py-8">
+									<svg
+										className="w-12 h-12 text-gray-400 mx-auto mb-3"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+										/>
+									</svg>
+									<p className="text-sm text-gray-400">
+										아직 시청한 영화가 없습니다.
+									</p>
 								</div>
-							))}
+							)}
 						</div>
 					</div>
 

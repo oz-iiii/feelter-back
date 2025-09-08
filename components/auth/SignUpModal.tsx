@@ -55,12 +55,12 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
       console.log('🎉 SignUp result:', result)
       
       setSuccess(true)
-      // 회원가입 성공 후 5초 뒤 모달 닫기 (이메일 확인 시간 고려)
+      // 회원가입 성공 후 3초 뒤 모달 닫기 (이메일 확인 시간 고려)
       setTimeout(() => {
-        onClose()
         setSuccess(false)
         resetForm()
-      }, 5000)
+        onClose()
+      }, 3000)
     } catch (err: any) {
       console.error('💥 SignUp failed:', err)
       

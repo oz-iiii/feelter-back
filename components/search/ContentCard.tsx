@@ -5,7 +5,7 @@ import Image from "next/image";
 import { BiHeart, BiMessageRounded } from "react-icons/bi";
 import { BsHeartFill } from "react-icons/bs";
 import { ContentItem } from "@/lib/data";
-import { useFavoriteStore, useMovieStore } from "@/lib/stores";
+import { useFavoriteStore, useMovieStore, useWatchHistoryStore } from "@/lib/stores";
 import { Movie } from "@/lib/types/movie";
 
 interface ContentCardProps {
@@ -15,6 +15,7 @@ interface ContentCardProps {
 
 const ContentCard: React.FC<ContentCardProps> = ({ content, onOpen }) => {
   const { toggleFavorite, isFavorite } = useFavoriteStore();
+  const { addToWatchHistory } = useWatchHistoryStore();
   const { movies } = useMovieStore();
   
   // ContentItem에서 해당하는 Movie 찾기
@@ -65,6 +66,39 @@ const ContentCard: React.FC<ContentCardProps> = ({ content, onOpen }) => {
 
   const handleOpenClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // 시청 이력에 추가
+    const movie = findMovieByTitle(content.title);
+    if (movie) {
+      addToWatchHistory(movie);
+    } else {
+      // Movie를 찾을 수 없는 경우, ContentItem에서 Movie 타입 생성
+      const syntheticMovie: Movie = {
+        id: `synthetic_${content.title.replace(/\s+/g, '_')}`,
+        tmdbid: 0,
+        title: content.title,
+        release: new Date(content.year || 2024, 0, 1),
+        age: "전체관람가",
+        genre: content.genre || "드라마",
+        runningTime: "120분",
+        country: "한국",
+        director: "미상",
+        actor: "미상",
+        overview: content.description || "",
+        streaming: "Netflix",
+        streamingUrl: "https://netflix.com",
+        youtubeUrl: "https://youtube.com",
+        imgUrl: content.poster || "",
+        bgUrl: content.poster || "",
+        feelterTime: "저녁",
+        feelterPurpose: "휴식",
+        feelterOccasion: "혼자",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      addToWatchHistory(syntheticMovie);
+    }
+    
     onOpen(content);
   };
 

@@ -6,12 +6,13 @@ import { IoHeartOutline } from "@react-icons/all-files/io5/IoHeartOutline";
 import { IoHeart } from "@react-icons/all-files/io5/IoHeart";
 import { IoChatbubbleOutline } from "@react-icons/all-files/io5/IoChatbubbleOutline";
 import { IoCaretForwardCircleOutline } from "@react-icons/all-files/io5/IoCaretForwardCircleOutline";
-import { useMovieStore, useFavoriteStore } from "@/lib/stores";
+import { useMovieStore, useFavoriteStore, useWatchHistoryStore } from "@/lib/stores";
 import { Movie } from "@/lib/types/movie";
 
 export default function FeelterGrid() {
 	const { movies, loading, fetchMovies } = useMovieStore();
 	const { toggleFavorite, isFavorite } = useFavoriteStore();
+	const { addToWatchHistory } = useWatchHistoryStore();
 	const [activeMovieId, setActiveMovieId] = useState<string | null>(null);
 
 	useEffect(() => {
@@ -29,6 +30,13 @@ export default function FeelterGrid() {
 	const handleFavoriteClick = (movie: Movie, e: React.MouseEvent) => {
 		e.stopPropagation(); // 부모 클릭 이벤트 방지
 		toggleFavorite(movie);
+	};
+
+	// 영화 시청 핸들러
+	const handlePlayMovie = (movie: Movie, e: React.MouseEvent) => {
+		e.stopPropagation();
+		addToWatchHistory(movie); // 시청 이력에 추가
+		window.open(movie.streamingUrl, "_blank");
 	};
 
 	if (loading) {
@@ -92,10 +100,7 @@ export default function FeelterGrid() {
 									{/* 플레이 버튼 */}
 									<button
 										className="flex items-center justify-center rounded-full text-white hover:scale-110"
-										onClick={(e) => {
-											e.stopPropagation();
-											window.open(movie.streamingUrl, "_blank");
-										}}
+										onClick={(e) => handlePlayMovie(movie, e)}
 									>
 										<IoCaretForwardCircleOutline size={54} />
 									</button>
