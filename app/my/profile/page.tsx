@@ -24,6 +24,7 @@ export default function ProfilePage() {
         nickname: user.nickname || user.email?.split('@')[0] || '',
         email: user.email || '',
         profileImage: user.profile_image || '',
+        bio: user.bio || '',
         points: user.points || 0
       });
     }
@@ -37,7 +38,9 @@ export default function ProfilePage() {
       // Supabase auth 사용자 메타데이터 업데이트
       const { data, error } = await supabase.auth.updateUser({
         data: {
-          nickname: tempProfile.nickname
+          nickname: tempProfile.nickname,
+          profile_image: tempProfile.profileImage,
+          bio: tempProfile.bio
         }
       });
       
@@ -66,6 +69,7 @@ export default function ProfilePage() {
         nickname: user.nickname || user.email?.split('@')[0] || '',
         email: user.email || '',
         profileImage: user.profile_image || '',
+        bio: user.bio || '',
         points: user.points || 0
       });
     }
@@ -335,7 +339,7 @@ export default function ProfilePage() {
                   </label>
                   {isEditing && tempProfile ? (
                     <textarea
-                      value={tempProfile.bio}
+                      value={tempProfile.bio || ''}
                       onChange={(e) =>
                         setTempProfile({ ...tempProfile, bio: e.target.value })
                       }
@@ -343,7 +347,7 @@ export default function ProfilePage() {
                       className="w-full px-3 py-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
                     />
                   ) : (
-                    <p className="text-white py-2">{"사용자 소개는 추후 업데이트 예정입니다."}</p>
+                    <p className="text-white py-2">{user?.bio || "자기소개가 없습니다."}</p>
                   )}
                 </div>
 

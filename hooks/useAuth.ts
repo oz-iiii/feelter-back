@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 export interface AuthUser extends User {
   nickname?: string
   profile_image?: string
+  bio?: string
   points?: number
 }
 
@@ -54,11 +55,12 @@ export const useAuth = () => {
 
   const fetchUserProfile = async (authUser: User) => {
     try {
-      // users 테이블이 없는 경우 기본 사용자 정보만 사용
+      // Supabase auth 메타데이터에서 사용자 정보 가져오기
       const userData: AuthUser = {
         ...authUser,
-        nickname: authUser.email?.split('@')[0] || 'User',
-        profile_image: undefined,
+        nickname: authUser.user_metadata?.nickname || authUser.email?.split('@')[0] || 'User',
+        profile_image: authUser.user_metadata?.profile_image,
+        bio: authUser.user_metadata?.bio,
         points: 100 // 기본 포인트
       }
 
