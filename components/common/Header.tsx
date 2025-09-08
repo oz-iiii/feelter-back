@@ -3,6 +3,7 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 // Since the environment can't resolve 'next/link', we will use a standard anchor tag.
 // This will still work for navigation within the component.
 interface NavbarProps {
@@ -10,6 +11,7 @@ interface NavbarProps {
 }
 
 export default function Header({ onMySidebarToggle }: NavbarProps) {
+	const { user } = useAuth();
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const pathname = usePathname();
@@ -55,8 +57,11 @@ export default function Header({ onMySidebarToggle }: NavbarProps) {
 	return (
 		<header className="border-b border-neutral-500 bg-black p-4 sticky top-0 z-50">
 			<div className="flex justify-between items-center max-w-7xl mx-auto">
-				{/* 1. 로고 - 클릭 시 메인 화면으로 이동 */}
-				<Link href="/" className="text-xl font-bold text-white">
+				{/* 1. 로고 - 로그인 상태에 따라 다른 화면으로 이동 */}
+				<Link 
+					href={user ? "/home" : "/"} 
+					className="text-xl font-bold text-white"
+				>
 					Feelter
 				</Link>
 
