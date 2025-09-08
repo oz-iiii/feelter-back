@@ -27,8 +27,6 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignI
       resetForm()
       onClose() // 로그인 성공 시 모달 닫기
     } catch (err: any) {
-      console.error('로그인 에러:', err)
-      
       let errorMessage = '로그인 중 오류가 발생했습니다.'
       
       if (err.message.includes('Email not confirmed')) {

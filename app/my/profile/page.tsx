@@ -3,44 +3,71 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
-import { User } from "@/components/common/model/types";
-import { defaultUser } from "@/lib/data/users";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
+import SignInModal from "@/components/auth/SignInModal";
+import SignUpModal from "@/components/auth/SignUpModal";
 
 export default function ProfilePage() {
-  const getInitialProfile = (): User | null => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("userProfile");
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    }
-    // 비회원 상태 - defaultUser 대신 null 반환
-    return null;
-  };
-
-  const [profile, setProfile] = useState<User | null>(getInitialProfile);
+  const { user, loading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [tempProfile, setTempProfile] = useState<User | null>(profile);
+  const [isSaving, setIsSaving] = useState(false);
+  const [tempProfile, setTempProfile] = useState<any>(null);
+  
+  // 모달 상태 관리
+  const [showSignInModal, setShowSignInModal] = useState(false);
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
 
   useEffect(() => {
-    if (profile) {
-      setTempProfile({ ...profile });
+    if (user) {
+      setTempProfile({
+        nickname: user.nickname || user.email?.split('@')[0] || '',
+        email: user.email || '',
+        profileImage: user.profile_image || '',
+        points: user.points || 0
+      });
     }
-  }, [profile]);
+  }, [user]);
 
-  const handleSave = () => {
-    if (tempProfile) {
-      setProfile({ ...tempProfile });
-      if (typeof window !== "undefined") {
-        localStorage.setItem("userProfile", JSON.stringify(tempProfile));
+  const handleSave = async () => {
+    if (!tempProfile) return;
+    
+    setIsSaving(true);
+    try {
+      // Supabase auth 사용자 메타데이터 업데이트
+      const { data, error } = await supabase.auth.updateUser({
+        data: {
+          nickname: tempProfile.nickname
+        }
+      });
+      
+      if (error) {
+        throw error;
       }
+      
+      // 성공적으로 저장됨
+      alert('프로필이 성공적으로 저장되었습니다!');
       setIsEditing(false);
+      
+      // 페이지 새로고침으로 업데이트된 정보 반영
+      window.location.reload();
+      
+    } catch (error) {
+      console.error('프로필 저장 오류:', error);
+      alert('프로필 저장 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleCancel = () => {
-    if (profile) {
-      setTempProfile({ ...profile });
+    if (user) {
+      setTempProfile({
+        nickname: user.nickname || user.email?.split('@')[0] || '',
+        email: user.email || '',
+        profileImage: user.profile_image || '',
+        points: user.points || 0
+      });
     }
     setIsEditing(false);
   };
@@ -59,10 +86,24 @@ export default function ProfilePage() {
     }
   };
 
-  // 비회원 상태일 때 로그인 안내 화면 표시
-  if (!profile) {
+  // 로딩 중이거나 비회원 상태일 때 처리
+  if (loading) {
     return (
       <MyLayout>
+        <div className="w-full max-w-4xl mx-auto px-4 pb-8">
+          <div className="bg-neutral-900 rounded-lg p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#b8e600] mx-auto"></div>
+            <p className="text-gray-400 mt-4">로딩 중...</p>
+          </div>
+        </div>
+      </MyLayout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <>
+        <MyLayout>
         <div className="w-full max-w-4xl mx-auto px-4 pb-8">
           <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 p-8 text-center">
             <svg
@@ -84,19 +125,13 @@ export default function ProfilePage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button 
-                onClick={() => {
-                  // TODO: Supabase 로그인 페이지로 이동하거나 모달 열기
-                  alert('로그인 기능은 Supabase 연동 후 구현예정입니다.');
-                }}
+                onClick={() => setShowSignInModal(true)}
                 className="px-6 py-3 bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded-lg transition-colors font-medium"
               >
                 로그인
               </button>
               <button 
-                onClick={() => {
-                  // TODO: Supabase 회원가입 페이지로 이동하거나 모달 열기
-                  alert('회원가입 기능은 Supabase 연동 후 구현예정입니다.');
-                }}
+                onClick={() => setShowSignUpModal(true)}
                 className="px-6 py-3 bg-neutral-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium"
               >
                 회원가입
@@ -104,11 +139,33 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </MyLayout>
+        </MyLayout>
+
+        {/* 로그인 모달 */}
+        <SignInModal
+          isOpen={showSignInModal}
+          onClose={() => setShowSignInModal(false)}
+          onSwitchToSignUp={() => {
+            setShowSignInModal(false);
+            setShowSignUpModal(true);
+          }}
+        />
+
+        {/* 회원가입 모달 */}
+        <SignUpModal
+          isOpen={showSignUpModal}
+          onClose={() => setShowSignUpModal(false)}
+          onSwitchToSignIn={() => {
+            setShowSignUpModal(false);
+            setShowSignInModal(true);
+          }}
+        />
+      </>
     );
   }
 
   return (
+    <>
     <MyLayout>
       <div className="w-full max-w-4xl mx-auto px-4 pb-8">
         {/* Header */}
@@ -128,9 +185,13 @@ export default function ProfilePage() {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="px-4 py-2 bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded-lg transition-colors"
+                  disabled={isSaving}
+                  className="px-4 py-2 bg-[#DDE66E] hover:bg-[#b8e600] disabled:opacity-50 disabled:cursor-not-allowed text-black rounded-lg transition-colors flex items-center"
                 >
-                  저장
+                  {isSaving && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+                  )}
+                  {isSaving ? '저장 중...' : '저장'}
                 </button>
               </>
             ) : (
@@ -156,17 +217,25 @@ export default function ProfilePage() {
               </h2>
               <div className="text-center">
                 <div className="relative inline-block">
-                  <Image
-                    src={
-                      isEditing && tempProfile
-                        ? tempProfile.profileImage
-                        : profile?.profileImage || "/api/placeholder/120/120"
-                    }
-                    alt="프로필 이미지"
-                    width={128}
-                    height={128}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 mb-4"
-                  />
+                  <div className="w-32 h-32 rounded-full bg-gray-300 border-4 border-gray-200 mb-4 flex items-center justify-center">
+                    {(isEditing && tempProfile?.profileImage) || user?.profile_image ? (
+                      <Image
+                        src={
+                          isEditing && tempProfile
+                            ? tempProfile.profileImage
+                            : user?.profile_image || ""
+                        }
+                        alt="프로필 이미지"
+                        width={128}
+                        height={128}
+                        className="w-32 h-32 rounded-full object-cover"
+                      />
+                    ) : (
+                      <svg className="w-16 h-16 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
                   {isEditing && (
                     <label className="absolute bottom-2 right-2 bg-[#DDE66E] hover:bg-[#b8e600] text-black p-2 rounded-full cursor-pointer shadow-lg transition-colors">
                       <svg
@@ -198,7 +267,7 @@ export default function ProfilePage() {
                   )}
                 </div>
                 <p className="text-sm text-gray-400">
-                  가입일: {profile?.joinDate || "-"}
+                  가입일: {user?.email ? "인증 완료" : "-"}
                 </p>
               </div>
             </div>
@@ -233,7 +302,7 @@ export default function ProfilePage() {
                       className="w-full px-3 py-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
                     />
                   ) : (
-                    <p className="text-white py-2">{profile?.nickname || "-"}</p>
+                    <p className="text-white py-2">{user?.nickname || user?.email?.split('@')[0] || "-"}</p>
                   )}
                 </div>
 
@@ -255,7 +324,7 @@ export default function ProfilePage() {
                       className="w-full px-3 py-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
                     />
                   ) : (
-                    <p className="text-white py-2">{profile?.email || "-"}</p>
+                    <p className="text-white py-2">{user?.email || "-"}</p>
                   )}
                 </div>
 
@@ -274,7 +343,7 @@ export default function ProfilePage() {
                       className="w-full px-3 py-2 border border-neutral-700 rounded-lg bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#ccff00]"
                     />
                   ) : (
-                    <p className="text-white py-2">{profile?.bio || "-"}</p>
+                    <p className="text-white py-2">{"사용자 소개는 추후 업데이트 예정입니다."}</p>
                   )}
                 </div>
 
@@ -284,14 +353,9 @@ export default function ProfilePage() {
                     선호 장르
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {profile?.favoriteGenres?.map((genre, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 border border-[#404400] text-[#e6ff4d] text-sm rounded-full"
-                      >
-                        {genre}
-                      </span>
-                    ))}
+                    <span className="px-3 py-1 border border-gray-600 text-gray-400 text-sm rounded-full">
+                      선호 장르 설정은 추후 업데이트 예정입니다
+                    </span>
                   </div>
                 </div>
 
@@ -301,14 +365,9 @@ export default function ProfilePage() {
                     선호 감독
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {profile?.favoriteDirectors?.map((director, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 border border-green-900 text-green-300 text-sm rounded-full"
-                      >
-                        {director}
-                      </span>
-                    ))}
+                    <span className="px-3 py-1 border border-gray-600 text-gray-400 text-sm rounded-full">
+                      선호 감독 설정은 추후 업데이트 예정입니다
+                    </span>
                   </div>
                 </div>
               </div>
@@ -317,5 +376,26 @@ export default function ProfilePage() {
         </div>
       </div>
     </MyLayout>
+
+    {/* 로그인 모달 */}
+    <SignInModal
+      isOpen={showSignInModal}
+      onClose={() => setShowSignInModal(false)}
+      onSwitchToSignUp={() => {
+        setShowSignInModal(false);
+        setShowSignUpModal(true);
+      }}
+    />
+
+    {/* 회원가입 모달 */}
+    <SignUpModal
+      isOpen={showSignUpModal}
+      onClose={() => setShowSignUpModal(false)}
+      onSwitchToSignIn={() => {
+        setShowSignUpModal(false);
+        setShowSignInModal(true);
+      }}
+    />
+    </>
   );
 }

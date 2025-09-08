@@ -22,8 +22,6 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    console.log('📝 Form submitted:', { email, nickname, passwordLength: password.length })
 
     // 유효성 검사
     if (!email.trim()) {
@@ -50,9 +48,7 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
     setError('')
 
     try {
-      console.log('🎯 Calling signUp function...')
       const result = await signUp(email, password, nickname)
-      console.log('🎉 SignUp result:', result)
       
       setSuccess(true)
       // 회원가입 성공 후 3초 뒤 모달 닫기 (이메일 확인 시간 고려)
@@ -62,7 +58,6 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
         onClose()
       }, 3000)
     } catch (err: any) {
-      console.error('💥 SignUp failed:', err)
       
       // 구체적인 에러 메시지 처리
       let errorMessage = '회원가입 중 오류가 발생했습니다.'

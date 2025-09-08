@@ -14,29 +14,19 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Supabase 연결 상태 확인
-    console.log('🔧 Supabase client initialized:', !!supabase)
-    console.log('🔧 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
-    console.log('🔧 Supabase Anon Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-
     // 현재 세션 확인
     const getSession = async () => {
       try {
-        console.log('📡 Getting session...')
         const { data: { session }, error } = await supabase.auth.getSession()
         
-        if (error) {
-          console.error('❌ Error getting session:', error.message, error)
-        } else {
-          console.log('✅ Session retrieved:', session ? 'User logged in' : 'No session')
+        if (!error) {
           setSession(session)
           if (session?.user) {
-            console.log('👤 User found in session:', session.user.email)
             await fetchUserProfile(session.user)
           }
         }
       } catch (err) {
-        console.error('❌ Exception in getSession:', err)
+        // 세션 조회 실패시 무시
       }
       setLoading(false)
     }
@@ -46,14 +36,11 @@ export const useAuth = () => {
     // 인증 상태 변경 감지
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Auth state changed:', event, session ? 'with session' : 'no session')
         setSession(session)
         
         if (session?.user) {
-          console.log('👤 User in state change:', session.user.email)
           await fetchUserProfile(session.user)
         } else {
-          console.log('👤 No user in state change, clearing user state')
           setUser(null)
         }
         setLoading(false)
@@ -61,41 +48,28 @@ export const useAuth = () => {
     )
 
     return () => {
-      console.log('🧹 Cleaning up auth subscription')
       subscription?.unsubscribe()
     }
   }, [])
 
   const fetchUserProfile = async (authUser: User) => {
     try {
-      // 사용자 프로필 정보 조회
-      const { data: profile, error } = await supabase
-        .from('users')
-        .select('nickname, profile_image, points')
-        .eq('id', authUser.id)
-        .single()
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user profile:', error)
-      }
-
+      // users 테이블이 없는 경우 기본 사용자 정보만 사용
       const userData: AuthUser = {
         ...authUser,
-        nickname: profile?.nickname || authUser.email?.split('@')[0] || 'User',
-        profile_image: profile?.profile_image,
-        points: profile?.points || 0
+        nickname: authUser.email?.split('@')[0] || 'User',
+        profile_image: undefined,
+        points: 100 // 기본 포인트
       }
 
       setUser(userData)
     } catch (error) {
-      console.error('Error in fetchUserProfile:', error)
+      // 프로필 조회 실패시 기본 사용자 정보 사용
       setUser(authUser as AuthUser)
     }
   }
 
   const signUp = async (email: string, password: string, nickname: string) => {
-    console.log('🚀 Starting signup process for:', email)
-    
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -108,61 +82,30 @@ export const useAuth = () => {
       })
 
       if (error) {
-        console.error('❌ Signup error:', error.message, error)
         throw error
       }
 
-      console.log('✅ Signup successful:', data)
-      console.log('📧 User needs email confirmation:', !data.session && data.user)
-
-      // 사용자 프로필 생성 (optional - 테이블이 있을 경우)
-      if (data.user) {
-        try {
-          console.log('💾 Creating user profile...')
-          const { error: profileError } = await supabase
-            .from('users')
-            .insert({
-              id: data.user.id,
-              email: data.user.email!,
-              nickname: nickname,
-              points: 100 // 신규 가입 보너스 포인트
-            })
-
-          if (profileError) {
-            console.log('⚠️ Profile creation failed (table may not exist):', profileError.message)
-          } else {
-            console.log('✅ User profile created successfully')
-          }
-        } catch (profileError) {
-          console.log('⚠️ Profile creation exception:', profileError)
-        }
-      }
+      // 사용자 프로필은 auth 메타데이터에 저장
+      // users 테이블이 없으므로 별도 프로필 테이블 생성 생략
 
       return data
     } catch (err) {
-      console.error('❌ Exception in signUp:', err)
       throw err
     }
   }
 
   const signIn = async (email: string, password: string) => {
-    console.log('🚀 Starting signin process for:', email)
-    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     })
 
     if (error) {
-      console.error('❌ SignIn error:', error.message, error)
       throw error
     }
-
-    console.log('✅ SignIn successful:', data)
     
     // 로그인 성공 시 즉시 사용자 프로필 가져오기
     if (data.user) {
-      console.log('👤 Fetching user profile after signin...')
       await fetchUserProfile(data.user)
     }
     

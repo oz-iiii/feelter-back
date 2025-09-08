@@ -23,9 +23,7 @@ interface MovieState {
 
 export const useMovieStore = create<MovieState>()(
   devtools(
-    (set, get) => {
-      console.log("🏪 MovieStore: Store initialized");
-      return {
+    (set, get) => ({
         movies: [],
         currentMovie: null,
         loading: false,
@@ -143,9 +141,7 @@ export const useMovieStore = create<MovieState>()(
       clearError: () => {
         set({ error: null });
       },
-
-      };
-    },
+    }),
     {
       name: "movie-store",
     }

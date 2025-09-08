@@ -102,13 +102,21 @@ export default function MyPage() {
 					<div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
 						{/* Profile Image */}
 						<div>
-							<Image
-								src={user.profile_image || "/api/placeholder/120/120"}
-								alt="프로필 이미지"
-								width={96}
-								height={96}
-								className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
-							/>
+							<div className="w-24 h-24 rounded-full bg-gray-300 border-4 border-gray-200 flex items-center justify-center">
+								{user.profile_image ? (
+									<Image
+										src={user.profile_image}
+										alt="프로필 이미지"
+										width={96}
+										height={96}
+										className="w-24 h-24 rounded-full object-cover"
+									/>
+								) : (
+									<svg className="w-12 h-12 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+										<path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+									</svg>
+								)}
+							</div>
 						</div>
 
 						{/* Profile Info */}
