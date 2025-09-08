@@ -1,4 +1,4 @@
-import { User } from '@/components/common/model/types';
+import { User } from "@/lib/types/user";
 
 export const defaultUser: User = {
   id: 1,
@@ -8,5 +8,5 @@ export const defaultUser: User = {
   profileImage: "/images/default-profile.jpg",
   joinDate: "2024.12.01",
   favoriteGenres: ["액션", "SF", "드라마", "로맨스"],
-  favoriteDirectors: ["크리스토퍼 놀란", "봉준호", "데미안 셔젤"]
+  favoriteDirectors: ["크리스토퍼 놀란", "봉준호", "데미안 셔젤"],
 };

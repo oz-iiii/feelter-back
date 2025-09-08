@@ -24,26 +24,26 @@ interface MovieState {
 export const useMovieStore = create<MovieState>()(
   devtools(
     (set, get) => ({
-        movies: [],
-        currentMovie: null,
-        loading: false,
-        error: null,
-        filters: {},
-        hasMore: true,
+      movies: [],
+      currentMovie: null,
+      loading: false,
+      error: null,
+      filters: {},
+      hasMore: true,
 
       fetchMovies: async () => {
         const { movies, loading } = get();
-        
+
         // 이미 로딩 중이거나 영화 데이터가 있으면 다시 fetch하지 않음
         if (loading || movies.length > 0) {
           return;
         }
-        
+
         set({ loading: true, error: null });
         try {
-          const response = await fetch('/api/movies');
+          const response = await fetch("/api/movies");
           const result = await response.json();
-          
+
           if (result.success) {
             set({ movies: result.data, loading: false });
           } else {
@@ -53,7 +53,10 @@ export const useMovieStore = create<MovieState>()(
           set({
             movies: [],
             loading: false,
-            error: error instanceof Error ? error.message : "영화 데이터를 불러오는데 실패했습니다.",
+            error:
+              error instanceof Error
+                ? error.message
+                : "영화 데이터를 불러오는데 실패했습니다.",
           });
         }
       },
@@ -77,11 +80,8 @@ export const useMovieStore = create<MovieState>()(
       searchMovies: async (filters: MovieFilters, reset: boolean = true) => {
         set({ loading: true, error: null });
         try {
-          const { movies, hasMore: newHasMore } = await movieService.getFilteredMovies(
-            filters,
-            20,
-            0
-          );
+          const { movies, hasMore: newHasMore } =
+            await movieService.getFilteredMovies(filters, 20, 0);
 
           if (reset) {
             set({
@@ -110,7 +110,7 @@ export const useMovieStore = create<MovieState>()(
         if (!hasMore) return;
 
         const currentPage = Math.floor(movies.length / 20);
-        
+
         set({ loading: true });
         try {
           const { movies: newMovies, hasMore: newHasMore } =

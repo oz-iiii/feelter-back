@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { Movie } from "../types/movie";
+import { Category, Movie } from "../types/movie";
 
 export interface UserCategory {
   id: string;
@@ -13,13 +13,13 @@ export interface UserCategory {
 
 interface CategoryState {
   categories: UserCategory[];
-  
+
   // Actions
   createCategory: (name: string, description?: string) => string;
   updateCategory: (id: string, updates: Partial<UserCategory>) => void;
   deleteCategory: (id: string) => void;
   addMoviesToCategory: (categoryId: string, movies: Movie[]) => void;
-  removeMovieFromCategory: (categoryId: string, movieId: string) => void;
+  removeMovieFromCategory: (categoryId: string, movieId: number) => void;
   getCategoryById: (id: string) => UserCategory | undefined;
   // 디버깅용 함수
   testAddMovie: () => void;
@@ -30,104 +30,119 @@ export const useCategoryStore = create<CategoryState>()(
     persist(
       (set, get) => ({
         categories: [],
-        
+
         createCategory: (name: string, description?: string) => {
           const newCategory: UserCategory = {
-            id: `category_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: `category_${Date.now()}_${Math.random()
+              .toString(36)
+              .substr(2, 9)}`,
             name,
             description,
             movies: [],
             createdAt: new Date(),
             updatedAt: new Date(),
           };
-          
+
           set((state) => ({
-            categories: [...state.categories, newCategory]
+            categories: [...state.categories, newCategory],
           }));
-          
+
           return newCategory.id;
         },
-        
+
         updateCategory: (id: string, updates: Partial<UserCategory>) => {
           set((state) => ({
-            categories: state.categories.map(category =>
+            categories: state.categories.map((category) =>
               category.id === id
                 ? { ...category, ...updates, updatedAt: new Date() }
                 : category
-            )
+            ),
           }));
         },
-        
+
         deleteCategory: (id: string) => {
           set((state) => ({
-            categories: state.categories.filter(category => category.id !== id)
+            categories: state.categories.filter(
+              (category) => category.id !== id
+            ),
           }));
         },
-        
+
         addMoviesToCategory: (categoryId: string, movies: Movie[]) => {
-          console.log('Adding movies to category:', { categoryId, movies: movies.length });
+          console.log("Adding movies to category:", {
+            categoryId,
+            movies: movies.length,
+          });
           set((state) => {
-            const updatedCategories = state.categories.map(category =>
+            const updatedCategories = state.categories.map((category) =>
               category.id === categoryId
                 ? {
                     ...category,
                     movies: [
-                      ...category.movies.filter(existingMovie =>
-                        !movies.some(newMovie => newMovie.id === existingMovie.id)
+                      ...category.movies.filter(
+                        (existingMovie) =>
+                          !movies.some(
+                            (newMovie) => newMovie.id === existingMovie.id
+                          )
                       ),
-                      ...movies
+                      ...movies,
                     ],
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
                   }
                 : category
             );
-            console.log('Updated categories:', updatedCategories);
+            console.log("Updated categories:", updatedCategories);
             return { categories: updatedCategories };
           });
         },
-        
-        removeMovieFromCategory: (categoryId: string, movieId: string) => {
+
+        removeMovieFromCategory: (categoryId: string, movieId: number) => {
           set((state) => ({
-            categories: state.categories.map(category =>
+            categories: state.categories.map((category) =>
               category.id === categoryId
                 ? {
                     ...category,
-                    movies: category.movies.filter(movie => movie.id !== movieId),
-                    updatedAt: new Date()
+                    movies: category.movies.filter(
+                      (Movie) => Movie.id !== movieId
+                    ),
+                    updatedAt: new Date(),
                   }
                 : category
-            )
+            ),
           }));
         },
-        
+
         getCategoryById: (id: string) => {
           const { categories } = get();
-          return categories.find(category => category.id === id);
+          return categories.find((category) => category.id === id);
         },
-        
+
         // 디버깅용 테스트 함수
         testAddMovie: () => {
-          const testCategory = get().createCategory("테스트 카테고리", "테스트용입니다");
+          const testCategory = get().createCategory(
+            "테스트 카테고리",
+            "테스트용입니다"
+          );
           const testMovie: Movie = {
-            id: "test-movie-1",
+            id: 1,
             tmdbid: 123,
             title: "테스트 영화",
             release: new Date(),
             age: "12세관람가",
-            genre: "액션",
+            genre: ["액션"],
             runningTime: "120분",
-            country: "한국",
-            director: "홍길동",
-            actor: "김영희",
+            country: ["한국"],
+            director: ["홍길동"],
+            actor: ["김영희"],
             overview: "테스트 영화입니다",
-            streaming: "넷플릭스",
+            streaming: ["넷플릭스"],
             streamingUrl: "https://netflix.com",
             youtubeUrl: "https://youtube.com",
             imgUrl: "/test-image.jpg",
             bgUrl: "/test-bg.jpg",
-            feelterTime: "저녁",
-            feelterPurpose: "휴식",
-            feelterOccasion: "혼자",
+            feelterTime: ["저녁"],
+            feelterPurpose: ["휴식"],
+            feelterOccasion: ["혼자"],
             createdAt: new Date(),
             updatedAt: new Date(),
           };
@@ -148,12 +163,13 @@ export const useCategoryStore = create<CategoryState>()(
                 ...cat,
                 createdAt: new Date(cat.createdAt),
                 updatedAt: new Date(cat.updatedAt),
-                movies: cat.movies?.map((movie: any) => ({
-                  ...movie,
-                  release: new Date(movie.release),
-                  createdAt: new Date(movie.createdAt),
-                  updatedAt: new Date(movie.updatedAt),
-                })) || [],
+                movies:
+                  cat.movies?.map((movie: Movie) => ({
+                    ...movie,
+                    release: new Date(movie.release),
+                    createdAt: new Date(movie.createdAt),
+                    updatedAt: new Date(movie.updatedAt),
+                  })) || [],
               }));
             }
             return data;

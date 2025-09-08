@@ -5,13 +5,15 @@ import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
 import { useFavoriteStore, useCategoryStore } from "@/lib/stores";
 import { Movie } from "@/lib/types/movie";
+import { movieRankingService } from "@/lib/services/movieService";
 
 export default function FavoritesPage() {
   const { favorites, removeFromFavorites } = useFavoriteStore();
-  const { categories, createCategory, addMoviesToCategory } = useCategoryStore();
+  const { categories, createCategory, addMoviesToCategory } =
+    useCategoryStore();
   const [sortBy, setSortBy] = useState("recent");
   const [viewMode, setViewMode] = useState("grid");
-  const [selectedMovies, setSelectedMovies] = useState<Set<string>>(new Set());
+  const [selectedMovies, setSelectedMovies] = useState<Set<number>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -22,11 +24,11 @@ export default function FavoritesPage() {
     setMounted(true);
   }, []);
 
-  const removeFavorite = (id: string) => {
+  const removeFavorite = (id: number) => {
     removeFromFavorites(id);
   };
 
-  const toggleMovieSelection = (movieId: string) => {
+  const toggleMovieSelection = (movieId: number) => {
     const newSelection = new Set(selectedMovies);
     if (newSelection.has(movieId)) {
       newSelection.delete(movieId);
@@ -40,55 +42,73 @@ export default function FavoritesPage() {
     if (selectedMovies.size === favorites.length) {
       setSelectedMovies(new Set());
     } else {
-      setSelectedMovies(new Set(favorites.map(movie => movie.id)));
+      setSelectedMovies(new Set(favorites.map((movie) => movie.id)));
     }
   };
 
   const getSelectedMovieObjects = (): Movie[] => {
-    return favorites.filter(movie => selectedMovies.has(movie.id));
+    return favorites.filter((movie) => selectedMovies.has(movie.id));
   };
 
   const handleAddToCategory = (categoryId?: string, categoryName?: string) => {
     const selectedMovieObjects = getSelectedMovieObjects();
-    console.log('handleAddToCategory called:', { categoryId, categoryName, selectedMovies: selectedMovieObjects.length });
-    
+    console.log("handleAddToCategory called:", {
+      categoryId,
+      categoryName,
+      selectedMovies: selectedMovieObjects.length,
+    });
+
     if (categoryName) {
       // 새 카테고리 생성하고 반환된 ID로 바로 영화 추가
       const newCategoryId = createCategory(categoryName);
-      console.log('New category created with ID:', newCategoryId);
+      console.log("New category created with ID:", newCategoryId);
       addMoviesToCategory(newCategoryId, selectedMovieObjects);
     } else if (categoryId) {
       // 기존 카테고리에 추가
-      console.log('Adding to existing category:', categoryId);
+      console.log("Adding to existing category:", categoryId);
       addMoviesToCategory(categoryId, selectedMovieObjects);
     }
-    
+
     setSelectedMovies(new Set());
     setIsSelectionMode(false);
     setShowCategoryModal(false);
     setNewCategoryName("");
   };
 
-  const sortedFavorites = mounted ? [...favorites].sort((a, b) => {
-    try {
-      if (sortBy === "recent") {
-        const aTime = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
-        const bTime = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
-        return bTime - aTime;
-      }
-      if (sortBy === "rating") return 0; // Default rating since Movie type doesn't have rating
-      if (sortBy === "title") return a.title.localeCompare(b.title);
-      if (sortBy === "year") {
-        const aYear = a.release instanceof Date ? a.release.getFullYear() : new Date(a.release).getFullYear();
-        const bYear = b.release instanceof Date ? b.release.getFullYear() : new Date(b.release).getFullYear();
-        return bYear - aYear;
-      }
-      return 0;
-    } catch (error) {
-      console.warn('Sorting error:', error);
-      return 0;
-    }
-  }) : [];
+  const sortedFavorites = mounted
+    ? [...favorites].sort((a, b) => {
+        try {
+          if (sortBy === "recent") {
+            const aTime =
+              a.createdAt instanceof Date
+                ? a.createdAt.getTime()
+                : new Date(a.createdAt).getTime();
+            const bTime =
+              b.createdAt instanceof Date
+                ? b.createdAt.getTime()
+                : new Date(b.createdAt).getTime();
+            return bTime - aTime;
+          }
+          if (sortBy === "rating") return 0; // Default rating since Movie type doesn't have rating
+          if (sortBy === "title") return a.title.localeCompare(b.title);
+          if (sortBy === "year") {
+            const aYear =
+              a.release instanceof Date
+                ? a.release.getFullYear()
+                : new Date(a.release).getFullYear();
+            const bYear =
+              b.release instanceof Date
+                ? b.release.getFullYear()
+                : new Date(b.release).getFullYear();
+            return bYear - aYear;
+          }
+          return 0;
+        } catch (error) {
+          console.warn("Sorting error:", error);
+          return 0;
+        }
+      })
+    : [];
 
   return (
     <MyLayout>
@@ -155,7 +175,9 @@ export default function FavoritesPage() {
                   onClick={selectAllMovies}
                   className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
                 >
-                  {selectedMovies.size === favorites.length ? "전체 해제" : "전체 선택"}
+                  {selectedMovies.size === favorites.length
+                    ? "전체 해제"
+                    : "전체 선택"}
                 </button>
                 {selectedMovies.size > 0 && (
                   <button
@@ -209,8 +231,8 @@ export default function FavoritesPage() {
               <div
                 key={movie.id}
                 className={`bg-gray-800 rounded-lg shadow-sm overflow-hidden group hover:shadow-lg transition-all ${
-                  isSelectionMode && selectedMovies.has(movie.id) 
-                    ? "ring-2 ring-blue-500 scale-105" 
+                  isSelectionMode && selectedMovies.has(movie.id)
+                    ? "ring-2 ring-blue-500 scale-105"
                     : ""
                 }`}
               >
@@ -228,8 +250,16 @@ export default function FavoritesPage() {
                       className="absolute top-2 left-2 w-6 h-6 rounded-full border-2 border-white bg-black bg-opacity-50 flex items-center justify-center transition-all"
                     >
                       {selectedMovies.has(movie.id) && (
-                        <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        <svg
+                          className="w-4 h-4 text-blue-500"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       )}
                     </button>
@@ -259,7 +289,13 @@ export default function FavoritesPage() {
                   <p className="text-sm text-gray-400 mb-2">
                     {(() => {
                       try {
-                        return (movie.release instanceof Date ? movie.release.getFullYear() : new Date(movie.release).getFullYear()) + ' • ' + movie.genre;
+                        return (
+                          (movie.release instanceof Date
+                            ? movie.release.getFullYear()
+                            : new Date(movie.release).getFullYear()) +
+                          " • " +
+                          movie.genre
+                        );
                       } catch {
                         return movie.genre;
                       }
@@ -274,9 +310,7 @@ export default function FavoritesPage() {
                       >
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
-                      <span className="text-sm text-gray-400">
-                        8.5
-                      </span>
+                      <span className="text-sm text-gray-400">8.5</span>
                     </div>
                   </div>
                 </div>
@@ -293,8 +327,8 @@ export default function FavoritesPage() {
                 <div
                   key={movie.id}
                   className={`p-6 hover:bg-gray-700 transition-colors ${
-                    isSelectionMode && selectedMovies.has(movie.id) 
-                      ? "bg-gray-700 border-l-4 border-blue-500" 
+                    isSelectionMode && selectedMovies.has(movie.id)
+                      ? "bg-gray-700 border-l-4 border-blue-500"
                       : ""
                   }`}
                 >
@@ -305,8 +339,16 @@ export default function FavoritesPage() {
                         className="w-6 h-6 rounded border-2 border-gray-400 flex items-center justify-center transition-all"
                       >
                         {selectedMovies.has(movie.id) && (
-                          <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <svg
+                            className="w-4 h-4 text-blue-500"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         )}
                       </button>
@@ -323,21 +365,27 @@ export default function FavoritesPage() {
                         {movie.title}
                       </h3>
                       <p className="text-gray-400 mb-1">
-                        감독: {movie.director} • {(() => {
+                        감독: {movie.director} •{" "}
+                        {(() => {
                           try {
-                            return movie.release instanceof Date ? movie.release.getFullYear() : new Date(movie.release).getFullYear();
+                            return movie.release instanceof Date
+                              ? movie.release.getFullYear()
+                              : new Date(movie.release).getFullYear();
                           } catch {
-                            return '알 수 없음';
+                            return "알 수 없음";
                           }
                         })()}
                       </p>
                       <p className="text-gray-400 mb-2">장르: {movie.genre}</p>
                       <p className="text-sm text-gray-500">
-                        추가일: {(() => {
+                        추가일:{" "}
+                        {(() => {
                           try {
-                            return movie.createdAt instanceof Date ? movie.createdAt.toLocaleDateString() : new Date(movie.createdAt).toLocaleDateString();
+                            return movie.createdAt instanceof Date
+                              ? movie.createdAt.toLocaleDateString()
+                              : new Date(movie.createdAt).toLocaleDateString();
                           } catch {
-                            return '알 수 없음';
+                            return "알 수 없음";
                           }
                         })()}
                       </p>
@@ -351,9 +399,7 @@ export default function FavoritesPage() {
                         >
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
-                        <span className="text-white font-medium">
-                          8.5
-                        </span>
+                        <span className="text-white font-medium">8.5</span>
                       </div>
                       {!isSelectionMode && (
                         <button
@@ -378,7 +424,7 @@ export default function FavoritesPage() {
               <h3 className="text-lg font-semibold text-white mb-4">
                 카테고리 선택
               </h3>
-              
+
               {/* Existing Categories */}
               {categories.length > 0 && (
                 <div className="mb-6">
@@ -425,7 +471,9 @@ export default function FavoritesPage() {
                 />
                 {newCategoryName && (
                   <button
-                    onClick={() => handleAddToCategory(undefined, newCategoryName)}
+                    onClick={() =>
+                      handleAddToCategory(undefined, newCategoryName)
+                    }
                     className="mt-2 w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
                   >
                     새 카테고리에 추가

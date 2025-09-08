@@ -4,12 +4,12 @@ import { Movie } from "../types/movie";
 
 interface FavoriteState {
   favorites: Movie[];
-  
+
   // Actions
   addToFavorites: (movie: Movie) => void;
-  removeFromFavorites: (movieId: string) => void;
+  removeFromFavorites: (movieId: number) => void;
   toggleFavorite: (movie: Movie) => void;
-  isFavorite: (movieId: string) => boolean;
+  isFavorite: (movieId: number) => boolean;
   clearFavorites: () => void;
 }
 
@@ -18,40 +18,44 @@ export const useFavoriteStore = create<FavoriteState>()(
     persist(
       (set, get) => ({
         favorites: [],
-        
+
         addToFavorites: (movie: Movie) => {
           const { favorites } = get();
-          const isAlreadyFavorite = favorites.some(fav => fav.id === movie.id);
-          
+          const isAlreadyFavorite = favorites.some(
+            (fav) => fav.id === movie.id
+          );
+
           if (!isAlreadyFavorite) {
             set((state) => ({
-              favorites: [...state.favorites, movie]
+              favorites: [...state.favorites, movie],
             }));
           }
         },
-        
-        removeFromFavorites: (movieId: string) => {
+
+        removeFromFavorites: (movieId: number) => {
           set((state) => ({
-            favorites: state.favorites.filter(movie => movie.id !== movieId)
+            favorites: state.favorites.filter((movie) => movie.id !== movieId),
           }));
         },
-        
+
         toggleFavorite: (movie: Movie) => {
           const { favorites, addToFavorites, removeFromFavorites } = get();
-          const isAlreadyFavorite = favorites.some(fav => fav.id === movie.id);
-          
+          const isAlreadyFavorite = favorites.some(
+            (fav) => fav.id === movie.id
+          );
+
           if (isAlreadyFavorite) {
             removeFromFavorites(movie.id);
           } else {
             addToFavorites(movie);
           }
         },
-        
-        isFavorite: (movieId: string) => {
+
+        isFavorite: (movieId: number) => {
           const { favorites } = get();
-          return favorites.some(fav => fav.id === movieId);
+          return favorites.some((fav) => fav.id === movieId);
         },
-        
+
         clearFavorites: () => {
           set({ favorites: [] });
         },
@@ -65,12 +69,14 @@ export const useFavoriteStore = create<FavoriteState>()(
             const data = JSON.parse(str);
             // Date 객체 복원
             if (data.state?.favorites) {
-              data.state.favorites = data.state.favorites.map((movie: any) => ({
-                ...movie,
-                release: new Date(movie.release),
-                createdAt: new Date(movie.createdAt),
-                updatedAt: new Date(movie.updatedAt),
-              }));
+              data.state.favorites = data.state.favorites.map(
+                (movie: Movie) => ({
+                  ...movie,
+                  release: new Date(movie.release),
+                  createdAt: new Date(movie.createdAt),
+                  updatedAt: new Date(movie.updatedAt),
+                })
+              );
             }
             return data;
           },
