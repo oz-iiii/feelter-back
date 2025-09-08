@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
-import { User } from "@/components/common/model/types";
+import { User } from "@/lib/types/user";
 import { defaultUser } from "@/lib/data/users";
 
 export default function ProfilePage() {

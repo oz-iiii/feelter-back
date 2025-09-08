@@ -1,4 +1,4 @@
-import { Movie } from "./movie";
+import { Movie } from "@/lib/types/movie";
 
 export interface Category {
   id: number;
@@ -7,5 +7,5 @@ export interface Category {
   movieCount: number;
   isPublic: boolean;
   createdDate: string;
-  movies: Pick<Movie, "id" | "title" | "poster">[];
+  movies: Pick<Movie, "id" | "title" | "imgUrl">[];
 }

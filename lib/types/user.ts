@@ -1,5 +1,3 @@
-import { Genre, Director } from "../constants";
-
 export interface User {
   id: number;
   profileImage: string;
@@ -7,6 +5,6 @@ export interface User {
   email: string;
   bio: string;
   joinDate: string;
-  favoriteGenres: Genre[];
-  favoriteDirectors: Director[];
+  favoriteGenres: string[];
+  favoriteDirectors: string[];
 }
