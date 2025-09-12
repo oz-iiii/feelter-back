@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { movieService, movieRankingService } from "@/lib/services/movieService";
+import { movieService } from "@/lib/services/movieService";
 import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { Movie } from "@/lib/types/movie";
 
@@ -38,16 +38,15 @@ const mockMovies: Omit<Movie, "id" | "createdAt" | "updatedAt">[] = crawled.map(
 		title: movie.title,
 		release: new Date(movie.releaseDate),
 		age: movie.certification,
-		genre: movie.genres.join(", "),
+		genre: movie.genres, // string[] 그대로 사용
 		runningTime: `${movie.runtime}분`,
-		country: movie.countries.join(", "),
-		director: movie.directors.join(", "),
-		actor: movie.cast.slice(0, 5).join(", "),
+		country: movie.countries, // string[] 그대로 사용
+		director: movie.directors, // string[] 그대로 사용
+		actor: movie.cast.slice(0, 5), // string[] 그대로 사용
 		overview: movie.overview,
-		streaming:
-			movie.streamingProviders.length > 0
-				? movie.streamingProviders[0]
-				: "Netflix",
+		streaming: movie.streamingProviders.length > 0
+			? movie.streamingProviders
+			: ["Netflix"], // string[] 배열로 변경
 		streamingUrl: "https://netflix.com",
 		youtubeUrl:
 			movie.videos?.trailers?.length && movie.videos.trailers.length > 0
@@ -55,17 +54,17 @@ const mockMovies: Omit<Movie, "id" | "createdAt" | "updatedAt">[] = crawled.map(
 				: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
 		imgUrl: movie.posterUrl,
 		bgUrl: movie.posterUrl,
-		feelterTime: "저녁",
+		feelterTime: ["저녁"], // string[] 배열로 변경
 		feelterPurpose: movie.genres.includes("공포")
-			? "스릴"
+			? ["스릴"]
 			: movie.genres.includes("로맨스")
-			? "감동"
-			: "휴식",
+			? ["감동"]
+			: ["휴식"], // string[] 배열로 변경
 		feelterOccasion: movie.genres.includes("가족")
-			? "가족"
+			? ["가족"]
 			: movie.genres.includes("로맨스")
-			? "연인"
-			: "혼자",
+			? ["연인"]
+			: ["혼자"], // string[] 배열로 변경
 	})
 );
 
@@ -82,13 +81,13 @@ export async function POST() {
 					? m.release
 					: m.release.toISOString().slice(0, 10),
 			certification: m.age,
-			genres: m.genre ? m.genre.split(", ") : [],
+			genres: Array.isArray(m.genre) ? m.genre : [],
 			runtime: parseInt((m.runningTime || "0").replace(/[^0-9]/g, ""), 10) || 0,
-			countries: m.country ? m.country.split(", ") : [],
-			directors: m.director ? m.director.split(", ") : [],
-			actors: m.actor ? m.actor.split(", ") : [],
+			countries: Array.isArray(m.country) ? m.country : [],
+			directors: Array.isArray(m.director) ? m.director : [],
+			actors: Array.isArray(m.actor) ? m.actor : [],
 			overview: m.overview,
-			streaming_providers: m.streaming ? [m.streaming] : [],
+			streaming_providers: Array.isArray(m.streaming) ? m.streaming : [],
 			poster_url: m.imgUrl || m.bgUrl,
 		}));
 
