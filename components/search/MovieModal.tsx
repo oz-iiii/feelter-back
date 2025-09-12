@@ -12,6 +12,8 @@ import {
   BiChevronUp,
 } from 'react-icons/bi';
 import { ContentItem } from '@/lib/data';
+import { useMovieStore } from '@/lib/stores';
+import { Movie } from '@/lib/types/movie';
 
 interface MovieModalProps {
   content: ContentItem | null;
@@ -20,10 +22,19 @@ interface MovieModalProps {
 
 const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const { movies } = useMovieStore();
+
+  // ContentItem에서 해당하는 Movie 데이터 찾기
+  const findMovieByTitle = (title: string): Movie | null => {
+    return movies.find(movie => movie.title === title) || null;
+  };
+
+  const movieData = content ? findMovieByTitle(content.title) : null;
 
   const descriptionText =
+    movieData?.overview || 
     content?.description ||
-    '이 영화에 대한 설명이 아직 없습니다. 하지만 분명 멋진 영화일 겁니다! 스파이더맨의 정체가 탄로난 이후, 피터 파커는 일상으로 돌아가기 위해 닥터 스트레인지의 도움을 받지만, 주문의 부작용으로 멀티버스가 열리면서 다른 차원의 위협들이 나타나기 시작한다.';
+    '이 영화에 대한 설명이 아직 없습니다. 하지만 분명 멋진 영화일 겁니다!';
 
   const showReadMore = descriptionText.length > 150;
 
@@ -97,9 +108,9 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
                   {/* Basic Info */}
                   <div className="flex items-center space-x-4 text-sm text-gray-300 pt-2">
                     <span>{content.year}</span>
-                    <span>2h 15m</span>
+                    <span>{movieData?.runningTime || "120분"}</span>
                     <span className="flex items-center gap-1 border px-1 rounded">
-                      15+
+                      {movieData?.age || "전체관람가"}
                     </span>
                   </div>
                 </div>
@@ -134,21 +145,53 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
                   <div>
                     <h3 className="text-lg text-gray-400">출연진</h3>
                     <p className="text-xl text-gray-200">
-                      Tom Holland, Zendaya, Benedict Cumberbatch, Jacob Batalon
+                      {movieData?.actor 
+                        ? (Array.isArray(movieData.actor) 
+                           ? movieData.actor.join(", ") 
+                           : movieData.actor)
+                        : "정보 없음"
+                      }
                     </p>
                   </div>
 
                   {/* Genre */}
                   <div>
                     <h3 className="text-lg text-gray-400">장르</h3>
-                    <p className="text-xl text-gray-200">{content.genre}</p>
+                    <p className="text-xl text-gray-200">
+                      {movieData?.genre 
+                        ? (Array.isArray(movieData.genre) 
+                           ? movieData.genre.join(", ") 
+                           : movieData.genre)
+                        : (content.genre || "기타")
+                      }
+                    </p>
                   </div>
 
-                  {/* Tags */}
+                  {/* Director */}
+                  <div>
+                    <h3 className="text-lg text-gray-400">감독</h3>
+                    <p className="text-xl text-gray-200">
+                      {movieData?.director 
+                        ? (Array.isArray(movieData.director) 
+                           ? movieData.director.join(", ") 
+                           : movieData.director)
+                        : "정보 없음"
+                      }
+                    </p>
+                  </div>
+
+                  {/* Feelter Tags */}
                   <div>
                     <h3 className="text-lg text-gray-400">시리즈 특징</h3>
                     <p className="text-xl text-gray-200">
-                      Exciting, Mind-bending, Superhero, Action
+                      {movieData 
+                        ? [
+                            Array.isArray(movieData.feelterTime) ? movieData.feelterTime.join(", ") : movieData.feelterTime,
+                            Array.isArray(movieData.feelterPurpose) ? movieData.feelterPurpose.join(", ") : movieData.feelterPurpose,
+                            Array.isArray(movieData.feelterOccasion) ? movieData.feelterOccasion.join(", ") : movieData.feelterOccasion
+                          ].filter(Boolean).join(" • ")
+                        : "액션, 드라마, 스릴러"
+                      }
                     </p>
                   </div>
                 </div>
