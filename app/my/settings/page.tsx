@@ -3,11 +3,9 @@
 import { useState, useEffect } from "react";
 import MyLayout from "@/components/my/MyLayout";
 import { useAuth } from "@/hooks/useAuth";
-import { OTT_PLATFORMS } from "@/lib/constants/ottPlatforms";
 
 export default function SettingsPage() {
-  const { user, updateOttPlatforms, loading } = useAuth();
-  const [selectedOttPlatforms, setSelectedOttPlatforms] = useState<string[]>([]);
+  const { user, loading } = useAuth();
   const [settings, setSettings] = useState({
     notifications: {
       email: true,
@@ -42,39 +40,6 @@ export default function SettingsPage() {
     }));
   };
 
-  // 사용자 OTT 플랫폼 정보 동기화
-  useEffect(() => {
-    if (user) {
-      // user.selectedOttPlatforms가 undefined일 경우 빈 배열로 설정
-      setSelectedOttPlatforms(user.selectedOttPlatforms || []);
-    }
-  }, [user]);
-
-  const toggleOttPlatform = async (platformId: string) => {
-    if (!user) {
-      alert('로그인이 필요합니다.');
-      return;
-    }
-
-    const previousPlatforms = [...selectedOttPlatforms]; // 이전 상태 저장
-    const updatedPlatforms = selectedOttPlatforms.includes(platformId)
-      ? selectedOttPlatforms.filter(id => id !== platformId)
-      : [...selectedOttPlatforms, platformId];
-    
-    // UI 즉시 업데이트
-    setSelectedOttPlatforms(updatedPlatforms);
-    
-    try {
-      await updateOttPlatforms(updatedPlatforms);
-    } catch (error) {
-      console.error('OTT 플랫폼 업데이트 실패:', error);
-      // 실패시 이전 상태로 되돌리기
-      setSelectedOttPlatforms(previousPlatforms);
-      
-      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
-      alert(`OTT 플랫폼 저장 실패: ${errorMessage}`);
-    }
-  };
 
   return (
     <MyLayout>
@@ -417,66 +382,6 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* OTT Platform Settings */}
-          <div className="bg-gray-800 rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-white mb-6">
-              구독중인 OTT 플랫폼
-            </h2>
-            <p className="text-sm text-gray-400 mb-6">
-              구독중인 OTT 플랫폼을 선택하면 해당 플랫폼의 콘텐츠만 필터링하여 볼 수 있습니다.
-            </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {OTT_PLATFORMS.map((platform) => {
-                const isSelected = selectedOttPlatforms.includes(platform.id);
-                return (
-                  <button
-                    key={platform.id}
-                    onClick={() => !loading && toggleOttPlatform(platform.id)}
-                    disabled={loading}
-                    className={`p-4 rounded-lg border-2 transition-all duration-200 ${
-                      loading 
-                        ? 'opacity-50 cursor-not-allowed border-gray-600 bg-gray-700'
-                        : isSelected
-                        ? 'border-[#ccff00] bg-[#ccff00]/10'
-                        : 'border-gray-600 bg-gray-700 hover:border-gray-500'
-                    }`}
-                  >
-                    <div className="flex flex-col items-center space-y-2">
-                      <div className="text-2xl">{platform.logo}</div>
-                      <div className={`text-sm font-medium ${
-                        isSelected ? 'text-[#ccff00]' : 'text-white'
-                      }`}>
-                        {platform.name}
-                      </div>
-                      {isSelected && (
-                        <div className="flex items-center text-xs text-[#ccff00]">
-                          <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                          선택됨
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {selectedOttPlatforms.length > 0 && (
-              <div className="mt-6 p-4 bg-gray-700 rounded-lg">
-                <div className="flex items-center space-x-2 text-sm text-gray-300">
-                  <svg className="w-4 h-4 text-[#ccff00]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                  <span>
-                    {selectedOttPlatforms.length}개의 플랫폼이 선택되었습니다. 
-                    선택된 플랫폼의 콘텐츠만 표시됩니다.
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* Account Management */}
           <div className="bg-gray-800 rounded-lg shadow-sm p-6">

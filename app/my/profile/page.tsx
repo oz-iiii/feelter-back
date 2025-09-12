@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 import SignInModal from "@/components/auth/SignInModal";
 import SignUpModal from "@/components/auth/SignUpModal";
 import { OTT_PLATFORMS } from "@/lib/constants/ottPlatforms";
+import OttPlatformDisplay from "@/components/common/OttPlatformDisplay";
 
 export default function ProfilePage() {
 	const { user, loading, updateOttPlatforms } = useAuth();
@@ -53,7 +54,7 @@ export default function ProfilePage() {
 					// selectedOttPlatforms는 updateOttPlatforms에서 이미 처리됨
 				};
 
-				const { data, error } = await supabase.auth.updateUser({
+				const { error } = await supabase.auth.updateUser({
 					data: updatedData,
 				});
 
@@ -422,7 +423,7 @@ export default function ProfilePage() {
 										)}
 									</div>
 
-									{/* OTT Platforms */}
+									{/* OTT Platforms (아이콘 없이 텍스트만) */}
 									<div>
 										<label className="block text-sm font-medium text-gray-300 mb-2">
 											구독중인 OTT 플랫폼
@@ -446,16 +447,12 @@ export default function ProfilePage() {
 																		: 'border-gray-600 bg-gray-700 hover:border-gray-500'
 																}`}
 															>
-																<div className="flex flex-col items-center space-y-1">
-																	<div className="text-lg">{platform.logo}</div>
-																	<div className={`text-xs font-medium ${
+																<div className="flex items-center justify-center">
+																	<div className={`text-sm font-medium ${
 																		isSelected ? 'text-[#ccff00]' : 'text-white'
 																	}`}>
 																		{platform.name}
 																	</div>
-																	{isSelected && (
-																		<div className="text-xs text-[#ccff00]">✓</div>
-																	)}
 																</div>
 															</button>
 														);
@@ -468,24 +465,13 @@ export default function ProfilePage() {
 												)}
 											</div>
 										) : (
-											<div className="flex flex-wrap gap-2">
-												{user?.selectedOttPlatforms && user.selectedOttPlatforms.length > 0 ? (
-													OTT_PLATFORMS
-														.filter(platform => user.selectedOttPlatforms?.includes(platform.id))
-														.map((platform) => (
-															<span key={platform.id} className="px-3 py-1 bg-neutral-800 text-white text-sm rounded-full flex items-center">
-																<span className="mr-1">{platform.logo}</span>
-																{platform.name}
-															</span>
-														))
-												) : (
-													<span className="px-3 py-1 border border-gray-600 text-gray-400 text-sm rounded-full">
-														구독중인 OTT 플랫폼이 없습니다
-													</span>
-												)}
-											</div>
+											<OttPlatformDisplay 
+												selectedPlatformIds={user?.selectedOttPlatforms || []} 
+												variant="profile" 
+											/>
 										)}
 									</div>
+
 								</div>
 							</div>
 						</div>

@@ -8,7 +8,7 @@ import { useFavoriteStore, useWatchHistoryStore } from "@/lib/stores";
 import { useAuth } from "@/hooks/useAuth";
 import SignInModal from "@/components/auth/SignInModal";
 import SignUpModal from "@/components/auth/SignUpModal";
-import { getOttPlatformsByIds } from "@/lib/constants/ottPlatforms";
+import OttPlatformDisplay from "@/components/common/OttPlatformDisplay";
 
 export default function MyPage() {
 	const { favorites, removeFromFavorites } = useFavoriteStore();
@@ -25,8 +25,6 @@ export default function MyPage() {
 	// 대시보드에서 보여줄 최근 즐겨찾기 3개만 가져오기
 	const recentFavorites = favorites.slice(0, 3);
 
-	// 선택된 OTT 플랫폼 정보 가져오기
-	const selectedOttPlatforms = user?.selectedOttPlatforms ? getOttPlatformsByIds(user.selectedOttPlatforms) : [];
 
 	// 비회원 상태일 때 로그인 안내 화면 표시
 	if (!user) {
@@ -129,20 +127,15 @@ export default function MyPage() {
 								{user.nickname || user.email?.split('@')[0] || "사용자"}
 							</h1>
 							<p className="text-gray-400 mb-2">이메일: {user.email}</p>
-							{selectedOttPlatforms.length > 0 && (
+							{user.selectedOttPlatforms && user.selectedOttPlatforms.length > 0 && (
 								<div className="mb-4">
-									<p className="text-sm text-gray-500 mb-2">구독중인 OTT: {selectedOttPlatforms.length}개</p>
+									<p className="text-sm text-gray-500 mb-2">구독중인 OTT: {user.selectedOttPlatforms.length}개</p>
 									<div className="flex flex-wrap gap-1">
-										{selectedOttPlatforms.slice(0, 6).map((platform) => (
-											<span key={platform.id} className="text-xs px-2 py-1 bg-neutral-800 rounded-full text-gray-300">
-												{platform.logo} {platform.name}
-											</span>
-										))}
-										{selectedOttPlatforms.length > 6 && (
-											<span className="text-xs px-2 py-1 bg-neutral-800 rounded-full text-gray-300">
-												+{selectedOttPlatforms.length - 6}
-											</span>
-										)}
+										<OttPlatformDisplay 
+											selectedPlatformIds={user.selectedOttPlatforms} 
+											variant="dashboard" 
+											maxDisplay={6} 
+										/>
 									</div>
 								</div>
 							)}
