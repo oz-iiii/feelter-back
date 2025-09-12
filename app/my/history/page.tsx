@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
-import { movieService } from "@/lib/services/movieService";
+import { useWatchHistoryStore } from "@/lib/stores/watchHistoryStore";
 
 type HistoryItem = {
-  id: number;
+  id: string;
   title: string;
   poster: string;
   rating: number;
@@ -19,34 +19,30 @@ type HistoryItem = {
 export default function HistoryPage() {
   const [viewMode, setViewMode] = useState("grid");
   const [filter, setFilter] = useState("all");
-  const [watchHistory, setWatchHistory] = useState<HistoryItem[]>([]);
+  const { watchHistory, removeFromWatchHistory, clearWatchHistory } = useWatchHistoryStore();
+  
+  // watchHistoryStore의 데이터를 HistoryItem 형식으로 변환
+  const historyItems: HistoryItem[] = watchHistory.map((item) => ({
+    id: item.id,
+    title: item.title,
+    poster: item.poster || "/images/parasite.jpg",
+    rating: item.rating || 0,
+    duration: item.movieData.runningTime || "120분",
+    genre: Array.isArray(item.movieData.genre) ? item.movieData.genre : [item.movieData.genre || "드라마"],
+    director: Array.isArray(item.movieData.director) ? item.movieData.director : [item.movieData.director || "미상"],
+    watchDate: item.watchDate,
+  }));
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const movies = await movieService.getAllMovies();
-        const mapped: HistoryItem[] = movies.map((m) => ({
-          id: m.id,
-          title: m.title,
-          poster: m.imgUrl || "/images/parasite.jpg",
-          rating: 0,
-          duration: m.runningTime ?? "",
-          genre: m.genre ?? "",
-          director: m.director ?? "",
-          watchDate: undefined,
-        }));
-        setWatchHistory(mapped);
-      } catch (e) {
-        console.error("시청 이력 로드 오류:", e);
-      }
-    };
-    load();
-  }, []);
-
-  const filteredHistory = watchHistory.filter((movie) => {
+  const filteredHistory = historyItems.filter((movie) => {
     if (filter === "all") return true;
-    if (filter === "recent") return true;
-    if (filter === "high-rated") return movie.rating >= 4.5;
+    if (filter === "recent") {
+      // 최근 7일 내 시청한 영화
+      const today = new Date();
+      const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const watchDate = new Date(movie.watchDate?.replace(/\./g, '-') || '');
+      return watchDate >= sevenDaysAgo;
+    }
+    if (filter === "high-rated") return movie.rating >= 4.0;
     return true;
   });
 
@@ -95,7 +91,10 @@ export default function HistoryPage() {
               </button>
             </div>
 
-            <button className="px-4 py-2 bg-rose-800 text-sm text-neutral-300 hover:bg-rose-600 hover:text-white rounded-lg transition-colors">
+            <button 
+              onClick={clearWatchHistory}
+              className="px-4 py-2 bg-rose-800 text-sm text-neutral-300 hover:bg-rose-600 hover:text-white rounded-lg transition-colors"
+            >
               전체 삭제
             </button>
           </div>
@@ -112,7 +111,7 @@ export default function HistoryPage() {
               총 시청 영화
             </h3>
             <p className="text-3xl font-bold text-[#ccff00]">
-              {watchHistory.length}편
+              {historyItems.length}편
             </p>
           </div>
           <div
@@ -122,10 +121,10 @@ export default function HistoryPage() {
           >
             <h3 className="text-lg font-semibold text-white mb-2">평균 평점</h3>
             <p className="text-3xl font-bold text-yellow-500">
-              {(
-                watchHistory.reduce((sum, movie) => sum + movie.rating, 0) /
-                watchHistory.length
-              ).toFixed(1)}
+              {historyItems.length > 0 ? (
+                historyItems.reduce((sum, movie) => sum + movie.rating, 0) /
+                historyItems.length
+              ).toFixed(1) : "0.0"}
             </p>
           </div>
           <div
@@ -137,7 +136,7 @@ export default function HistoryPage() {
               이번 달 시청
             </h3>
             <p className="text-3xl font-bold text-green-600">
-              {watchHistory.length}편
+              {historyItems.length}편
             </p>
           </div>
         </div>
@@ -185,13 +184,16 @@ export default function HistoryPage() {
                     {movie.watchDate}
                   </p>
                   <p className="text-xs text-gray-400 truncate">
-                    {movie.genre}
+                    {movie.genre?.join(", ") || "기타"}
                   </p>
                   <div className="flex space-x-1 mt-3">
                     <button className="flex-1 px-2 py-1 text-xs bg-[#dde66e] hover:bg-[#b8e600] text-black rounded transition-colors">
                       다시보기
                     </button>
-                    <button className="px-2 py-1 text-xs border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors">
+                    <button 
+                      onClick={() => removeFromWatchHistory(movie.id)}
+                      className="px-2 py-1 text-xs border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors"
+                    >
                       삭제
                     </button>
                   </div>
@@ -239,10 +241,10 @@ export default function HistoryPage() {
                             {movie.title}
                           </h3>
                           <p className="text-gray-400 mb-1">
-                            감독: {movie.director} • {movie.duration}
+                            감독: {movie.director?.join(", ") || "미상"} • {movie.duration}
                           </p>
                           <p className="text-gray-400 mb-3">
-                            장르: {movie.genre}
+                            장르: {movie.genre?.join(", ") || "기타"}
                           </p>
                           <p className="text-sm text-gray-500">
                             시청일: {movie.watchDate}
@@ -274,7 +276,10 @@ export default function HistoryPage() {
                             <button className="px-3 py-1 text-sm bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded transition-colors">
                               다시 보기
                             </button>
-                            <button className="px-3 py-1 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors">
+                            <button 
+                              onClick={() => removeFromWatchHistory(movie.id)}
+                              className="px-3 py-1 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors"
+                            >
                               삭제
                             </button>
                           </div>

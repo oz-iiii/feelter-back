@@ -7,9 +7,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import SignInModal from "@/components/auth/SignInModal";
 import SignUpModal from "@/components/auth/SignUpModal";
+import { OTT_PLATFORMS } from "@/lib/constants/ottPlatforms";
 
 export default function ProfilePage() {
-	const { user, loading } = useAuth();
+	const { user, loading, updateOttPlatforms } = useAuth();
 	const [isEditing, setIsEditing] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 	const [tempProfile, setTempProfile] = useState<any>(null);
@@ -25,35 +26,73 @@ export default function ProfilePage() {
 				email: user.email || "",
 				profileImage: user.profile_image || "",
 				points: user.points || 0,
+				selectedOttPlatforms: user.selectedOttPlatforms || [],
+				bio: user.bio || "",
 			});
 		}
 	}, [user]);
 
 	const handleSave = async () => {
-		if (!tempProfile) return;
+		if (!tempProfile || !user) return;
 
 		setIsSaving(true);
 		try {
-			// Supabase auth 사용자 메타데이터 업데이트
-			const { data, error } = await supabase.auth.updateUser({
-				data: {
-					nickname: tempProfile.nickname,
-				},
-			});
-
-			if (error) {
-				throw error;
+			// OTT 플랫폼 데이터는 useAuth의 updateOttPlatforms를 통해 저장
+			if (updateOttPlatforms) {
+				await updateOttPlatforms(tempProfile.selectedOttPlatforms);
 			}
 
-			// 성공적으로 저장됨
-			alert("프로필이 성공적으로 저장되었습니다!");
+			// 나머지 프로필 데이터는 Supabase에 저장 시도
+			let profileSaveSuccess = false;
+			
+			try {
+				const updatedData = {
+					...user.user_metadata,
+					nickname: tempProfile.nickname,
+					bio: tempProfile.bio,
+					// selectedOttPlatforms는 updateOttPlatforms에서 이미 처리됨
+				};
+
+				const { data, error } = await supabase.auth.updateUser({
+					data: updatedData,
+				});
+
+				if (error) {
+					console.warn("Supabase 프로필 업데이트 실패 (로컬 저장은 유지):", error);
+				} else {
+					profileSaveSuccess = true;
+				}
+			} catch (supabaseError) {
+				console.warn("Supabase 연결 실패 (로컬 저장은 유지):", supabaseError);
+			}
+
+			// 프로필 정보도 localStorage에 백업
+			if (typeof window !== 'undefined') {
+				try {
+					localStorage.setItem(`profile_${user.id}`, JSON.stringify({
+						nickname: tempProfile.nickname,
+						bio: tempProfile.bio,
+					}));
+				} catch (localError) {
+					console.warn('localStorage 저장 실패:', localError);
+				}
+			}
+
+			// 성공 메시지
+			if (profileSaveSuccess) {
+				alert("프로필이 성공적으로 저장되었습니다!");
+			} else {
+				alert("프로필이 로컬에 저장되었습니다. (서버 동기화는 나중에 시도됩니다)");
+			}
+			
 			setIsEditing(false);
 
 			// 페이지 새로고침으로 업데이트된 정보 반영
 			window.location.reload();
 		} catch (error) {
 			console.error("프로필 저장 오류:", error);
-			alert("프로필 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
+			const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.";
+			alert(`프로필 저장 중 오류가 발생했습니다: ${errorMessage}`);
 		} finally {
 			setIsSaving(false);
 		}
@@ -66,9 +105,28 @@ export default function ProfilePage() {
 				email: user.email || "",
 				profileImage: user.profile_image || "",
 				points: user.points || 0,
+				selectedOttPlatforms: user.selectedOttPlatforms || [],
+				bio: user.bio || "",
 			});
 		}
 		setIsEditing(false);
+	};
+
+	// OTT 플랫폼 토글 함수
+	const toggleOttPlatform = (platformId: string) => {
+		if (!tempProfile || !isEditing) return;
+		
+		// 현재 선택된 플랫폼 배열 (undefined 방지)
+		const currentPlatforms = tempProfile.selectedOttPlatforms || [];
+		
+		const updatedPlatforms = currentPlatforms.includes(platformId)
+			? currentPlatforms.filter((id: string) => id !== platformId)
+			: [...currentPlatforms, platformId];
+
+		setTempProfile({
+			...tempProfile,
+			selectedOttPlatforms: updatedPlatforms,
+		});
 	};
 
 	const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -364,28 +422,69 @@ export default function ProfilePage() {
 										)}
 									</div>
 
-									{/* Favorite Genres */}
+									{/* OTT Platforms */}
 									<div>
 										<label className="block text-sm font-medium text-gray-300 mb-2">
-											선호 장르
+											구독중인 OTT 플랫폼
 										</label>
-										<div className="flex flex-wrap gap-2">
-											<span className="px-3 py-1 border border-gray-600 text-gray-400 text-sm rounded-full">
-												선호 장르 설정은 추후 업데이트 예정입니다
-											</span>
-										</div>
-									</div>
-
-									{/* Favorite Directors */}
-									<div>
-										<label className="block text-sm font-medium text-gray-300 mb-2">
-											선호 감독
-										</label>
-										<div className="flex flex-wrap gap-2">
-											<span className="px-3 py-1 border border-gray-600 text-gray-400 text-sm rounded-full">
-												선호 감독 설정은 추후 업데이트 예정입니다
-											</span>
-										</div>
+										{isEditing && tempProfile ? (
+											<div>
+												<p className="text-xs text-gray-500 mb-4">
+													구독중인 OTT 플랫폼을 선택하세요.
+												</p>
+												<div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+													{OTT_PLATFORMS.map((platform) => {
+														const isSelected = (tempProfile.selectedOttPlatforms || []).includes(platform.id);
+														return (
+															<button
+																key={platform.id}
+																type="button"
+																onClick={() => toggleOttPlatform(platform.id)}
+																className={`p-3 rounded-lg border-2 transition-all duration-200 ${
+																	isSelected
+																		? 'border-[#ccff00] bg-[#ccff00]/10'
+																		: 'border-gray-600 bg-gray-700 hover:border-gray-500'
+																}`}
+															>
+																<div className="flex flex-col items-center space-y-1">
+																	<div className="text-lg">{platform.logo}</div>
+																	<div className={`text-xs font-medium ${
+																		isSelected ? 'text-[#ccff00]' : 'text-white'
+																	}`}>
+																		{platform.name}
+																	</div>
+																	{isSelected && (
+																		<div className="text-xs text-[#ccff00]">✓</div>
+																	)}
+																</div>
+															</button>
+														);
+													})}
+												</div>
+												{(tempProfile.selectedOttPlatforms || []).length > 0 && (
+													<div className="mt-3 text-xs text-gray-400">
+														선택됨: {(tempProfile.selectedOttPlatforms || []).length}개
+													</div>
+												)}
+											</div>
+										) : (
+											<div className="flex flex-wrap gap-2">
+												{user?.selectedOttPlatforms && user.selectedOttPlatforms.length > 0 ? (
+													OTT_PLATFORMS
+														.filter(platform => user.selectedOttPlatforms?.includes(platform.id))
+														.map((platform) => (
+															<span key={platform.id} className="px-3 py-1 bg-neutral-800 text-white text-sm rounded-full flex items-center">
+																<span className="mr-1">{platform.logo}</span>
+																{platform.name}
+															</span>
+														))
+												) : (
+													<span className="px-3 py-1 border border-gray-600 text-gray-400 text-sm rounded-full">
+														구독중인 OTT 플랫폼이 없습니다
+													</span>
+												)}
+											</div>
+										)}
 									</div>
 								</div>
 							</div>
