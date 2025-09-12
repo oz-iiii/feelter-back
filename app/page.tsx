@@ -115,10 +115,11 @@ export default function Home() {
             <div className="value-item bg-[#222] border border-white/[0.08] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="/img/icon-globe.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=🌐"
                   alt="지구본 아이콘"
                   width={144}
                   height={144}
+                  sizes="144px"
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
@@ -131,10 +132,11 @@ export default function Home() {
             <div className="value-item bg-[#222] border border-white/[0.08] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="/img/icon-community.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=👥"
                   alt="손 잡은 아이콘"
                   width={144}
                   height={144}
+                  sizes="144px"
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
@@ -158,10 +160,11 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="/img/icon-search.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=🔍"
                   alt="검색 돋보기"
                   width={144}
                   height={144}
+                  sizes="144px"
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
@@ -174,10 +177,11 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="/img/icon-survey.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=📋"
                   alt="설문지 아이콘"
                   width={144}
                   height={144}
+                  sizes="144px"
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
@@ -190,10 +194,11 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="/img/icon-heart.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=❤️"
                   alt="하트 아이콘"
                   width={144}
                   height={144}
+                  sizes="144px"
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
@@ -205,10 +210,11 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="/img/icon-pin.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=📌"
                   alt="핀 아이콘"
                   width={144}
                   height={144}
+                  sizes="144px"
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
@@ -221,10 +227,11 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="/img/icon-chart.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=📊"
                   alt="차트 아이콘"
                   width={144}
                   height={144}
+                  sizes="144px"
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
@@ -237,10 +244,11 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="/img/icon-chat.png"
+                  src="https://via.placeholder.com/144x144/ccff00/000000?text=💬"
                   alt="말풍선 아이콘"
                   width={144}
                   height={144}
+                  sizes="144px"
                   className="max-w-full max-h-full object-contain"
                 />
               </div>

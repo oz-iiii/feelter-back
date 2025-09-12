@@ -9,21 +9,20 @@ import { IoCaretForwardCircleOutline } from "@react-icons/all-files/io5/IoCaretF
 import {
   useMovieStore,
   useFavoriteStore,
-  useWatchHistoryStore,
 } from "@/lib/stores";
 import { Movie } from "@/lib/types/movie";
 
 export default function FeelterGrid() {
   const { movies, loading, fetchMovies } = useMovieStore();
   const { toggleFavorite, isFavorite } = useFavoriteStore();
-  const [activeMovieId, setActiveMovieId] = useState<number | null>(null);
+  const [activeMovieId, setActiveMovieId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMovies();
   }, []);
 
   // 영화 클릭 이벤트 핸들러
-  const handleMovieClick = (id: number) => {
+  const handleMovieClick = (id: string) => {
     // 클릭된 영화의 ID가 현재 활성화된 영화의 ID와 같으면 비활성화
     // 다르면 해당 영화를 활성화
     setActiveMovieId((prevId) => (prevId === id ? null : id));
@@ -68,6 +67,7 @@ export default function FeelterGrid() {
                 src={movie.imgUrl}
                 alt={`${movie.title} Poster`}
                 fill
+                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 16.67vw"
                 className="object-cover rounded"
               />
 

@@ -36,9 +36,58 @@ const logSupabaseError = (label: string, error: unknown) => {
   console.error(`${label} (json):`, safeStringify(error));
 };
 
+// Helper function to generate feelter data based on genre
+const generateFeelterData = (genres: string[]): {
+  feelterTime: string[];
+  feelterPurpose: string[];
+  feelterOccasion: string[];
+} => {
+  const genreList = Array.isArray(genres) ? genres : [genres];
+  const genreStr = genreList.join(" ").toLowerCase();
+  
+  // 시간대 결정
+  let feelterTime: string[] = ["저녁"]; // 기본값
+  if (genreStr.includes("공포") || genreStr.includes("스릴러") || genreStr.includes("horror") || genreStr.includes("thriller")) {
+    feelterTime = ["밤"];
+  } else if (genreStr.includes("가족") || genreStr.includes("애니메이션") || genreStr.includes("family") || genreStr.includes("animation")) {
+    feelterTime = ["오후"];
+  } else if (genreStr.includes("로맨스") || genreStr.includes("romance")) {
+    feelterTime = ["저녁"];
+  }
+
+  // 목적 결정
+  let feelterPurpose: string[] = ["휴식"]; // 기본값
+  if (genreStr.includes("공포") || genreStr.includes("스릴러") || genreStr.includes("horror") || genreStr.includes("thriller")) {
+    feelterPurpose = ["스릴"];
+  } else if (genreStr.includes("로맨스") || genreStr.includes("romance") || genreStr.includes("드라마") || genreStr.includes("drama")) {
+    feelterPurpose = ["감동"];
+  } else if (genreStr.includes("액션") || genreStr.includes("action") || genreStr.includes("모험") || genreStr.includes("adventure")) {
+    feelterPurpose = ["자극"];
+  } else if (genreStr.includes("코미디") || genreStr.includes("comedy")) {
+    feelterPurpose = ["유머"];
+  } else if (genreStr.includes("다큐멘터리") || genreStr.includes("documentary")) {
+    feelterPurpose = ["학습"];
+  }
+
+  // 상황 결정
+  let feelterOccasion: string[] = ["혼자"]; // 기본값
+  if (genreStr.includes("가족") || genreStr.includes("애니메이션") || genreStr.includes("family") || genreStr.includes("animation")) {
+    feelterOccasion = ["가족"];
+  } else if (genreStr.includes("로맨스") || genreStr.includes("romance")) {
+    feelterOccasion = ["연인"];
+  } else if (genreStr.includes("액션") || genreStr.includes("action") || genreStr.includes("코미디") || genreStr.includes("comedy")) {
+    feelterOccasion = ["친구"];
+  }
+
+  return { feelterTime, feelterPurpose, feelterOccasion };
+};
+
 // Helper function to convert Supabase row to Movie type (updated for actual DB schema)
 const convertRowToMovie = (row: MovieRow): Movie => {
   const r = row as unknown as Record<string, unknown>;
+  
+  const genres = (r["genres"] as string[]) ?? [];
+  const feelterData = generateFeelterData(genres);
 
   return {
     id: String(r["id"])!,
@@ -48,20 +97,20 @@ const convertRowToMovie = (row: MovieRow): Movie => {
       ? new Date(r["release_date"] as string)
       : new Date(),
     age: (r["certification"] as string) ?? "전체관람가",
-    genre: (r["genres"] as string[]) ?? "",
-    runningTime: (r["runtime"] as string) ?? "120분",
+    genre: genres,
+    runningTime: `${(r["runtime"] as number) || 120}분`,
     country: (r["countries"] as string[]) ?? "",
     director: (r["directors"] as string[]) ?? "",
     actor: (r["actors"] as string[]) ?? "",
     overview: (r["overview"] as string) ?? "",
-    streaming: (r["streaming"] as string[]) ?? "",
+    streaming: (r["streaming_providers"] as string[]) ?? ["Netflix"],
     streamingUrl: "", // Not in current schema
     youtubeUrl: (r["videos"] as string) ?? "",
     imgUrl: (r["poster_url"] as string) ?? "",
     bgUrl: (r["poster_url"] as string) ?? "", // Use poster as background for now
-    feelterTime: ["저녁"], // Default values for feelter fields
-    feelterPurpose: ["휴식"],
-    feelterOccasion: ["혼자"],
+    feelterTime: feelterData.feelterTime,
+    feelterPurpose: feelterData.feelterPurpose,
+    feelterOccasion: feelterData.feelterOccasion,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

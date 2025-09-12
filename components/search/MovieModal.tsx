@@ -79,6 +79,7 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
                     src={content.poster || "/images/placeholder.jpg"}
                     alt={content.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     style={{ objectFit: 'cover' }}
                     className="opacity-40 rounded-l-lg"
                   />
