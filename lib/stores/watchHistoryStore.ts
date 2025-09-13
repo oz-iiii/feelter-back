@@ -93,7 +93,7 @@ export const useWatchHistoryStore = create<WatchHistoryState>()(
             const data = JSON.parse(str);
             // Date 객체 복원
             if (data.state?.watchHistory) {
-              data.state.watchHistory = data.state.watchHistory.map((item: any) => ({
+              data.state.watchHistory = data.state.watchHistory.map((item: WatchHistoryItem) => ({
                 ...item,
                 movieData: {
                   ...item.movieData,

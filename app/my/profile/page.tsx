@@ -14,7 +14,14 @@ export default function ProfilePage() {
 	const { user, loading, updateOttPlatforms } = useAuth();
 	const [isEditing, setIsEditing] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
-	const [tempProfile, setTempProfile] = useState<any>(null);
+	const [tempProfile, setTempProfile] = useState<{
+		nickname: string;
+		email: string;
+		profileImage: string;
+		points: number;
+		selectedOttPlatforms: string[];
+		bio: string;
+	} | null>(null);
 
 	// 모달 상태 관리
 	const [showSignInModal, setShowSignInModal] = useState(false);

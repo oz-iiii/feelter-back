@@ -48,7 +48,7 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
     setError('')
 
     try {
-      const result = await signUp(email, password, nickname)
+      await signUp(email, password, nickname)
       
       setSuccess(true)
       // 회원가입 성공 후 3초 뒤 모달 닫기 (이메일 확인 시간 고려)
@@ -57,21 +57,23 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
         resetForm()
         onClose()
       }, 3000)
-    } catch (err: any) {
+    } catch (err: unknown) {
       
       // 구체적인 에러 메시지 처리
       let errorMessage = '회원가입 중 오류가 발생했습니다.'
       
-      if (err.message.includes('User already registered')) {
-        errorMessage = '이미 등록된 이메일입니다.'
-      } else if (err.message.includes('Invalid email') || err.message.includes('email_address_invalid')) {
-        errorMessage = '올바른 이메일 주소를 입력해주세요. (예: user@gmail.com)'
-      } else if (err.message.includes('Password should be at least 6 characters')) {
-        errorMessage = '비밀번호는 6자 이상이어야 합니다.'
-      } else if (err.code === 'email_address_invalid') {
+      if (err instanceof Error) {
+        if (err.message.includes('User already registered')) {
+          errorMessage = '이미 등록된 이메일입니다.'
+        } else if (err.message.includes('Invalid email') || err.message.includes('email_address_invalid')) {
+          errorMessage = '올바른 이메일 주소를 입력해주세요. (예: user@gmail.com)'
+        } else if (err.message.includes('Password should be at least 6 characters')) {
+          errorMessage = '비밀번호는 6자 이상이어야 합니다.'
+        } else {
+          errorMessage = err.message
+        }
+      } else if (typeof err === 'object' && err !== null && 'code' in err && err.code === 'email_address_invalid') {
         errorMessage = '사용할 수 없는 이메일 도메인입니다. Gmail, Naver 등을 사용해주세요.'
-      } else if (err.message) {
-        errorMessage = err.message
       }
       
       setError(errorMessage)

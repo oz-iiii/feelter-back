@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { Category, Movie } from "../types/movie";
+import { Movie } from "../types/movie";
 
 export interface UserCategory {
   id: string;
@@ -159,7 +159,7 @@ export const useCategoryStore = create<CategoryState>()(
             const data = JSON.parse(str);
             // Date 객체 복원
             if (data.state?.categories) {
-              data.state.categories = data.state.categories.map((cat: any) => ({
+              data.state.categories = data.state.categories.map((cat: UserCategory) => ({
                 ...cat,
                 createdAt: new Date(cat.createdAt),
                 updatedAt: new Date(cat.updatedAt),

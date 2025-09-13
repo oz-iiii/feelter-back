@@ -5,7 +5,6 @@ import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
 import { useFavoriteStore, useCategoryStore } from "@/lib/stores";
 import { Movie } from "@/lib/types/movie";
-import { movieRankingService } from "@/lib/services/movieService";
 
 export default function FavoritesPage() {
   const { favorites, removeFromFavorites } = useFavoriteStore();

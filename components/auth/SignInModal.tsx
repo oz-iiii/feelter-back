@@ -26,17 +26,19 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp }: SignI
       await signIn(email, password)
       resetForm()
       onClose() // 로그인 성공 시 모달 닫기
-    } catch (err: any) {
+    } catch (err: unknown) {
       let errorMessage = '로그인 중 오류가 발생했습니다.'
       
-      if (err.message.includes('Email not confirmed')) {
-        errorMessage = '이메일 인증이 완료되지 않았습니다. 이메일을 확인하여 인증을 완료해주세요.'
-      } else if (err.message.includes('Invalid login credentials')) {
-        errorMessage = '이메일 또는 비밀번호가 잘못되었습니다.'
-      } else if (err.message.includes('Too many requests')) {
-        errorMessage = '너무 많은 로그인 시도가 있었습니다. 잠시 후 다시 시도해주세요.'
-      } else if (err.message) {
-        errorMessage = err.message
+      if (err instanceof Error) {
+        if (err.message.includes('Email not confirmed')) {
+          errorMessage = '이메일 인증이 완료되지 않았습니다. 이메일을 확인하여 인증을 완료해주세요.'
+        } else if (err.message.includes('Invalid login credentials')) {
+          errorMessage = '이메일 또는 비밀번호가 잘못되었습니다.'
+        } else if (err.message.includes('Too many requests')) {
+          errorMessage = '너무 많은 로그인 시도가 있었습니다. 잠시 후 다시 시도해주세요.'
+        } else {
+          errorMessage = err.message
+        }
       }
       
       setError(errorMessage)

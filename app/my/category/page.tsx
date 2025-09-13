@@ -6,7 +6,7 @@ import MyLayout from "@/components/my/MyLayout";
 import { useCategoryStore } from "@/lib/stores";
 
 export default function MyCatPage() {
-  const { categories, createCategory, deleteCategory, updateCategory, testAddMovie } = useCategoryStore();
+  const { categories, createCategory, deleteCategory, testAddMovie } = useCategoryStore();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newCategory, setNewCategory] = useState({

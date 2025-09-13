@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Heart, MessageCircle, Play } from "lucide-react";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -673,9 +674,11 @@ const CardCarousel = ({
         onClick={handleClick}
         onTouchEnd={handleClick}
       >
-        <img
+        <Image
           src={imageUrl}
           alt={title || "이미지 없음"}
+          width={150}
+          height={200}
           className="rounded-lg shadow-lg h-[200px] object-cover"
         />
       </div>

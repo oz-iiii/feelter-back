@@ -27,7 +27,7 @@ export const useAuth = () => {
             await fetchUserProfile(session.user)
           }
         }
-      } catch (err) {
+      } catch {
         // 세션 조회 실패시 무시
       }
       setLoading(false)
@@ -93,7 +93,7 @@ export const useAuth = () => {
       }
 
       setUser(userData)
-    } catch (error) {
+    } catch {
       // 프로필 조회 실패시 localStorage에서라도 데이터 복구 시도
       let fallbackOttPlatforms = []
       let fallbackNickname = authUser.email?.split('@')[0] || 'User'

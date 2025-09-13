@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { Heart, MessageCircle, Play } from "lucide-react";
 import { useTransition, animated } from "@react-spring/web";
 // 1. data/contents.ts 파일에서 데이터와 타입을 불러옵니다.
@@ -17,7 +18,7 @@ const LazyImage = ({
   className: string;
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const imgRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -41,16 +42,19 @@ const LazyImage = ({
   }, []);
 
   return (
-    <img
-      ref={imgRef}
-      src={
-        isVisible
-          ? src
-          : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="200" viewBox="0 0 150 200"></svg>'
-      }
-      alt={alt}
-      className={className}
-    />
+    <div ref={imgRef}>
+      <Image
+        src={
+          isVisible
+            ? src
+            : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="200" viewBox="0 0 150 200"></svg>'
+        }
+        alt={alt}
+        width={150}
+        height={200}
+        className={className}
+      />
+    </div>
   );
 };
 
