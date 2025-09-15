@@ -8,6 +8,7 @@ import MovieModal from "@/components/search/MovieModal";
 import { ContentItem, MASTER_DATA } from "@/lib/data";
 import { useMovieStore } from "@/lib/stores";
 import { Movie } from "@/lib/types/movie";
+import { advancedKoreanSearch } from "@/lib/utils/koreanSearch";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -88,7 +89,7 @@ export default function SearchPage() {
 
   const filteredData = searchQuery
     ? sortedDataset?.filter((item) =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase())
+        advancedKoreanSearch(item.title, searchQuery)
       ) || []
     : sortedDataset || [];
 
@@ -141,6 +142,7 @@ export default function SearchPage() {
               totalPages={totalPages}
               onPageChange={handlePageChange}
               onCardClick={handleOpenModal}
+              searchQuery={searchQuery}
             />
           )}
         </div>

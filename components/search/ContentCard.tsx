@@ -7,16 +7,21 @@ import { BsHeartFill } from "react-icons/bs";
 import { ContentItem } from "@/lib/data";
 import { useFavoriteStore, useMovieStore, useWatchHistoryStore } from "@/lib/stores";
 import { Movie } from "@/lib/types/movie";
+import { createHighlightProps } from "@/lib/utils/textHighlight";
 
 interface ContentCardProps {
   content: ContentItem;
   onOpen: (content: ContentItem) => void;
+  searchQuery?: string;
 }
 
-const ContentCard: React.FC<ContentCardProps> = ({ content, onOpen }) => {
+const ContentCard: React.FC<ContentCardProps> = ({ content, onOpen, searchQuery = "" }) => {
   const { toggleFavorite, isFavorite } = useFavoriteStore();
   const { addToWatchHistory } = useWatchHistoryStore();
   const { movies } = useMovieStore();
+
+  // 검색어 하이라이팅 정보 생성
+  const titleHighlight = createHighlightProps(content.title, searchQuery);
   
   // ContentItem에서 해당하는 Movie 찾기
   const findMovieByTitle = (title: string): Movie | null => {
@@ -148,9 +153,16 @@ const ContentCard: React.FC<ContentCardProps> = ({ content, onOpen }) => {
       {/* Meta Info */}
       <div className="p-4 h-[30%] flex flex-col justify-between">
         <div>
-          <h3 className="font-bold text-[18px] text-white truncate">
-            {content.title}
-          </h3>
+          {searchQuery ? (
+            <h3
+              className="font-bold text-[18px] text-white truncate"
+              {...titleHighlight}
+            />
+          ) : (
+            <h3 className="font-bold text-[18px] text-white truncate">
+              {content.title}
+            </h3>
+          )}
           <p className="text-[14px] text-[#B0B3B8] mt-1">
             {content.year} / {content.genre}
           </p>

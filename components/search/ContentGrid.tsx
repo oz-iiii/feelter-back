@@ -15,6 +15,7 @@ interface ContentGridProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   onCardClick: (content: ContentItem) => void;
+  searchQuery?: string;
 }
 
 const ContentGrid: React.FC<ContentGridProps> = ({
@@ -26,6 +27,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
   totalPages,
   onPageChange,
   onCardClick,
+  searchQuery = "",
 }) => {
   return (
     <section className="bg-[#141A28] rounded-2xl p-6">
@@ -37,7 +39,12 @@ const ContentGrid: React.FC<ContentGridProps> = ({
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {content.map((item) => (
-          <ContentCard key={item.title} content={item} onOpen={onCardClick} />
+          <ContentCard
+            key={item.title}
+            content={item}
+            onOpen={onCardClick}
+            searchQuery={searchQuery}
+          />
         ))}
       </div>
       {totalPages > 1 && (
