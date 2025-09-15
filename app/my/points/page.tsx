@@ -2,76 +2,37 @@
 
 import { useState } from "react";
 import MyLayout from "@/components/my/MyLayout";
+import { usePointStore } from "@/lib/stores";
 
 export default function PointsPage() {
-  const [currentPoints] = useState(2450);
-
-  const [pointHistory] = useState([
-    {
-      id: 1,
-      type: "earn",
-      amount: 100,
-      description: "영화 리뷰 작성",
-      date: "2024.08.10",
-      movieTitle: "인터스텔라",
-    },
-    {
-      id: 2,
-      type: "earn",
-      amount: 50,
-      description: "영화 평점 등록",
-      date: "2024.08.08",
-      movieTitle: "기생충",
-    },
-    {
-      id: 3,
-      type: "use",
-      amount: -200,
-      description: "프리미엄 영화 대여",
-      date: "2024.08.07",
-      movieTitle: "타이타닉",
-    },
-    {
-      id: 4,
-      type: "earn",
-      amount: 300,
-      description: "설문조사 참여",
-      date: "2024.08.05",
-      movieTitle: null,
-    },
-    {
-      id: 5,
-      type: "use",
-      amount: -150,
-      description: "할인 쿠폰",
-      date: "2024.08.03",
-      movieTitle: null,
-    },
-    {
-      id: 6,
-      type: "earn",
-      amount: 250,
-      description: "추천 영화 등록",
-      date: "2024.08.01",
-      movieTitle: "라라랜드",
-    },
-  ]);
+  const {
+    currentPoints,
+    pointHistory,
+    getTotalEarned,
+    getTotalUsed,
+    getFilteredHistory,
+    addPoints,
+    usePoints
+  } = usePointStore();
 
   const [filter, setFilter] = useState("all");
 
-  const filteredHistory = pointHistory.filter((item) => {
-    if (filter === "all") return true;
-    if (filter === "earn") return item.type === "earn";
-    if (filter === "use") return item.type === "use";
-    return true;
-  });
+  const filteredHistory = getFilteredHistory(filter);
+  const totalEarned = getTotalEarned();
+  const totalUsed = getTotalUsed();
 
-  const totalEarned = pointHistory
-    .filter((item) => item.type === "earn")
-    .reduce((sum, item) => sum + item.amount, 0);
-  const totalUsed = pointHistory
-    .filter((item) => item.type === "use")
-    .reduce((sum, item) => sum + Math.abs(item.amount), 0);
+  // 테스트용 포인트 추가/사용 함수들
+  const handleAddTestPoints = () => {
+    addPoints(100, "테스트 포인트 적립", "테스트 영화");
+  };
+
+  const handleUseTestPoints = () => {
+    try {
+      usePoints(50, "테스트 포인트 사용", "테스트 영화");
+    } catch (error) {
+      alert((error as Error).message);
+    }
+  };
 
   return (
     <MyLayout>
@@ -80,6 +41,22 @@ export default function PointsPage() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <h1 className="text-3xl font-bold text-white">포인트 관리</h1>
+          </div>
+
+          {/* 테스트 버튼들 */}
+          <div className="flex space-x-2">
+            <button
+              onClick={handleAddTestPoints}
+              className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors"
+            >
+              +100P 테스트
+            </button>
+            <button
+              onClick={handleUseTestPoints}
+              className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
+            >
+              -50P 테스트
+            </button>
           </div>
         </div>
 

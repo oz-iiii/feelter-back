@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { usePointStore } from "@/lib/stores";
 import SignInModal from "@/components/auth/SignInModal";
 import SignUpModal from "@/components/auth/SignUpModal";
 
@@ -15,6 +16,7 @@ interface MySidebarProps {
 export default function MySidebar({ isOpen, onClose }: MySidebarProps) {
 	const pathname = usePathname();
 	const { user, signOut } = useAuth();
+	const { currentPoints } = usePointStore();
 
 	// 모달 상태 관리
 	const [showSignInModal, setShowSignInModal] = useState(false);
@@ -213,7 +215,7 @@ export default function MySidebar({ isOpen, onClose }: MySidebarProps) {
 										{user.nickname || user.email?.split("@")[0] || "사용자"}
 									</p>
 									<p className="text-xs text-gray-400">
-										{user.points?.toLocaleString() || 0} 포인트
+										{currentPoints.toLocaleString()} 포인트
 									</p>
 								</div>
 							</div>
