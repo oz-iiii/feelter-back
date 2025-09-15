@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useCommunityStore } from "@/lib/stores/communityStore";
+import { CommunityPost } from "@/lib/types/community";
 import ActivityCard, { ActivityCardProps } from "./ActivityCard";
 
 interface ReviewTabProps {
@@ -80,24 +82,87 @@ const mockReviewData: ActivityCardProps[] = [
   },
 ];
 
+// 시간 계산 함수
+const getTimeAgo = (date: Date | string): string => {
+  const now = new Date();
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+
+  if (isNaN(dateObj.getTime())) {
+    return "알 수 없음";
+  }
+
+  const diffInMs = now.getTime() - dateObj.getTime();
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInMinutes < 1) return "방금";
+  if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+  if (diffInHours < 24) return `${diffInHours}시간 전`;
+  return `${diffInDays}일 전`;
+};
+
+// 커뮤니티 포스트를 ActivityCard Props로 변환하는 함수
+const convertPostToActivityCard = (post: CommunityPost): ActivityCardProps => {
+  const timeAgo = getTimeAgo(post.createdAt);
+
+  return {
+    type: "review",
+    avatar: "⭐",
+    username: `${post.authorName}님이 ${timeAgo}에`,
+    timestamp: "리뷰를 작성했습니다",
+    activityType: "리뷰",
+    title: post.movieTitle || post.title,
+    rating: post.rating,
+    preview:
+      post.content.length > 100
+        ? `${post.content.substring(0, 100)}...`
+        : post.content,
+    likes: post.likes,
+    comments: post.comments,
+    tags: post.tags,
+  };
+};
+
 export default function ReviewTab({ onCreatePost }: ReviewTabProps) {
-  const [reviewData, setReviewData] =
-    useState<ActivityCardProps[]>(mockReviewData);
+  const { posts, postsLoading, postsError, searchPosts } = useCommunityStore();
+
+  const [reviewData, setReviewData] = useState<ActivityCardProps[]>([]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
-  const [isLoading] = useState(false);
 
+  // 컴포넌트 마운트 시 리뷰 게시글만 가져오기
   useEffect(() => {
-    let filteredData = [...mockReviewData];
+    searchPosts({ type: "review" }, true);
+  }, [searchPosts]);
 
-    // Apply rating filter
+  // posts가 변경될 때 reviewData 업데이트
+  useEffect(() => {
+    let filteredPosts = posts.filter((post) => post.type === "review");
+
+    // 평점 필터 적용
     if (selectedRating) {
-      filteredData = filteredData.filter(
-        (item) => item.rating === selectedRating
+      filteredPosts = filteredPosts.filter(
+        (post) => post.rating === selectedRating
       );
     }
 
-    setReviewData(filteredData);
-  }, [selectedRating]);
+    // mock 데이터와 실제 데이터 합치기
+    const realReviewData = filteredPosts.map(convertPostToActivityCard);
+    let combinedData = [...realReviewData];
+
+    // 실제 데이터가 없을 때만 mock 데이터 사용
+    if (realReviewData.length === 0) {
+      let mockFiltered = [...mockReviewData];
+      if (selectedRating) {
+        mockFiltered = mockFiltered.filter(
+          (item) => item.rating === selectedRating
+        );
+      }
+      combinedData = mockFiltered;
+    }
+
+    setReviewData(combinedData);
+  }, [posts, selectedRating]);
 
   const getRatingColor = (rating: number) => {
     if (rating >= 4) return "text-green-400";
@@ -175,6 +240,30 @@ export default function ReviewTab({ onCreatePost }: ReviewTabProps) {
         ⭐ 새 리뷰 작성하기
       </button>
 
+      {/* Error Message */}
+      {postsError && (
+        <div className="bg-red-600/20 border border-red-600 rounded-xl p-4 mb-6">
+          <p className="text-red-400">{postsError}</p>
+        </div>
+      )}
+
+      {/* Loading Indicator */}
+      {postsLoading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="bg-gray-800 rounded-xl p-6 text-center border border-white/10 shadow-sm">
+            <div
+              className="animate-spin w-8 h-8 border-2 border-t-transparent 
+                        rounded-full mx-auto mb-3"
+              style={{
+                borderColor: "#CCFF00",
+                borderTopColor: "transparent",
+              }}
+            ></div>
+            <p style={{ color: "#CCFF00" }}>리뷰를 불러오는 중...</p>
+          </div>
+        </div>
+      )}
+
       {/* Review Cards */}
       <div className="space-y-6">
         {reviewData.map((item, index) => (
@@ -209,7 +298,7 @@ export default function ReviewTab({ onCreatePost }: ReviewTabProps) {
       </div>
 
       {/* Empty State */}
-      {reviewData.length === 0 && !isLoading && (
+      {reviewData.length === 0 && !postsLoading && (
         <div className="text-center py-16">
           <div className="text-6xl mb-4">⭐</div>
           <h3 className="text-xl font-bold mb-2" style={{ color: "#CCFF00" }}>
