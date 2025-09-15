@@ -1,26 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useFilter } from "@/lib/contexts/FilterContext";
+import { FilterState } from "@/lib/types/filter";
 
 interface FilterSectionProps {
   title: string;
-  category: string;
+  category: keyof FilterState;
   data: string[];
 }
 
-const FilterSection: React.FC<FilterSectionProps> = ({ title, data }) => {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+const FilterSection: React.FC<FilterSectionProps> = ({ title, category, data }) => {
+  const filter = useFilter();
+  const selectedItems = filter[category];
 
   const handleCheckboxChange = (label: string) => {
-    setSelected((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(label)) {
-        newSet.delete(label);
-      } else {
-        newSet.add(label);
-      }
-      return newSet;
-    });
+    filter.toggleFilter(category, label);
   };
 
   return (
@@ -35,7 +30,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ title, data }) => {
             <input
               type="checkbox"
               className="w-4 h-4 text-lime-400 bg-gray-700 rounded border-gray-600 focus:ring-lime-500 focus:ring-offset-gray-900"
-              checked={selected.has(label)}
+              checked={selectedItems.includes(label)}
               onChange={() => handleCheckboxChange(label)}
             />
             <span>{label}</span>

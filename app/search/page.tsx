@@ -5,10 +5,13 @@ import SearchBar from "@/components/search/SearchBar";
 import ContentGrid from "@/components/search/ContentGrid";
 import Sidebar from "@/components/search/Sidebar";
 import MovieModal from "@/components/search/MovieModal";
+import ActiveFilters from "@/components/search/ActiveFilters";
 import { ContentItem, MASTER_DATA } from "@/lib/data";
 import { useMovieStore } from "@/lib/stores";
 import { Movie } from "@/lib/types/movie";
 import { advancedKoreanSearch } from "@/lib/utils/koreanSearch";
+import { FilterProvider, useFilter } from "@/lib/contexts/FilterContext";
+import { applyFilters } from "@/lib/utils/filterUtils";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -26,8 +29,10 @@ const movieToContentItem = (movie: Movie): ContentItem => ({
   description: movie.overview,
 });
 
-export default function SearchPage() {
+// SearchPage 내부 컴포넌트 (필터 컨텍스트 사용)
+function SearchPageContent() {
   const { movies, loading } = useMovieStore();
+  const filters = useFilter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState("latest");
   const [currentPage, setCurrentPage] = useState(1);
@@ -87,11 +92,15 @@ export default function SearchPage() {
     }
   }, [isSidebarOpen, selectedContent]);
 
-  const filteredData = searchQuery
+  // 1. 검색어로 필터링
+  const searchFilteredData = searchQuery
     ? sortedDataset?.filter((item) =>
         advancedKoreanSearch(item.title, searchQuery)
       ) || []
     : sortedDataset || [];
+
+  // 2. 사이드바 필터 적용
+  const filteredData = applyFilters(searchFilteredData, filters);
 
   const currentContent = filteredData.slice(
     (currentPage - 1) * pageSize,
@@ -108,6 +117,11 @@ export default function SearchPage() {
     setSearchQuery(query);
     setCurrentPage(1); // Reset to first page on new search
   };
+
+  // 필터가 변경될 때 첫 페이지로 리셋
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   return (
     <div className="text-[#B0B3B8] font-sans min-h-screen bg-[#0A0F1C]">
@@ -128,6 +142,7 @@ export default function SearchPage() {
           onSearch={handleSearch}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <ActiveFilters />
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="text-lg text-white">영화 데이터를 불러오는 중...</div>
@@ -149,5 +164,14 @@ export default function SearchPage() {
       </main>
       <MovieModal content={selectedContent} onClose={handleCloseModal} />
     </div>
+  );
+}
+
+// 메인 SearchPage 컴포넌트 (FilterProvider로 감싸기)
+export default function SearchPage() {
+  return (
+    <FilterProvider>
+      <SearchPageContent />
+    </FilterProvider>
   );
 }

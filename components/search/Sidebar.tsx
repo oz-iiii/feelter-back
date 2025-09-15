@@ -2,7 +2,9 @@
 
 import React from "react";
 import { IoCloseOutline } from "react-icons/io5";
+import { BiRefresh } from "react-icons/bi";
 import FilterSection from "./FilterSection";
+import { useFilter } from "@/lib/contexts/FilterContext";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,6 +13,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, masterData }) => {
+  const { hasActiveFilters, clearFilters, getActiveFilterCount } = useFilter();
   return (
     <aside
       className={`fixed top-0 left-0 w-72 h-screen bg-black/80 backdrop-blur-sm text-white transform transition-transform duration-300 z-[1000] no-scrollbar ${
@@ -18,15 +21,34 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, masterData }) => {
       }`}
     >
       <div className="flex justify-between items-center p-4 shadow-xl">
-        <h2 className="text-xl font-bold text-sky-400">Filter</h2>
-        <button
-          className="text-gray-400 hover:text-white hover:scale-110 transition-transform duration-200"
-          aria-label="Close sidebar"
-          type="button"
-          onClick={onClose}
-        >
-          <IoCloseOutline size={28} />
-        </button>
+        <div className="flex items-center space-x-2">
+          <h2 className="text-xl font-bold text-sky-400">Filter</h2>
+          {getActiveFilterCount() > 0 && (
+            <span className="bg-sky-500 text-white text-xs px-2 py-1 rounded-full">
+              {getActiveFilterCount()}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center space-x-2">
+          {hasActiveFilters() && (
+            <button
+              onClick={clearFilters}
+              className="text-gray-400 hover:text-white hover:scale-110 transition-all duration-200"
+              aria-label="필터 초기화"
+              title="필터 초기화"
+            >
+              <BiRefresh size={24} />
+            </button>
+          )}
+          <button
+            className="text-gray-400 hover:text-white hover:scale-110 transition-transform duration-200"
+            aria-label="Close sidebar"
+            type="button"
+            onClick={onClose}
+          >
+            <IoCloseOutline size={28} />
+          </button>
+        </div>
       </div>
       <div className="p-4 overflow-y-auto h-[calc(100vh-65px)] no-scrollbar">
         <div className="space-y-6">
