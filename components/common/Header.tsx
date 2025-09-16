@@ -38,18 +38,22 @@ export default function Header({ onMySidebarToggle }: NavbarProps) {
 		}
 
 		// 테스트용 영화 제목들
-		const testMovieTitles = ["파이널 데스티네이션", "토이 스토리", "퍼펙트 데이즈", "포레스트 검프"];
+		const testMovieTitles = [
+			"파이널 데스티네이션",
+			"토이 스토리",
+			"퍼펙트 데이즈",
+			"포레스트 검프",
+		];
 
 		// 영화 제목에서 검색어와 매칭되는 항목들 찾기
-		const movieTitles = movies.length > 0
-			? movies.map(movie => movie.title)
-			: testMovieTitles;
+		const movieTitles =
+			movies.length > 0 ? movies.map((movie) => movie.title) : testMovieTitles;
 
 		const matchedMovies = movieTitles
-			.filter(title => advancedKoreanSearch(title, query))
+			.filter((title) => advancedKoreanSearch(title, query))
 			.slice(0, 5); // 최대 5개까지만
 
-		console.log('자동완성 검색:', query, '→ 결과:', matchedMovies);
+		console.log("자동완성 검색:", query, "→ 결과:", matchedMovies);
 		setSuggestions(matchedMovies);
 		setShowSuggestions(matchedMovies.length > 0);
 	};
@@ -57,11 +61,11 @@ export default function Header({ onMySidebarToggle }: NavbarProps) {
 	// 검색을 실행하고 서치페이지로 이동하는 함수
 	const performSearch = (searchTerm?: string) => {
 		const finalQuery = searchTerm || searchQuery;
-		console.log('헤더에서 검색 실행:', finalQuery);
+		console.log("헤더에서 검색 실행:", finalQuery);
 		if (finalQuery.trim() !== "") {
 			// 서치페이지로 이동하면서 검색어를 URL 파라미터로 전달
 			const searchUrl = `/search?q=${encodeURIComponent(finalQuery.trim())}`;
-			console.log('이동할 URL:', searchUrl);
+			console.log("이동할 URL:", searchUrl);
 			router.push(searchUrl);
 			setShowSuggestions(false);
 		}
@@ -112,8 +116,8 @@ export default function Header({ onMySidebarToggle }: NavbarProps) {
 		<header className="border-b border-neutral-500 bg-black p-4 sticky top-0 z-50">
 			<div className="flex justify-between items-center max-w-7xl mx-auto">
 				{/* 1. 로고 - 로그인 상태에 따라 다른 화면으로 이동 */}
-				<Link 
-					href={user ? "/home" : "/"} 
+				<Link
+					href={user ? "/home" : "/"}
 					className="text-xl font-bold text-white"
 				>
 					Feelter
@@ -126,7 +130,7 @@ export default function Header({ onMySidebarToggle }: NavbarProps) {
 							<div className="relative flex items-center">
 								<input
 									type="text"
-									placeholder="영화, 드라마, 예능을 검색하세요 (예: 'ㅍ'만 쳐도 검색됩니다)"
+									placeholder="영화, 드라마, 예능을 검색하세요"
 									className="w-full px-4 py-2 pr-10 rounded-full border border-gray-600 bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#ccff00] text-white placeholder-gray-400"
 									value={searchQuery}
 									onChange={handleInputChange}
@@ -179,7 +183,9 @@ export default function Header({ onMySidebarToggle }: NavbarProps) {
 														d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
 													/>
 												</svg>
-												<span className="truncate text-white">{suggestion}</span>
+												<span className="truncate text-white">
+													{suggestion}
+												</span>
 											</div>
 										</button>
 									))}

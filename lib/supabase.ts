@@ -237,8 +237,8 @@ export type Database = {
           favorite_genres: string[];
           favorite_actors: string[];
           favorite_directors: string[];
-          stats: any;
-          preferences: any;
+          stats: Record<string, unknown>;
+          preferences: Record<string, unknown>;
           created_at: string;
           updated_at: string;
         };
@@ -252,8 +252,8 @@ export type Database = {
           favorite_genres?: string[];
           favorite_actors?: string[];
           favorite_directors?: string[];
-          stats?: any;
-          preferences?: any;
+          stats?: Record<string, unknown>;
+          preferences?: Record<string, unknown>;
           created_at?: string;
           updated_at?: string;
         };
@@ -267,8 +267,8 @@ export type Database = {
           favorite_genres?: string[];
           favorite_actors?: string[];
           favorite_directors?: string[];
-          stats?: any;
-          preferences?: any;
+          stats?: Record<string, unknown>;
+          preferences?: Record<string, unknown>;
           created_at?: string;
           updated_at?: string;
         };
@@ -286,7 +286,7 @@ export type Database = {
           description: string | null;
           specialty: string | null;
           achievements: string[];
-          stats: any;
+          stats: Record<string, unknown>;
           created_at: string;
           updated_at: string;
         };
@@ -302,7 +302,7 @@ export type Database = {
           description?: string | null;
           specialty?: string | null;
           achievements?: string[];
-          stats?: any;
+          stats?: Record<string, unknown>;
           created_at?: string;
           updated_at?: string;
         };
@@ -318,7 +318,7 @@ export type Database = {
           description?: string | null;
           specialty?: string | null;
           achievements?: string[];
-          stats?: any;
+          stats?: Record<string, unknown>;
           created_at?: string;
           updated_at?: string;
         };
