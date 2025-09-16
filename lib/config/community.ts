@@ -20,10 +20,10 @@ export const COMMUNITY_CONFIG = {
 
 // 환경에 따른 자동 설정
 if (typeof window !== "undefined") {
-  // 개발 환경에서는 로컬 스토리지 사용
-  if (process.env.NODE_ENV === "development") {
-    COMMUNITY_CONFIG.USE_LOCAL_STORAGE = true;
-  }
+  // 개발 환경에서도 Supabase 사용하도록 변경
+  // if (process.env.NODE_ENV === "development") {
+  //   COMMUNITY_CONFIG.USE_LOCAL_STORAGE = true;
+  // }
 
   // URL 파라미터로 강제 설정 가능 (?storage=supabase 또는 ?storage=local)
   const urlParams = new URLSearchParams(window.location.search);

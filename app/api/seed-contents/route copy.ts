@@ -1,87 +1,132 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { movieService } from "@/lib/services/movieService";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
+import { Movie } from "@/lib/types/movie";
 
-// Supabase 관리자 클라이언트 설정
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-export const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
+// JSON 파일에서 크롤링된 데이터 직접 임포트
+import crawledData from "./contents.json";
 
-// POST 요청을 처리하는 함수
-export async function POST(req) {
-  if (!supabaseAdmin) {
-    return NextResponse.json(
-      { success: false, error: "관리자 클라이언트가 설정되지 않았습니다." },
-      { status: 500 }
-    );
-  }
+// 크롤링된 데이터의 타입 정의
+interface CrawledMovie {
+  contentsid: number;
+  title: string;
+  release: Date;
+  age: string;
+  genres: string;
+  runningtime: string;
+  countries: string;
+  directors: string;
+  actors: string[];
+  overview: string;
+  netizenRaing: number;
+  imgUrl: string;
+  bgUrl: string;
+  youtubeUrl: string;
+  ottplatform: string;
+  netflixUrl?: string;
+  tvingUrl?: string;
+  coupangplayUrl?: string;
+  wavveUrl?: string;
+  disneyUrl?: string;
+  watchaUrl?: string;
+  feelterTime: string;
+  feelterPurpose: string;
+  feelterOccasion: string;
+  bestcoment: string;
+  upload: Date;
+}
 
+// JSON 추론 타입 보정
+const crawled: CrawledMovie[] = crawledData as unknown as CrawledMovie[];
+
+// 크롤링된 데이터를 lib/types/Movie 형식으로 변환
+const mockMovies: Omit<Movie, "id" | "createdAt" | "updatedAt">[] = crawled.map(
+  (movie: CrawledMovie) => ({
+    tmdbid: movie.tmdbId,
+    title: movie.title,
+    release: new Date(movie.releaseDate),
+    age: movie.certification,
+    genre: movie.genres, // string[] 그대로 사용
+    runningTime: `${movie.runtime}분`,
+    country: movie.countries, // string[] 그대로 사용
+    director: movie.directors, // string[] 그대로 사용
+    actor: movie.cast.slice(0, 5), // string[] 그대로 사용
+    overview: movie.overview,
+    streaming:
+      movie.streamingProviders.length > 0
+        ? movie.streamingProviders
+        : ["Netflix"], // string[] 배열로 변경
+    streamingUrl: "https://netflix.com",
+    youtubeUrl:
+      movie.videos?.trailers?.length && movie.videos.trailers.length > 0
+        ? movie.videos.trailers[0]
+        : "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    imgUrl: movie.posterUrl,
+    bgUrl: movie.posterUrl,
+    feelterTime: ["저녁"], // string[] 배열로 변경
+    feelterPurpose: movie.genres.includes("공포")
+      ? ["스릴"]
+      : movie.genres.includes("로맨스")
+      ? ["감동"]
+      : ["휴식"], // string[] 배열로 변경
+    feelterOccasion: movie.genres.includes("가족")
+      ? ["가족"]
+      : movie.genres.includes("로맨스")
+      ? ["연인"]
+      : ["혼자"], // string[] 배열로 변경
+  })
+);
+
+export async function POST() {
   try {
-    const seedData = await req.json(); // 요청 본문에서 JSON 데이터 읽기
-    console.log("✅ JSON 데이터를 읽고 데이터베이스에 맞게 변환 중...");
+    console.log("영화 데이터를 Supabase에 입력하는 중...");
 
-    const contentsToInsert = seedData.map((item) => ({
-      title: item.title,
-      overview: item.overview,
-      director: item.director,
-      genres: item.genres,
-      platforms: item.platforms,
+    // 스키마에 맞춘 정확 매핑 (snake_case) + admin 클라이언트 사용
+    const inserts = mockMovies.map((m) => ({
+      tmdb_id: m.tmdbid,
+      title: m.title,
+      release_date:
+        typeof m.release === "string"
+          ? m.release
+          : m.release.toISOString().slice(0, 10),
+      certification: m.age,
+      genres: Array.isArray(m.genre) ? m.genre : [],
+      runtime: parseInt((m.runningTime || "0").replace(/[^0-9]/g, ""), 10) || 0,
+      countries: Array.isArray(m.country) ? m.country : [],
+      directors: Array.isArray(m.director) ? m.director : [],
+      actors: Array.isArray(m.actor) ? m.actor : [],
+      overview: m.overview,
+      streaming_providers: Array.isArray(m.streaming) ? m.streaming : [],
+      poster_url: m.imgUrl || m.bgUrl,
     }));
 
-    // 1단계: contents 테이블에 기본 영화 정보 일괄 삽입
-    console.log("✅ 1단계: contents 테이블에 데이터 일괄 업로드 중...");
-    const { data: contentsData, error: contentsError } = await supabaseAdmin
-      .from("contents")
-      .insert(contentsToInsert)
-      .select("id, title");
+    const client = supabaseAdmin ?? supabase;
+    const { error: insertError } = await client.from("movies").insert(inserts);
 
-    if (contentsError) {
-      console.error("❌ contents 테이블 삽입 오류:", contentsError);
-      throw new Error(`contents 테이블 삽입 실패: ${contentsError.message}`);
+    if (insertError) {
+      console.error("시드 삽입 오류:", insertError);
+      throw new Error(`영화 배치 추가 실패: ${insertError.message}`);
     }
 
-    // 2단계: feelterTPO 데이터 준비 및 삽입
-    console.log("✅ 2단계: feelterTPO 데이터 준비 중...");
-    const tpoToInsert = [];
-    seedData.forEach((item, index) => {
-      const correspondingContent = contentsData.find(
-        (c) => c.title === item.title
-      );
-      if (correspondingContent) {
-        tpoToInsert.push({
-          contentsid: correspondingContent.id,
-          feelterTime: item.feelterTime,
-          feelterPurpose: item.feelterPurpose,
-          feelterOccasion: item.feelterOccasion,
-        });
-      }
-    });
+    console.log("✅ 영화 데이터 입력 완료!");
 
-    if (tpoToInsert.length > 0) {
-      const { error: tpoError } = await supabaseAdmin
-        .from("feelterTPO")
-        .insert(tpoToInsert);
+    // 입력된 영화 목록 확인
+    const movies = await movieService.getAllMovies();
+    console.log(`총 ${movies.length}개의 영화가 입력되었습니다.`);
 
-      if (tpoError) {
-        console.error("❌ feelterTPO 테이블 삽입 오류:", tpoError);
-        throw new Error(`feelterTPO 테이블 삽입 실패: ${tpoError.message}`);
-      }
-      console.log(`✅ ${tpoToInsert.length}개의 feelterTPO 데이터 입력 완료!`);
-    }
-
-    console.log("🎉 모든 데이터베이스 작업 완료!");
+    // rankings 테이블은 현재 스키마에 없으므로 건너뜀
 
     return NextResponse.json({
       success: true,
-      message: "모든 데이터가 성공적으로 입력되었습니다.",
-      insertedContentsCount: contentsData.length,
-      insertedTpoCount: tpoToInsert.length,
+      message: "영화 데이터가 성공적으로 입력되었습니다.",
+      moviesCount: movies.length,
     });
   } catch (error) {
-    console.error("❌ 데이터 입력 중 오류 발생:", error);
+    console.error("❌ 영화 데이터 입력 중 오류 발생:", error);
     return NextResponse.json(
       {
         success: false,
-        message: "데이터 입력 중 오류가 발생했습니다.",
+        message: "영화 데이터 입력 중 오류가 발생했습니다.",
         error: error instanceof Error ? error.message : "알 수 없는 오류",
       },
       { status: 500 }
@@ -89,9 +134,22 @@ export async function POST(req) {
   }
 }
 
-// GET 요청은 업로드 기능을 안내
 export async function GET() {
-  return NextResponse.json({
-    message: "데이터베이스에 데이터를 업로드하려면 POST 요청을 보내세요.",
-  });
+  try {
+    const movies = await movieService.getAllMovies();
+    return NextResponse.json({
+      success: true,
+      moviesCount: movies.length,
+      movies: movies.slice(0, 5), // 처음 5개만 반환
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "영화 데이터를 불러오는 중 오류가 발생했습니다.",
+        error: error instanceof Error ? error.message : "알 수 없는 오류",
+      },
+      { status: 500 }
+    );
+  }
 }
