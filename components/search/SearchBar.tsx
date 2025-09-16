@@ -7,10 +7,19 @@ import { useDebounce } from "@/lib/hooks/useDebounce";
 interface SearchBarProps {
 	onMenuClick: () => void;
 	onSearch: (query: string) => void;
+	initialQuery?: string;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onMenuClick, onSearch }) => {
-	const [query, setQuery] = useState("");
+const SearchBar: React.FC<SearchBarProps> = ({ onMenuClick, onSearch, initialQuery = "" }) => {
+	const [query, setQuery] = useState(initialQuery);
+
+	// initialQuery가 변경되면 query 업데이트 (한 번만)
+	useEffect(() => {
+		if (initialQuery !== query) {
+			console.log('📝 SearchBar 검색어 업데이트:', initialQuery);
+			setQuery(initialQuery);
+		}
+	}, [initialQuery]);
 
 	// 300ms 디바운스 적용 (한글 입력 고려)
 	const debouncedQuery = useDebounce(query, 300);
@@ -18,7 +27,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onMenuClick, onSearch }) => {
 	// 디바운스된 검색어로 실시간 검색 실행
 	useEffect(() => {
 		onSearch(debouncedQuery);
-	}, [debouncedQuery, onSearch]);
+	}, [debouncedQuery]);
 
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
