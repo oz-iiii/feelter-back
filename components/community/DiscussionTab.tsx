@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useCommunityStore } from "@/lib/stores/communityStore";
+import { CommunityPost } from "@/lib/types/community";
 
 interface Discussion {
   id: string;
@@ -100,21 +102,78 @@ interface DiscussionTabProps {
   onCreatePost: () => void;
 }
 
+// 시간 계산 함수
+const getTimeAgo = (date: Date | string): string => {
+  const now = new Date();
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+
+  if (isNaN(dateObj.getTime())) {
+    return "알 수 없음";
+  }
+
+  const diffInMs = now.getTime() - dateObj.getTime();
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInMinutes < 1) return "방금";
+  if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+  if (diffInHours < 24) return `${diffInHours}시간 전`;
+  return `${diffInDays}일 전`;
+};
+
+// 커뮤니티 포스트를 Discussion으로 변환하는 함수
+const convertPostToDiscussion = (post: CommunityPost): Discussion => {
+  const timeAgo = getTimeAgo(post.createdAt);
+
+  return {
+    id: post.id,
+    type: "discussion",
+    avatar: "💭",
+    username: post.authorName,
+    timestamp: timeAgo,
+    title: post.title,
+    preview: post.content,
+    likes: post.likes,
+    comments: post.comments,
+    views: post.views,
+    isActive: post.isActive,
+    tags: post.tags,
+    status: post.status,
+  };
+};
+
 export default function DiscussionTab({ onCreatePost }: DiscussionTabProps) {
-  const [discussionData, setDiscussionData] =
-    useState<Discussion[]>(mockDiscussionData);
+  const { posts, postsLoading, postsError, searchPosts } = useCommunityStore();
+
+  const [discussionData, setDiscussionData] = useState<Discussion[]>([]);
   const [selectedType, setSelectedType] = useState<string | null>(null);
 
+  // 컴포넌트 마운트 시 토론 게시글만 가져오기
   useEffect(() => {
-    let filteredData = [...mockDiscussionData];
+    searchPosts({ type: "discussion" }, true);
+  }, [searchPosts]);
 
-    // Apply type filter
-    if (selectedType) {
-      filteredData = filteredData.filter((item) => item.type === selectedType);
+  // posts가 변경될 때 discussionData 업데이트
+  useEffect(() => {
+    let filteredPosts = posts.filter((post) => post.type === "discussion");
+
+    // 실제 데이터를 Discussion 형태로 변환
+    const realDiscussionData = filteredPosts.map(convertPostToDiscussion);
+    let combinedData = [...realDiscussionData];
+
+    // 실제 데이터가 없을 때만 mock 데이터 사용
+    if (realDiscussionData.length === 0) {
+      combinedData = [...mockDiscussionData];
     }
 
-    setDiscussionData(filteredData);
-  }, [selectedType]);
+    // 타입 필터 적용
+    if (selectedType) {
+      combinedData = combinedData.filter((item) => item.type === selectedType);
+    }
+
+    setDiscussionData(combinedData);
+  }, [posts, selectedType]);
 
   const getStatusBadge = (status?: string) => {
     if (!status) return null;
@@ -223,6 +282,30 @@ export default function DiscussionTab({ onCreatePost }: DiscussionTabProps) {
       >
         💬 새 토론 시작하기
       </button>
+
+      {/* Error Message */}
+      {postsError && (
+        <div className="bg-red-600/20 border border-red-600 rounded-xl p-4 mb-6">
+          <p className="text-red-400">{postsError}</p>
+        </div>
+      )}
+
+      {/* Loading Indicator */}
+      {postsLoading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="bg-gray-800 rounded-xl p-6 text-center border border-white/10 shadow-sm">
+            <div
+              className="animate-spin w-8 h-8 border-2 border-t-transparent 
+                        rounded-full mx-auto mb-3"
+              style={{
+                borderColor: "#CCFF00",
+                borderTopColor: "transparent",
+              }}
+            ></div>
+            <p style={{ color: "#CCFF00" }}>토론을 불러오는 중...</p>
+          </div>
+        </div>
+      )}
 
       {/* Discussion Cards */}
       <div className="space-y-4">

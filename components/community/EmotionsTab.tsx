@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useCommunityStore } from "@/lib/stores/communityStore";
+import { CommunityPost } from "@/lib/types/community";
 
 interface EmotionRecord {
   id: string;
@@ -81,12 +83,55 @@ const emotionColors = {
   두려움: "from-gray-600 to-black",
 };
 
+// 커뮤니티 포스트를 EmotionRecord로 변환하는 함수
+const convertPostToEmotion = (post: CommunityPost): EmotionRecord => {
+  return {
+    id: post.id,
+    movie: post.movieTitle || post.title,
+    emotion: post.emotion || "기타",
+    emoji: post.emotionEmoji || "💙",
+    date:
+      post.createdAt instanceof Date
+        ? post.createdAt.toISOString().split("T")[0].replace(/-/g, ".")
+        : new Date(post.createdAt)
+            .toISOString()
+            .split("T")[0]
+            .replace(/-/g, "."),
+    text: post.content,
+    intensity: post.emotionIntensity || 3,
+    tags: post.tags,
+  };
+};
+
 export default function EmotionsTab({ onCreatePost }: EmotionsTabProps) {
-  const [emotionData] = useState<EmotionRecord[]>(mockEmotionData);
+  const { posts, postsLoading, postsError, searchPosts } = useCommunityStore();
+
+  const [emotionData, setEmotionData] = useState<EmotionRecord[]>([]);
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<EmotionRecord | null>(
     null
   );
+
+  // 컴포넌트 마운트 시 감정 게시글만 가져오기
+  useEffect(() => {
+    searchPosts({ type: "emotion" }, true);
+  }, [searchPosts]);
+
+  // posts가 변경될 때 emotionData 업데이트
+  useEffect(() => {
+    let filteredPosts = posts.filter((post) => post.type === "emotion");
+
+    // 실제 데이터를 EmotionRecord 형태로 변환
+    const realEmotionData = filteredPosts.map(convertPostToEmotion);
+    let combinedData = [...realEmotionData];
+
+    // 실제 데이터가 없을 때만 mock 데이터 사용
+    if (realEmotionData.length === 0) {
+      combinedData = [...mockEmotionData];
+    }
+
+    setEmotionData(combinedData);
+  }, [posts]);
 
   const getEmotionColor = (emotion: string) => {
     return (
@@ -189,6 +234,30 @@ export default function EmotionsTab({ onCreatePost }: EmotionsTabProps) {
       >
         💙 새 감정 기록하기
       </button>
+
+      {/* Error Message */}
+      {postsError && (
+        <div className="bg-red-600/20 border border-red-600 rounded-xl p-4 mb-6">
+          <p className="text-red-400">{postsError}</p>
+        </div>
+      )}
+
+      {/* Loading Indicator */}
+      {postsLoading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="bg-gray-800 rounded-xl p-6 text-center border border-white/10 shadow-sm">
+            <div
+              className="animate-spin w-8 h-8 border-2 border-t-transparent 
+                        rounded-full mx-auto mb-3"
+              style={{
+                borderColor: "#CCFF00",
+                borderTopColor: "transparent",
+              }}
+            ></div>
+            <p style={{ color: "#CCFF00" }}>감정 기록을 불러오는 중...</p>
+          </div>
+        </div>
+      )}
 
       {/* Emotion Records Grid */}
       <div className="space-y-4 mb-8">
