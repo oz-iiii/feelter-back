@@ -226,7 +226,7 @@ export const localPostService = {
   },
 
   // 좋아요 토글
-  async toggleLike(postId: string, userId: string): Promise<void> {
+  async toggleLike(postId: string, userId: string): Promise<CommunityPost> {
     try {
       const allPosts = getFromLocalStorage<CommunityPost[]>(
         POSTS_STORAGE_KEY,
@@ -252,6 +252,8 @@ export const localPostService = {
 
       post.updatedAt = new Date();
       saveToLocalStorage(POSTS_STORAGE_KEY, allPosts);
+
+      return post; // 업데이트된 포스트 반환
     } catch (error) {
       console.error("Error toggling like:", error);
       throw new Error("좋아요 처리에 실패했습니다.");

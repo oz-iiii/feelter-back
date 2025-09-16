@@ -88,6 +88,7 @@ const convertPostToActivityCard = (post: CommunityPost): ActivityCardProps => {
   const timeAgo = getTimeAgo(post.createdAt);
 
   return {
+    id: post.id, // ID 추가
     type:
       post.type === "emotion"
         ? "emotion"

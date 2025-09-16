@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export interface ActivityCardProps {
+  id?: string; // 게시글 ID 추가
   type: "review" | "discussion" | "cat" | "emotion";
   avatar: string;
   username: string;
@@ -19,6 +21,7 @@ export interface ActivityCardProps {
 }
 
 export default function ActivityCard({
+  id,
   type,
   avatar,
   username,
@@ -32,16 +35,28 @@ export default function ActivityCard({
   tags,
   className = "",
 }: ActivityCardProps) {
+  const router = useRouter();
   const [likes, setLikes] = useState(initialLikes);
   const [isLiked, setIsLiked] = useState(false);
 
-  const handleLike = () => {
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation(); // 카드 클릭 이벤트 방지
     if (isLiked) {
       setLikes(likes - 1);
     } else {
       setLikes(likes + 1);
     }
     setIsLiked(!isLiked);
+  };
+
+  const handleCardClick = () => {
+    if (id) {
+      router.push(`/community/${id}`);
+    }
+  };
+
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // 카드 클릭 이벤트 방지
   };
 
   const getCardStyle = () => {
@@ -81,10 +96,12 @@ export default function ActivityCard({
 
   return (
     <article
+      onClick={handleCardClick}
       className={`
         bg-gray-800 backdrop-blur-lg border rounded-2xl p-6 mb-6 shadow-sm
         transition-all duration-300 hover:transform hover:-translate-y-1
         hover:shadow-lg ${getCardStyle()} ${className}
+        ${id ? "cursor-pointer" : ""}
       `}
     >
       {/* Card Header */}
@@ -171,6 +188,7 @@ export default function ActivityCard({
         </button>
 
         <button
+          onClick={handleButtonClick}
           className="flex items-center gap-2 px-3 py-1 rounded-full text-sm 
                           text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-300"
         >
@@ -179,6 +197,7 @@ export default function ActivityCard({
         </button>
 
         <button
+          onClick={handleButtonClick}
           className="flex items-center gap-2 px-3 py-1 rounded-full text-sm 
                           text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-300"
         >
@@ -189,6 +208,7 @@ export default function ActivityCard({
         {/* Special buttons for cat cards */}
         {type === "cat" && (
           <button
+            onClick={handleButtonClick}
             className="flex items-center gap-2 px-3 py-1 rounded-full text-sm 
                             text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-300"
           >

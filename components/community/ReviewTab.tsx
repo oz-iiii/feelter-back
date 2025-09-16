@@ -107,6 +107,7 @@ const convertPostToActivityCard = (post: CommunityPost): ActivityCardProps => {
   const timeAgo = getTimeAgo(post.createdAt);
 
   return {
+    id: post.id, // ID 추가
     type: "review",
     avatar: "⭐",
     username: `${post.authorName}님이 ${timeAgo}에`,
