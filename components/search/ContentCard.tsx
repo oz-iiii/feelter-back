@@ -56,14 +56,14 @@ const ContentCard: React.FC<ContentCardProps> = ({
         director: "미상",
         actor: "미상",
         overview: content.description || "",
-        streaming: "Netflix",
+        streaming: ["Netflix"],
         streamingUrl: "https://netflix.com",
         youtubeUrl: "https://youtube.com",
         imgUrl: content.poster || "",
         bgUrl: content.poster || "",
-        feelterTime: "저녁",
-        feelterPurpose: "휴식",
-        feelterOccasion: "혼자",
+        feelterTime: ["저녁"],
+        feelterPurpose: ["휴식"],
+        feelterOccasion: ["혼자"],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -74,8 +74,8 @@ const ContentCard: React.FC<ContentCardProps> = ({
   // 즐겨찾기 상태 확인 - 실제 Movie 또는 synthetic ID 둘 다 확인
   const movie = findMovieByTitle(content.title);
   const isCurrentlyFavorite = movie
-    ? isFavorite(movie.id)
-    : isFavorite(`synthetic_${content.title.replace(/\s+/g, "_")}`);
+    ? isFavorite(movie.id as number)
+    : isFavorite(Number(`synthetic_${content.title.replace(/\s+/g, "_")}`));
 
   const handleOpenClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -103,9 +103,9 @@ const ContentCard: React.FC<ContentCardProps> = ({
         youtubeUrl: "https://youtube.com",
         imgUrl: content.poster || "",
         bgUrl: content.poster || "",
-        feelterTime: "저녁",
-        feelterPurpose: "휴식",
-        feelterOccasion: "혼자",
+        feelterTime: ["저녁"],
+        feelterPurpose: ["휴식"],
+        feelterOccasion: ["혼자"],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
