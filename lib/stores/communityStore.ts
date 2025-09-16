@@ -265,6 +265,8 @@ export const useCommunityStore = create<CommunityState>()(
 
       addPost: async (postData, user) => {
         try {
+          console.log("📝 게시글 작성 시작", { postData, user });
+
           if (!user) {
             throw new Error("로그인이 필요한 기능입니다.");
           }
@@ -276,7 +278,14 @@ export const useCommunityStore = create<CommunityState>()(
             authorAvatar: user.profile_image || "",
           };
 
+          console.log("📋 최종 포스트 데이터", post);
+          console.log(
+            "🔧 사용할 서비스",
+            COMMUNITY_CONFIG.USE_LOCAL_STORAGE ? "로컬 스토리지" : "Supabase"
+          );
+
           const postId = await getPostService().addPost(post);
+          console.log("✅ 게시글 저장 성공, ID:", postId);
 
           // 사용자 통계 업데이트
           const userStatsService = getUserStatsService();
@@ -301,13 +310,23 @@ export const useCommunityStore = create<CommunityState>()(
             totalPosts: state.totalPosts + 1,
           }));
 
+          console.log("🎉 게시글 작성 완료!");
           return postId;
         } catch (error) {
+          console.error("❌ 게시글 작성 실패:", error);
+          console.error("에러 상세:", {
+            name: error instanceof Error ? error.name : "Unknown",
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          });
+
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "게시글 작성에 실패했습니다.";
+
           set({
-            postsError:
-              error instanceof Error
-                ? error.message
-                : "게시글 작성에 실패했습니다.",
+            postsError: errorMessage,
           });
           throw error;
         }
