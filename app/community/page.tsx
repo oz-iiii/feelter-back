@@ -61,10 +61,10 @@ export default function CommunityPage() {
         return <DiscussionTab onCreatePost={handleCreatePost} />;
       case "review":
         return <ReviewTab onCreatePost={handleCreatePost} />;
-      case "cats":
-        return <CatsTab />;
       case "emotions":
         return <EmotionsTab onCreatePost={handleCreatePost} />;
+      case "cats":
+        return <CatsTab />;
       default:
         return <FeedTab onCreatePost={handleCreatePost} />;
     }

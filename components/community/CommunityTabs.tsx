@@ -7,10 +7,10 @@ interface CommunityTabsProps {
 
 const tabs = [
   { id: "feed", label: "피드", icon: "📱" },
-  { id: "discussion", label: "토론 게시판", icon: "💭" },
   { id: "review", label: "리뷰 광장", icon: "⭐" },
-  { id: "cats", label: "나의 고양이 식구들", icon: "🐱" },
+  { id: "discussion", label: "토론 게시판", icon: "💭" },
   { id: "emotions", label: "나의 감정 기록실", icon: "💙" },
+  { id: "cats", label: "나의 고양이 식구들", icon: "🐱" },
 ];
 
 export default function CommunityTabs({
