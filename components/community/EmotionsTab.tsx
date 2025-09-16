@@ -119,7 +119,7 @@ export default function EmotionsTab({ onCreatePost }: EmotionsTabProps) {
 
   // posts가 변경될 때 emotionData 업데이트
   useEffect(() => {
-    let filteredPosts = posts.filter((post) => post.type === "emotion");
+    const filteredPosts = posts.filter((post) => post.type === "emotion");
 
     // 실제 데이터를 EmotionRecord 형태로 변환
     const realEmotionData = filteredPosts.map(convertPostToEmotion);
@@ -448,11 +448,13 @@ export default function EmotionsTab({ onCreatePost }: EmotionsTabProps) {
         </div>
         <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
           <div className="text-2xl font-bold text-blue-400">
-            {Math.round(
-              (emotionData.reduce((sum, item) => sum + item.intensity, 0) /
-                emotionData.length) *
-                10
-            ) / 10}
+            {emotionData.length > 0
+              ? Math.round(
+                  (emotionData.reduce((sum, item) => sum + item.intensity, 0) /
+                    emotionData.length) *
+                    10
+                )
+              : 0}
           </div>
           <div className="text-sm text-gray-400">평균 감정 강도</div>
         </div>

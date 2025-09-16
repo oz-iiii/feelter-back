@@ -59,8 +59,8 @@ const ContentCard: React.FC<ContentCardProps> = ({
         streaming: ["Netflix"],
         streamingUrl: "https://netflix.com",
         youtubeUrl: "https://youtube.com",
-        imgUrl: content.poster || "",
-        bgUrl: content.poster || "",
+        imgUrl: content.poster || "/among-us-poster.png",
+        bgUrl: content.poster || "/among-us-poster.png",
         feelterTime: ["저녁"],
         feelterPurpose: ["휴식"],
         feelterOccasion: ["혼자"],
@@ -101,8 +101,8 @@ const ContentCard: React.FC<ContentCardProps> = ({
         streaming: "Netflix",
         streamingUrl: "https://netflix.com",
         youtubeUrl: "https://youtube.com",
-        imgUrl: content.poster || "",
-        bgUrl: content.poster || "",
+        imgUrl: content.poster || "/among-us-poster.png",
+        bgUrl: content.poster || "/among-us-poster.png",
         feelterTime: ["저녁"],
         feelterPurpose: ["휴식"],
         feelterOccasion: ["혼자"],
@@ -120,7 +120,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
       {/* Thumbnail */}
       <div className="relative w-full h-[75%]">
         <Image
-          src={content.poster || "/images/placeholder.jpg"}
+          src={content.poster || "/among-us-poster.png"}
           alt={content.title}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
