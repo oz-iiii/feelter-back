@@ -72,6 +72,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, masterData }) => {
             category="years"
             data={masterData.years}
           />
+          <FilterSection
+            title="연령 등급별"
+            category="ages"
+            data={masterData.ages}
+          />
+          <FilterSection
+            title="제작국가별"
+            category="countries"
+            data={masterData.countries}
+          />
+          <FilterSection
+            title="상영시간별"
+            category="runtimes"
+            data={masterData.runtimes}
+          />
         </div>
       </div>
     </aside>
