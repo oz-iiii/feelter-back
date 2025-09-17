@@ -105,6 +105,7 @@ interface DiscussionTabProps {
   onCreatePost: () => void;
   onOpenSignIn?: () => void;
   onOpenSignUp?: () => void;
+  onSignOut?: () => void;
 }
 
 // 시간 계산 함수
@@ -152,6 +153,7 @@ export default function DiscussionTab({
   onCreatePost,
   onOpenSignIn,
   onOpenSignUp,
+  onSignOut,
 }: DiscussionTabProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -274,6 +276,7 @@ export default function DiscussionTab({
             onShowAllPosts={handleShowAllPosts}
             onOpenSignIn={onOpenSignIn}
             onOpenSignUp={onOpenSignUp}
+            onSignOut={onSignOut}
             showMyPosts={showMyPosts}
           />
         </div>

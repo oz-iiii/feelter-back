@@ -11,6 +11,7 @@ interface ReviewTabProps {
   onCreatePost: () => void;
   onOpenSignIn?: () => void;
   onOpenSignUp?: () => void;
+  onSignOut?: () => void;
 }
 
 const mockReviewData: ActivityCardProps[] = [
@@ -133,6 +134,7 @@ export default function ReviewTab({
   onCreatePost,
   onOpenSignIn,
   onOpenSignUp,
+  onSignOut,
 }: ReviewTabProps) {
   const { user } = useAuth();
   const { posts, postsLoading, postsError, searchPosts } = useCommunityStore();
@@ -206,6 +208,7 @@ export default function ReviewTab({
             onShowAllPosts={handleShowAllPosts}
             onOpenSignIn={onOpenSignIn}
             onOpenSignUp={onOpenSignUp}
+            onSignOut={onSignOut}
             showMyPosts={showMyPosts}
           />
         </div>

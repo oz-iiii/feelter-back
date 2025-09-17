@@ -9,6 +9,7 @@ interface FilterSidebarProps {
   onShowAllPosts?: () => void;
   onOpenSignIn?: () => void;
   onOpenSignUp?: () => void;
+  onSignOut?: () => void;
   showMyPosts?: boolean;
 }
 
@@ -21,6 +22,7 @@ export default function FilterSidebar({
   onShowAllPosts,
   onOpenSignIn,
   onOpenSignUp,
+  onSignOut,
   showMyPosts = false,
 }: FilterSidebarProps) {
   const { user } = useAuth();
@@ -77,6 +79,15 @@ export default function FilterSidebar({
                 >
                   프로필 편집
                 </button>
+                {onSignOut && (
+                  <button
+                    onClick={onSignOut}
+                    className="w-full py-2 px-3 bg-red-600 hover:bg-red-700 
+                                   rounded-lg text-sm transition-all duration-300 text-white"
+                  >
+                    로그아웃
+                  </button>
+                )}
               </div>
             </>
           ) : (

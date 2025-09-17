@@ -11,6 +11,7 @@ interface FeedTabProps {
   onCreatePost: () => void;
   onOpenSignIn?: () => void;
   onOpenSignUp?: () => void;
+  onSignOut?: () => void;
 }
 
 const mockFeedData: ActivityCardProps[] = [
@@ -141,6 +142,7 @@ export default function FeedTab({
   onCreatePost,
   onOpenSignIn,
   onOpenSignUp,
+  onSignOut,
 }: FeedTabProps) {
   const { user } = useAuth();
   const {
@@ -246,6 +248,7 @@ export default function FeedTab({
             onShowAllPosts={handleShowAllPosts}
             onOpenSignIn={onOpenSignIn}
             onOpenSignUp={onOpenSignUp}
+            onSignOut={onSignOut}
             showMyPosts={showMyPosts}
           />
         </div>
