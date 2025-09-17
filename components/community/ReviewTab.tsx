@@ -1,12 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { useCommunityStore } from "@/lib/stores/communityStore";
 import { CommunityPost } from "@/lib/types/community";
 import ActivityCard, { ActivityCardProps } from "./ActivityCard";
+import FilterSidebar from "./FilterSidebar";
 
 interface ReviewTabProps {
   onCreatePost: () => void;
+  onOpenSignIn?: () => void;
+  onOpenSignUp?: () => void;
 }
 
 const mockReviewData: ActivityCardProps[] = [
@@ -114,7 +118,7 @@ const convertPostToActivityCard = (post: CommunityPost): ActivityCardProps => {
     timestamp: "리뷰를 작성했습니다",
     activityType: "리뷰",
     title: post.movieTitle || post.title,
-    rating: post.rating,
+    rating: post.rating || 0, // 평점이 없는 경우 0으로 설정
     preview:
       post.content.length > 100
         ? `${post.content.substring(0, 100)}...`
@@ -125,11 +129,18 @@ const convertPostToActivityCard = (post: CommunityPost): ActivityCardProps => {
   };
 };
 
-export default function ReviewTab({ onCreatePost }: ReviewTabProps) {
+export default function ReviewTab({
+  onCreatePost,
+  onOpenSignIn,
+  onOpenSignUp,
+}: ReviewTabProps) {
+  const { user } = useAuth();
   const { posts, postsLoading, postsError, searchPosts } = useCommunityStore();
 
   const [reviewData, setReviewData] = useState<ActivityCardProps[]>([]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [showMyPosts, setShowMyPosts] = useState(false);
+  const [sortBy, setSortBy] = useState("최신순");
 
   // 컴포넌트 마운트 시 리뷰 게시글만 가져오기
   useEffect(() => {
@@ -171,158 +182,180 @@ export default function ReviewTab({ onCreatePost }: ReviewTabProps) {
     return "text-red-400";
   };
 
+  const handleShowMyPosts = () => {
+    setShowMyPosts(true);
+  };
+
+  const handleShowAllPosts = () => {
+    setShowMyPosts(false);
+  };
+
+  const handleSortChange = (sort: string) => {
+    setSortBy(sort);
+  };
+
   return (
     <div className="w-full">
-      {/* Page Header */}
-      <div className="text-center mb-8">
-        <h1
-          className="text-3xl lg:text-4xl font-bold mb-4"
-          style={{ color: "#CCFF00" }}
-        >
-          리뷰 광장
-        </h1>
-        <p className="text-gray-400 text-lg">
-          솔직하고 다양한 영화 리뷰를 만나보세요
-        </p>
-      </div>
-
-      {/* Rating Filter */}
-      <div className="mb-6 p-4 bg-gray-800 rounded-xl border border-white/10 shadow-sm">
-        <h3 className="text-sm font-medium text-gray-300 mb-3">평점별 필터</h3>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setSelectedRating(null)}
-            className={`px-3 py-1 rounded-full text-sm transition-all duration-300 ${
-              selectedRating === null
-                ? "text-black"
-                : "text-gray-400 hover:text-white"
-            }`}
-            style={{
-              backgroundColor:
-                selectedRating === null ? "#CCFF00" : "transparent",
-            }}
-          >
-            전체
-          </button>
-          {[5, 4, 3, 2, 1].map((rating) => (
-            <button
-              key={rating}
-              onClick={() => setSelectedRating(rating)}
-              className={`px-3 py-1 rounded-full text-sm transition-all duration-300 flex items-center gap-1 ${
-                selectedRating === rating
-                  ? "text-black"
-                  : `hover:text-white ${getRatingColor(rating)}`
-              }`}
-              style={{
-                backgroundColor:
-                  selectedRating === rating
-                    ? "#CCFF00"
-                    : "rgba(255, 255, 255, 0.1)",
-              }}
-            >
-              <span>★</span>
-              <span>{rating}점</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Create Review Button */}
-      <button
-        onClick={onCreatePost}
-        className="w-full mb-8 py-4 px-6 rounded-xl text-black 
-                   font-bold text-lg hover:shadow-lg transition-all duration-300 
-                   hover:-translate-y-1 border-2 border-transparent hover:border-white/20"
-        style={{
-          backgroundColor: "#CCFF00",
-          boxShadow: "0 4px 20px rgba(204, 255, 0, 0.3)",
-        }}
-      >
-        ⭐ 새 리뷰 작성하기
-      </button>
-
-      {/* Error Message */}
-      {postsError && (
-        <div className="bg-red-600/20 border border-red-600 rounded-xl p-4 mb-6">
-          <p className="text-red-400">{postsError}</p>
-        </div>
-      )}
-
-      {/* Loading Indicator */}
-      {postsLoading && (
-        <div className="flex justify-center items-center py-8">
-          <div className="bg-gray-800 rounded-xl p-6 text-center border border-white/10 shadow-sm">
-            <div
-              className="animate-spin w-8 h-8 border-2 border-t-transparent 
-                        rounded-full mx-auto mb-3"
-              style={{
-                borderColor: "#CCFF00",
-                borderTopColor: "transparent",
-              }}
-            ></div>
-            <p style={{ color: "#CCFF00" }}>리뷰를 불러오는 중...</p>
-          </div>
-        </div>
-      )}
-
-      {/* Review Cards */}
-      <div className="space-y-6">
-        {reviewData.map((item, index) => (
-          <ActivityCard
-            key={index}
-            {...item}
-            className="hover:shadow-yellow-500/10"
+      <div className="flex gap-6">
+        {/* Filter Sidebar */}
+        <div className="w-80 flex-shrink-0">
+          <FilterSidebar
+            sortBy={sortBy}
+            onSortChange={handleSortChange}
+            onShowMyPosts={handleShowMyPosts}
+            onShowAllPosts={handleShowAllPosts}
+            onOpenSignIn={onOpenSignIn}
+            onOpenSignUp={onOpenSignUp}
+            showMyPosts={showMyPosts}
           />
-        ))}
-      </div>
+        </div>
 
-      {/* Stats Summary */}
-      <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
-          <div className="text-2xl font-bold" style={{ color: "#CCFF00" }}>
-            127
+        {/* Main Content */}
+        <div className="flex-1">
+          {/* Rating Filter */}
+          <div className="mb-6 p-4 bg-gray-800 rounded-xl border border-white/10 shadow-sm">
+            <h3 className="text-sm font-medium text-gray-300 mb-3">
+              평점별 필터
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedRating(null)}
+                className={`px-3 py-1 rounded-full text-sm transition-all duration-300 ${
+                  selectedRating === null
+                    ? "text-black"
+                    : "text-gray-400 hover:text-white"
+                }`}
+                style={{
+                  backgroundColor:
+                    selectedRating === null ? "#CCFF00" : "transparent",
+                }}
+              >
+                전체
+              </button>
+              {[5, 4, 3, 2, 1].map((rating) => (
+                <button
+                  key={rating}
+                  onClick={() => setSelectedRating(rating)}
+                  className={`px-3 py-1 rounded-full text-sm transition-all duration-300 flex items-center gap-1 ${
+                    selectedRating === rating
+                      ? "text-black"
+                      : `hover:text-white ${getRatingColor(rating)}`
+                  }`}
+                  style={{
+                    backgroundColor:
+                      selectedRating === rating
+                        ? "#CCFF00"
+                        : "rgba(255, 255, 255, 0.1)",
+                  }}
+                >
+                  <span>★</span>
+                  <span>{rating}점</span>
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="text-sm text-gray-400">총 리뷰 수</div>
-        </div>
-        <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
-          <div className="text-2xl font-bold text-green-400">4.2</div>
-          <div className="text-sm text-gray-400">평균 평점</div>
-        </div>
-        <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
-          <div className="text-2xl font-bold text-blue-400">89</div>
-          <div className="text-sm text-gray-400">이번 주 리뷰</div>
-        </div>
-        <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
-          <div className="text-2xl font-bold text-purple-400">34</div>
-          <div className="text-sm text-gray-400">활성 리뷰어</div>
-        </div>
-      </div>
 
-      {/* Empty State */}
-      {reviewData.length === 0 && !postsLoading && (
-        <div className="text-center py-16">
-          <div className="text-6xl mb-4">⭐</div>
-          <h3 className="text-xl font-bold mb-2" style={{ color: "#CCFF00" }}>
-            해당하는 리뷰가 없습니다
-          </h3>
-          <p className="text-gray-400 mb-6">
-            다른 평점을 선택하거나 새 리뷰를 작성해보세요.
-          </p>
+          {/* Create Review Button */}
           <button
             onClick={onCreatePost}
-            className="px-6 py-3 rounded-lg font-medium hover:shadow-lg 
-                       transition-all duration-300 border-2 border-transparent 
-                       hover:border-white/20"
+            className="w-full mb-8 py-4 px-6 rounded-xl text-black 
+                   font-bold text-lg hover:shadow-lg transition-all duration-300 
+                   hover:-translate-y-1 border-2 border-transparent hover:border-white/20"
             style={{
               backgroundColor: "#CCFF00",
-              color: "#111111",
               boxShadow: "0 4px 20px rgba(204, 255, 0, 0.3)",
             }}
           >
-            첫 번째 리뷰 작성하기
+            ⭐ 새 리뷰 작성하기
           </button>
+
+          {/* Error Message */}
+          {postsError && (
+            <div className="bg-red-600/20 border border-red-600 rounded-xl p-4 mb-6">
+              <p className="text-red-400">{postsError}</p>
+            </div>
+          )}
+
+          {/* Loading Indicator */}
+          {postsLoading && (
+            <div className="flex justify-center items-center py-8">
+              <div className="bg-gray-800 rounded-xl p-6 text-center border border-white/10 shadow-sm">
+                <div
+                  className="animate-spin w-8 h-8 border-2 border-t-transparent 
+                        rounded-full mx-auto mb-3"
+                  style={{
+                    borderColor: "#CCFF00",
+                    borderTopColor: "transparent",
+                  }}
+                ></div>
+                <p style={{ color: "#CCFF00" }}>리뷰를 불러오는 중...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Review Cards */}
+          <div className="space-y-6">
+            {reviewData.map((item, index) => (
+              <ActivityCard
+                key={index}
+                {...item}
+                className="hover:shadow-yellow-500/10"
+              />
+            ))}
+          </div>
+
+          {/* Stats Summary */}
+          <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
+              <div className="text-2xl font-bold" style={{ color: "#CCFF00" }}>
+                127
+              </div>
+              <div className="text-sm text-gray-400">총 리뷰 수</div>
+            </div>
+            <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
+              <div className="text-2xl font-bold text-green-400">4.2</div>
+              <div className="text-sm text-gray-400">평균 평점</div>
+            </div>
+            <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
+              <div className="text-2xl font-bold text-blue-400">89</div>
+              <div className="text-sm text-gray-400">이번 주 리뷰</div>
+            </div>
+            <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
+              <div className="text-2xl font-bold text-purple-400">34</div>
+              <div className="text-sm text-gray-400">활성 리뷰어</div>
+            </div>
+          </div>
+
+          {/* Empty State */}
+          {reviewData.length === 0 && !postsLoading && (
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">⭐</div>
+              <h3
+                className="text-xl font-bold mb-2"
+                style={{ color: "#CCFF00" }}
+              >
+                해당하는 리뷰가 없습니다
+              </h3>
+              <p className="text-gray-400 mb-6">
+                다른 평점을 선택하거나 새 리뷰를 작성해보세요.
+              </p>
+              <button
+                onClick={onCreatePost}
+                className="px-6 py-3 rounded-lg font-medium hover:shadow-lg 
+                       transition-all duration-300 border-2 border-transparent 
+                       hover:border-white/20"
+                style={{
+                  backgroundColor: "#CCFF00",
+                  color: "#111111",
+                  boxShadow: "0 4px 20px rgba(204, 255, 0, 0.3)",
+                }}
+              >
+                첫 번째 리뷰 작성하기
+              </button>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

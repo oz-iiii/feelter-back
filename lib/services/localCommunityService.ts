@@ -43,7 +43,7 @@ const saveToLocalStorage = <T>(key: string, data: T): void => {
 
 // 게시글 관련 서비스 (로컬 버전)
 export const localPostService = {
-  // 모든 게시글 가져오기
+  // 모든 게시글 가져오기 (감정 게시글 제외)
   async getAllPosts(
     pageSize: number = 20,
     offset: number = 0
@@ -58,8 +58,11 @@ export const localPostService = {
         []
       );
 
+      // 감정 게시글 제외 (개인 전용이므로 공개 피드에서 제외)
+      const publicPosts = allPosts.filter((post) => post.type !== "emotion");
+
       // 날짜순 정렬 (최신순)
-      const sortedPosts = allPosts.sort(
+      const sortedPosts = publicPosts.sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
@@ -94,6 +97,9 @@ export const localPostService = {
       // 필터 적용
       if (filters.type) {
         allPosts = allPosts.filter((post) => post.type === filters.type);
+      } else {
+        // 타입 필터가 없으면 감정 게시글 제외 (공개 게시글만)
+        allPosts = allPosts.filter((post) => post.type !== "emotion");
       }
 
       if (filters.status) {

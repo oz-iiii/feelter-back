@@ -9,7 +9,7 @@ import {
 
 // 게시글 관련 서비스
 export const postService = {
-  // 모든 게시글 가져오기 (페이지네이션 포함)
+  // 모든 게시글 가져오기 (페이지네이션 포함, 감정 게시글 제외)
   async getAllPosts(
     pageSize: number = 20,
     offset: number = 0
@@ -19,15 +19,17 @@ export const postService = {
     total: number;
   }> {
     try {
-      // 전체 개수 가져오기
+      // 전체 개수 가져오기 (감정 게시글 제외)
       const { count } = await supabase
         .from("posts")
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact", head: true })
+        .neq("type", "emotion");
 
-      // 게시글 데이터 가져오기
+      // 게시글 데이터 가져오기 (감정 게시글 제외)
       const { data, error } = await supabase
         .from("posts")
         .select("*")
+        .neq("type", "emotion")
         .order("created_at", { ascending: false })
         .range(offset, offset + pageSize - 1);
 
@@ -62,6 +64,9 @@ export const postService = {
       // 필터 적용
       if (filters.type) {
         query = query.eq("type", filters.type);
+      } else {
+        // 타입 필터가 없으면 감정 게시글 제외 (공개 게시글만)
+        query = query.neq("type", "emotion");
       }
 
       if (filters.status) {

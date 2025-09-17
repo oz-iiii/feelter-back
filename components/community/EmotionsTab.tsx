@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import { useCommunityStore } from "@/lib/stores/communityStore";
 import { CommunityPost } from "@/lib/types/community";
 
@@ -18,59 +20,6 @@ interface EmotionRecord {
 interface EmotionsTabProps {
   onCreatePost: () => void;
 }
-
-const mockEmotionData: EmotionRecord[] = [
-  {
-    id: "1",
-    movie: "라라랜드",
-    emotion: "슬픔",
-    emoji: "😭",
-    date: "2024.01.15",
-    text: "마지막 장면에서 정말 많이 울었어요. 사랑과 꿈 사이의 선택이라는 주제가 너무 현실적이고 아프게 다가왔습니다.",
-    intensity: 5,
-    tags: ["뮤지컬", "로맨스", "꿈과현실"],
-  },
-  {
-    id: "2",
-    movie: "탑건: 매버릭",
-    emoji: "🔥",
-    emotion: "흥분",
-    date: "2024.01.12",
-    text: "액션 장면이 정말 숨막혔어요! 특히 마지막 미션 장면에서는 손에 땀을 쥐고 봤습니다. 톰 크루즈의 카리스마가 여전해요.",
-    intensity: 4,
-    tags: ["액션", "아드레날린", "톰크루즈"],
-  },
-  {
-    id: "3",
-    movie: "어바웃 타임",
-    emoji: "💖",
-    emotion: "따뜻함",
-    date: "2024.01.08",
-    text: "일상의 소중함을 다시 한 번 느꼈습니다. 가족과 사랑에 대한 따뜻한 메시지가 마음 깊이 와닿았어요.",
-    intensity: 4,
-    tags: ["가족", "일상", "시간여행"],
-  },
-  {
-    id: "4",
-    movie: "기생충",
-    emoji: "😰",
-    emotion: "불안",
-    date: "2024.01.05",
-    text: "계급사회의 현실을 너무 적나라하게 보여줘서 불편하면서도 깊이 생각하게 됐어요. 봉준호 감독의 연출력이 대단합니다.",
-    intensity: 5,
-    tags: ["사회비판", "계급갈등", "봉준호"],
-  },
-  {
-    id: "5",
-    movie: "미나리",
-    emoji: "🥺",
-    emotion: "그리움",
-    date: "2024.01.02",
-    text: "할머니와의 추억이 생각나서 눈물이 났어요. 가족의 의미와 고향에 대한 그리움을 아름답게 그려낸 작품입니다.",
-    intensity: 4,
-    tags: ["가족", "이민", "할머니"],
-  },
-];
 
 const emotionColors = {
   슬픔: "from-blue-500 to-indigo-600",
@@ -104,6 +53,8 @@ const convertPostToEmotion = (post: CommunityPost): EmotionRecord => {
 };
 
 export default function EmotionsTab({ onCreatePost }: EmotionsTabProps) {
+  const router = useRouter();
+  const { user, loading } = useAuth();
   const { posts, postsLoading, postsError, searchPosts } = useCommunityStore();
 
   const [emotionData, setEmotionData] = useState<EmotionRecord[]>([]);
@@ -112,26 +63,31 @@ export default function EmotionsTab({ onCreatePost }: EmotionsTabProps) {
     null
   );
 
+  // 로그인 상태 확인 및 리다이렉트
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/community");
+    }
+  }, [user, loading, router]);
+
   // 컴포넌트 마운트 시 감정 게시글만 가져오기
   useEffect(() => {
     searchPosts({ type: "emotion" }, true);
   }, [searchPosts]);
 
-  // posts가 변경될 때 emotionData 업데이트
+  // posts가 변경될 때 emotionData 업데이트 (본인 게시글만)
   useEffect(() => {
-    const filteredPosts = posts.filter((post) => post.type === "emotion");
+    if (!user) return;
+
+    // 본인이 작성한 감정 게시글만 필터링
+    const filteredPosts = posts.filter(
+      (post) => post.type === "emotion" && post.authorId === user.id
+    );
 
     // 실제 데이터를 EmotionRecord 형태로 변환
     const realEmotionData = filteredPosts.map(convertPostToEmotion);
-    let combinedData = [...realEmotionData];
-
-    // 실제 데이터가 없을 때만 mock 데이터 사용
-    if (realEmotionData.length === 0) {
-      combinedData = [...mockEmotionData];
-    }
-
-    setEmotionData(combinedData);
-  }, [posts]);
+    setEmotionData(realEmotionData);
+  }, [posts, user]);
 
   const getEmotionColor = (emotion: string) => {
     return (
@@ -163,21 +119,65 @@ export default function EmotionsTab({ onCreatePost }: EmotionsTabProps) {
     setSelectedRecord(record);
   };
 
+  const handleEditRecord = async (record: EmotionRecord) => {
+    // 편집 기능은 추후 구현
+    console.log("편집할 기록:", record);
+    alert("편집 기능은 추후 구현 예정입니다.");
+  };
+
+  const handleDeleteRecord = async (record: EmotionRecord) => {
+    if (confirm("정말로 이 감정 기록을 삭제하시겠습니까?")) {
+      try {
+        // 삭제 기능은 추후 구현
+        console.log("삭제할 기록:", record);
+        alert("삭제 기능은 추후 구현 예정입니다.");
+        setSelectedRecord(null);
+      } catch (error) {
+        console.error("삭제 실패:", error);
+        alert("삭제에 실패했습니다.");
+      }
+    }
+  };
+
+  // 로딩 중이거나 로그인하지 않은 경우
+  if (loading) {
+    return (
+      <div className="w-full">
+        <div className="flex justify-center items-center py-16">
+          <div className="bg-gray-800 rounded-xl p-6 text-center border border-white/10 shadow-sm">
+            <div
+              className="animate-spin w-8 h-8 border-2 border-t-transparent 
+                        rounded-full mx-auto mb-3"
+              style={{
+                borderColor: "#CCFF00",
+                borderTopColor: "transparent",
+              }}
+            ></div>
+            <p style={{ color: "#CCFF00" }}>로그인 상태를 확인하는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="w-full">
+        <div className="text-center py-16">
+          <div className="text-6xl mb-4">🔒</div>
+          <h3 className="text-xl font-bold mb-2" style={{ color: "#CCFF00" }}>
+            로그인이 필요합니다
+          </h3>
+          <p className="text-gray-400 mb-6">
+            나의 감정 기록실은 로그인한 사용자만 이용할 수 있습니다.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
-      {/* Page Header */}
-      <div className="text-center mb-8">
-        <h1
-          className="text-3xl lg:text-4xl font-bold mb-4"
-          style={{ color: "#CCFF00" }}
-        >
-          나의 감정 기록실
-        </h1>
-        <p className="text-gray-400 text-lg">
-          영화로 느낀 감정들을 기록하고 추억해보세요
-        </p>
-      </div>
-
       {/* Emotion Filter */}
       <div className="mb-6 p-4 bg-gray-800 rounded-xl border border-white/10 shadow-sm">
         <h3 className="text-sm font-medium text-gray-300 mb-3">감정별 필터</h3>
@@ -419,12 +419,16 @@ export default function EmotionsTab({ onCreatePost }: EmotionsTabProps) {
             {/* Actions */}
             <div className="flex gap-3">
               <button
+                onClick={() => handleEditRecord(selectedRecord)}
                 className="flex-1 py-3 px-6 rounded-xl text-black font-bold hover:shadow-lg transition-all duration-300"
                 style={{ backgroundColor: "#CCFF00" }}
               >
                 편집하기
               </button>
-              <button className="flex-1 py-3 px-6 bg-white/10 hover:bg-white/20 rounded-xl text-white font-bold transition-all duration-300">
+              <button
+                onClick={() => handleDeleteRecord(selectedRecord)}
+                className="flex-1 py-3 px-6 bg-white/10 hover:bg-white/20 rounded-xl text-white font-bold transition-all duration-300"
+              >
                 삭제하기
               </button>
             </div>

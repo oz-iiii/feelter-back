@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Cat {
   id: string;
@@ -75,7 +77,16 @@ const mockCatData: Cat[] = [
 ];
 
 export default function CatsTab() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
   const [selectedCat, setSelectedCat] = useState<Cat | null>(null);
+
+  // 로그인 상태 확인 및 리다이렉트
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/community");
+    }
+  }, [user, loading, router]);
 
   const getProgressColor = (level: number) => {
     if (level >= 7) return "from-purple-500 to-pink-500";
@@ -95,21 +106,45 @@ export default function CatsTab() {
     setSelectedCat(cat);
   };
 
+  // 로딩 중이거나 로그인하지 않은 경우
+  if (loading) {
+    return (
+      <div className="w-full">
+        <div className="flex justify-center items-center py-16">
+          <div className="bg-gray-800 rounded-xl p-6 text-center border border-white/10 shadow-sm">
+            <div
+              className="animate-spin w-8 h-8 border-2 border-t-transparent 
+                        rounded-full mx-auto mb-3"
+              style={{
+                borderColor: "#CCFF00",
+                borderTopColor: "transparent",
+              }}
+            ></div>
+            <p style={{ color: "#CCFF00" }}>로그인 상태를 확인하는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="w-full">
+        <div className="text-center py-16">
+          <div className="text-6xl mb-4">🔒</div>
+          <h3 className="text-xl font-bold mb-2" style={{ color: "#CCFF00" }}>
+            로그인이 필요합니다
+          </h3>
+          <p className="text-gray-400 mb-6">
+            나의 고양이 식구들은 로그인한 사용자만 이용할 수 있습니다.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
-      {/* Page Header */}
-      <div className="text-center mb-8">
-        <h1
-          className="text-3xl lg:text-4xl font-bold mb-4"
-          style={{ color: "#CCFF00" }}
-        >
-          나의 고양이 식구들
-        </h1>
-        <p className="text-gray-400 text-lg">
-          영화 리뷰와 함께 성장하는 귀여운 친구들
-        </p>
-      </div>
-
       {/* Cat Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {mockCatData.map((cat) => (

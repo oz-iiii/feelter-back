@@ -75,7 +75,7 @@ export default function ActivityCard({
   };
 
   const renderStars = () => {
-    if (rating === undefined) return null;
+    if (rating === undefined || rating === 0) return null;
 
     return (
       <div className="flex gap-1 mb-3">
