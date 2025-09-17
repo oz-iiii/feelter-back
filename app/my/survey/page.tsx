@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import MyLayout from "@/components/my/MyLayout";
+import { usePointStore } from "@/lib/stores";
 
 export default function SurveyPage() {
+  const { addPoints } = usePointStore();
   const [currentSurvey] = useState({
     id: 1,
     title: "2024 연말 영화 시청 패턴 조사",
@@ -105,7 +107,9 @@ export default function SurveyPage() {
   };
 
   const handleSubmitSurvey = () => {
-    alert("설문조사가 완료되었습니다! 500 포인트가 적립되었습니다.");
+    // 실제 포인트 적립
+    addPoints(currentSurvey.reward, "설문조사 완료", currentSurvey.title);
+    alert(`설문조사가 완료되었습니다! ${currentSurvey.reward} 포인트가 적립되었습니다.`);
     setShowSurveyDetail(false);
     setCurrentStep(0);
     setAnswers({});

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
 import { useAuth } from "@/hooks/useAuth";
+import { usePointStore } from "@/lib/stores";
 import { supabase } from "@/lib/supabase";
 import SignInModal from "@/components/auth/SignInModal";
 import SignUpModal from "@/components/auth/SignUpModal";
@@ -12,6 +13,7 @@ import OttPlatformDisplay from "@/components/common/OttPlatformDisplay";
 
 export default function ProfilePage() {
 	const { user, loading, updateOttPlatforms } = useAuth();
+	const { currentPoints } = usePointStore();
 	const [isEditing, setIsEditing] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 	const [tempProfile, setTempProfile] = useState<{
@@ -33,12 +35,12 @@ export default function ProfilePage() {
 				nickname: user.nickname || user.email?.split("@")[0] || "",
 				email: user.email || "",
 				profileImage: user.profile_image || "",
-				points: user.points || 0,
+				points: currentPoints,
 				selectedOttPlatforms: user.selectedOttPlatforms || [],
 				bio: user.bio || "",
 			});
 		}
-	}, [user]);
+	}, [user, currentPoints]);
 
 	const handleSave = async () => {
 		if (!tempProfile || !user) return;
@@ -112,7 +114,7 @@ export default function ProfilePage() {
 				nickname: user.nickname || user.email?.split("@")[0] || "",
 				email: user.email || "",
 				profileImage: user.profile_image || "",
-				points: user.points || 0,
+				points: currentPoints,
 				selectedOttPlatforms: user.selectedOttPlatforms || [],
 				bio: user.bio || "",
 			});

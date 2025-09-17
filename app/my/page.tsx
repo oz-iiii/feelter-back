@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
-import { useFavoriteStore, useWatchHistoryStore } from "@/lib/stores";
+import { useFavoriteStore, useWatchHistoryStore, usePointStore } from "@/lib/stores";
 import { useAuth } from "@/hooks/useAuth";
 import SignInModal from "@/components/auth/SignInModal";
 import SignUpModal from "@/components/auth/SignUpModal";
@@ -13,6 +13,7 @@ import OttPlatformDisplay from "@/components/common/OttPlatformDisplay";
 export default function MyPage() {
   const { favorites, removeFromFavorites } = useFavoriteStore();
   const { getRecentHistory } = useWatchHistoryStore();
+  const { currentPoints, resetToDefault } = usePointStore();
   const { user } = useAuth();
 
   // 모달 상태 관리

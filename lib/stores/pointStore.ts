@@ -11,6 +11,7 @@ export interface PointHistoryItem {
 }
 
 interface PointState {
+  version: number;
   currentPoints: number;
   pointHistory: PointHistoryItem[];
 
@@ -19,66 +20,34 @@ interface PointState {
   usePoints: (amount: number, description: string, movieTitle?: string) => void;
   updatePoints: (newPoints: number) => void;
   clearHistory: () => void;
+  resetToDefault: () => void;
+  initializeNewUser: () => void;
   getTotalEarned: () => number;
   getTotalUsed: () => number;
   getFilteredHistory: (filter: string) => PointHistoryItem[];
 }
 
+// 신규 사용자 환영 보너스
+const welcomeBonus: PointHistoryItem = {
+  id: 1,
+  type: "earn",
+  amount: 100,
+  description: "회원가입 환영 보너스",
+  date: new Date().toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).replace(/\s/g, '').replace(/\./g, '.'),
+  movieTitle: null,
+};
+
 export const usePointStore = create<PointState>()(
   devtools(
     persist(
       (set, get) => ({
-        currentPoints: 2450,
-        pointHistory: [
-          {
-            id: 1,
-            type: "earn",
-            amount: 100,
-            description: "영화 리뷰 작성",
-            date: "2024.08.10",
-            movieTitle: "인터스텔라",
-          },
-          {
-            id: 2,
-            type: "earn",
-            amount: 50,
-            description: "영화 평점 등록",
-            date: "2024.08.08",
-            movieTitle: "기생충",
-          },
-          {
-            id: 3,
-            type: "use",
-            amount: -200,
-            description: "프리미엄 영화 대여",
-            date: "2024.08.07",
-            movieTitle: "타이타닉",
-          },
-          {
-            id: 4,
-            type: "earn",
-            amount: 300,
-            description: "설문조사 참여",
-            date: "2024.08.05",
-            movieTitle: null,
-          },
-          {
-            id: 5,
-            type: "use",
-            amount: -150,
-            description: "할인 쿠폰",
-            date: "2024.08.03",
-            movieTitle: null,
-          },
-          {
-            id: 6,
-            type: "earn",
-            amount: 250,
-            description: "추천 영화 등록",
-            date: "2024.08.01",
-            movieTitle: "라라랜드",
-          },
-        ],
+        version: 1,
+        currentPoints: 100,
+        pointHistory: [welcomeBonus],
 
         addPoints: (amount: number, description: string, movieTitle?: string) => {
           const { pointHistory, currentPoints } = get();
@@ -139,6 +108,22 @@ export const usePointStore = create<PointState>()(
           set({ pointHistory: [] });
         },
 
+        resetToDefault: () => {
+          set({
+            version: 1,
+            currentPoints: 100,
+            pointHistory: [welcomeBonus],
+          });
+        },
+
+        initializeNewUser: () => {
+          set({
+            version: 1,
+            currentPoints: 100,
+            pointHistory: [welcomeBonus],
+          });
+        },
+
         getTotalEarned: () => {
           const { pointHistory } = get();
           return pointHistory
@@ -163,6 +148,18 @@ export const usePointStore = create<PointState>()(
       }),
       {
         name: "point-store", // localStorage key
+        version: 1,
+        migrate: (persistedState: any, version: number) => {
+          if (version < 1) {
+            // 기존 데이터를 새로운 형태로 마이그레이션
+            return {
+              version: 1,
+              currentPoints: 100,
+              pointHistory: [welcomeBonus]
+            }
+          }
+          return persistedState
+        },
       }
     ),
     {
