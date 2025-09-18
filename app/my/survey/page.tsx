@@ -76,7 +76,7 @@ export default function SurveyPage() {
   const [answers, setAnswers] = useState<{
     [key: number]: string | string[] | number;
   }>({});
-  const [completedSurveys] = useState([
+  const [completedSurveys, setCompletedSurveys] = useState([
     {
       id: 1,
       title: "영화 선호도 조사",
@@ -107,15 +107,40 @@ export default function SurveyPage() {
   };
 
   const handleSubmitSurvey = () => {
+    // 현재 날짜를 한국어 형식으로 생성
+    const currentDate = new Date().toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).replace(/\s/g, '').replace(/\./g, '.');
+
+    // 완료한 설문을 목록에 추가
+    const newCompletedSurvey = {
+      id: Date.now(), // 고유 ID 생성
+      title: currentSurvey.title,
+      completedDate: currentDate,
+      reward: currentSurvey.reward,
+      status: "completed" as const,
+    };
+
+    setCompletedSurveys(prev => [newCompletedSurvey, ...prev]);
+
     // 실제 포인트 적립
     addPoints(currentSurvey.reward, "설문조사 완료", currentSurvey.title);
     alert(`설문조사가 완료되었습니다! ${currentSurvey.reward} 포인트가 적립되었습니다.`);
+
+    // 상태 초기화
     setShowSurveyDetail(false);
     setCurrentStep(0);
     setAnswers({});
   };
 
   const progress = ((currentStep + 1) / currentSurvey.questions.length) * 100;
+
+  // 현재 설문이 이미 완료되었는지 확인
+  const isCurrentSurveyCompleted = completedSurveys.some(
+    survey => survey.title === currentSurvey.title
+  );
 
   return (
     <MyLayout>
@@ -130,7 +155,7 @@ export default function SurveyPage() {
         {!showSurveyDetail ? (
           <div className="space-y-8">
             {/* Current Survey */}
-            <div className="bg-gray-800 rounded-lg shadow-sm p-6">
+            <div className={`bg-gray-800 rounded-lg shadow-sm p-6 ${isCurrentSurveyCompleted ? 'opacity-60' : ''}`}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h2 className="text-xl font-semibold text-white mb-2">
@@ -140,9 +165,15 @@ export default function SurveyPage() {
                     {currentSurvey.description}
                   </p>
                 </div>
-                <span className="bg-green-900 text-green-300 text-sm font-medium px-2.5 py-0.5 rounded">
-                  새 설문
-                </span>
+                {isCurrentSurveyCompleted ? (
+                  <span className="bg-blue-900 text-blue-300 text-sm font-medium px-2.5 py-0.5 rounded">
+                    완료됨
+                  </span>
+                ) : (
+                  <span className="bg-green-900 text-green-300 text-sm font-medium px-2.5 py-0.5 rounded">
+                    새 설문
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center justify-between mb-6">
@@ -198,12 +229,21 @@ export default function SurveyPage() {
                 </div>
               </div>
 
-              <button
-                onClick={() => setShowSurveyDetail(true)}
-                className="w-full bg-[#ccff00] hover:bg-[#b8e600] text-black py-3 px-4 rounded-lg font-medium transition-colors"
-              >
-                설문 시작하기
-              </button>
+              {isCurrentSurveyCompleted ? (
+                <button
+                  disabled
+                  className="w-full bg-gray-600 text-gray-400 py-3 px-4 rounded-lg font-medium cursor-not-allowed"
+                >
+                  이미 완료한 설문입니다
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowSurveyDetail(true)}
+                  className="w-full bg-[#ccff00] hover:bg-[#b8e600] text-black py-3 px-4 rounded-lg font-medium transition-colors"
+                >
+                  설문 시작하기
+                </button>
+              )}
             </div>
 
             {/* Completed Surveys */}
