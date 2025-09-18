@@ -5,34 +5,14 @@ import MyLayout from "@/components/my/MyLayout";
 import { usePointStore } from "@/lib/stores";
 
 export default function PointsPage() {
-	const {
-		currentPoints,
-		pointHistory,
-		getTotalEarned,
-		getTotalUsed,
-		getFilteredHistory,
-		addPoints,
-		usePoints,
-	} = usePointStore();
+	const { currentPoints, getTotalEarned, getTotalUsed, getFilteredHistory } =
+		usePointStore();
 
 	const [filter, setFilter] = useState("all");
 
 	const filteredHistory = getFilteredHistory(filter);
 	const totalEarned = getTotalEarned();
 	const totalUsed = getTotalUsed();
-
-	// 테스트용 포인트 추가/사용 함수들
-	const handleAddTestPoints = () => {
-		addPoints(100, "테스트 포인트 적립", "테스트 영화");
-	};
-
-	const handleUseTestPoints = () => {
-		try {
-			usePoints(50, "테스트 포인트 사용", "테스트 영화");
-		} catch (error) {
-			alert((error as Error).message);
-		}
-	};
 
 	return (
 		<MyLayout>
