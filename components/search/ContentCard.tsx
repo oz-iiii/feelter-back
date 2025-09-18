@@ -172,7 +172,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
             </h3>
           )}
           <p className="text-[14px] text-[#B0B3B8] mt-1">
-            {content.year} / {content.genre}
+            {content.year} / {Array.isArray(content.genre) ? content.genre.join(', ') : content.genre}
           </p>
         </div>
         {content.rating && (
