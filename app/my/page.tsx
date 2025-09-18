@@ -17,7 +17,7 @@ import OttPlatformDisplay from "@/components/common/OttPlatformDisplay";
 export default function MyPage() {
 	const { favorites, removeFromFavorites } = useFavoriteStore();
 	const { getRecentHistory } = useWatchHistoryStore();
-	usePointStore();
+	const { currentPoints } = usePointStore();
 	const { user } = useAuth();
 
 	// 모달 상태 관리
@@ -190,7 +190,7 @@ export default function MyPage() {
 									내 포인트
 								</h2>
 								<p className="text-3xl font-bold text-[#b8e600]">
-									{user.points?.toLocaleString() || 0} P
+									{currentPoints.toLocaleString()} P
 								</p>
 							</div>
 							<div className="flex space-x-3">
