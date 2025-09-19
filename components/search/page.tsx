@@ -5,20 +5,55 @@ import SearchBar from "./SearchBar";
 import ContentGrid from "./ContentGrid";
 import Footer from "./Footer";
 import Sidebar from "./Sidebar";
-import { sampleContent, ContentItem, MASTER_DATA } from "@/lib/data";
+import MovieModal from "./MovieModal";
+import { ContentItem, MASTER_DATA } from "@/lib/data";
 
 export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState("latest");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(
+    null
+  );
   const pageSize = 8;
+
+  // 기본 콘텐츠 샘플 (sampleContent 대체)
+  const baseContent: ContentItem[] = [
+    {
+      title: "샘플 영화 A",
+      year: 2024,
+      genre: "드라마",
+      rating: 8.2,
+      poster: "/among-us-poster.png",
+      popularity: 90,
+      description: "감동적인 스토리의 드라마 영화",
+    },
+    {
+      title: "샘플 영화 B",
+      year: 2023,
+      genre: ["액션", "스릴러"],
+      rating: 7.6,
+      poster: "/among-us-poster.png",
+      popularity: 80,
+      description: "짜릿한 액션과 서스펜스",
+    },
+    {
+      title: "샘플 시리즈 C",
+      year: 2022,
+      genre: "코미디",
+      rating: 8.9,
+      poster: "/among-us-poster.png",
+      popularity: 95,
+      description: "유쾌한 에피소드가 가득한 시리즈",
+    },
+  ];
 
   const buildLargeDataset = (times: number = 10): ContentItem[] => {
     const arr: ContentItem[] = [];
     for (let i = 0; i < times; i += 1) {
       arr.push(
-        ...sampleContent.map((x, idx) => ({
+        ...baseContent.map((x: ContentItem, idx: number) => ({
           ...x,
           title: `${x.title} ${i + 1}-${idx + 1}`,
         }))
@@ -119,12 +154,14 @@ export default function Home() {
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={handlePageChange}
-            onCardClick={function (): void {
-              throw new Error("Function not implemented.");
-            }}
+            onCardClick={(item) => setSelectedContent(item)}
           />
         </div>
       </main>
+      <MovieModal
+        content={selectedContent}
+        onClose={() => setSelectedContent(null)}
+      />
       <Footer />
     </div>
   );
