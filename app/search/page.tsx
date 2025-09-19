@@ -25,7 +25,7 @@ const movieToContentItem = (movie: Movie): ContentItem => ({
       ? movie.release.getFullYear()
       : new Date(movie.release).getFullYear(),
   genre: movie.genre,
-  rating: 8.5, // Default rating since Movie doesn't have rating
+  rating: typeof movie.rating === "number" ? movie.rating : undefined, // 실제 네티즌 평점만 표시
   poster: movie.imgUrl,
   popularity: 85, // Default popularity
   description: movie.overview,
@@ -70,7 +70,7 @@ function SearchPageContent() {
       title: "파이널 데스티네이션",
       year: 2024,
       genre: ["액션", "스릴러"],
-      rating: 8.5,
+      rating: 6.2, // 낮은 평점
       poster: "/images/placeholder.jpg",
       popularity: 85,
       description: "스릴러 영화입니다.",
@@ -118,6 +118,71 @@ function SearchPageContent() {
       runtime: "140분",
       platform: ["Netflix"],
     },
+    {
+      title: "어벤져스: 엔드게임",
+      year: 2019,
+      genre: ["액션", "SF", "어드벤처"],
+      rating: 8.4,
+      poster: "/images/placeholder.jpg",
+      popularity: 92,
+      description: "마블 시네마틱 유니버스의 대단원.",
+      age: "12세",
+      country: ["미국"],
+      runtime: "181분",
+      platform: ["Disney+"],
+    },
+    {
+      title: "어벤져스: 인피니티 워",
+      year: 2018,
+      genre: ["액션", "SF", "어드벤처"],
+      rating: 8.4,
+      poster: "/images/placeholder.jpg",
+      popularity: 91,
+      description: "타노스의 지구 침공.",
+      age: "12세",
+      country: ["미국"],
+      runtime: "149분",
+      platform: ["Disney+"],
+    },
+    {
+      title: "스파이더맨: 노 웨이 홈",
+      year: 2021,
+      genre: ["액션", "SF", "어드벤처"],
+      rating: 8.2,
+      poster: "/images/placeholder.jpg",
+      popularity: 89,
+      description: "멀티버스의 스파이더맨들.",
+      age: "12세",
+      country: ["미국"],
+      runtime: "148분",
+      platform: ["Disney+"],
+    },
+    {
+      title: "어벤져스",
+      year: 2012,
+      genre: ["액션", "SF", "어드벤처"],
+      rating: 8.0,
+      poster: "/images/placeholder.jpg",
+      popularity: 87,
+      description: "최초의 어벤져스 팀 결성.",
+      age: "12세",
+      country: ["미국"],
+      runtime: "143분",
+      platform: ["Disney+"],
+    },
+    {
+      title: "평점 없는 영화",
+      year: 2020,
+      genre: ["드라마"],
+      // rating 없음 - 평점이 없는 영화 테스트용
+      poster: "/images/placeholder.jpg",
+      popularity: 75,
+      description: "평점이 없는 영화입니다.",
+      age: "15세",
+      country: ["한국"],
+      runtime: "110분",
+      platform: ["Netflix"],
+    },
   ];
 
   // Convert movies to ContentItem format for compatibility
@@ -142,7 +207,7 @@ function SearchPageContent() {
           case "popular":
             return item.popularity || 0;
           case "rating":
-            return item.rating || 8.0;
+            return item.rating || -1; // 평점이 없으면 -1로 처리 (맨 뒤로 정렬)
           case "title":
             return item.title || "";
           default:
@@ -154,6 +219,20 @@ function SearchPageContent() {
         if (sortKey === "title") {
           return String(getSortValue(a)).localeCompare(String(getSortValue(b)));
         }
+
+        // 평점 정렬시 특별 처리
+        if (sortKey === "rating") {
+          const aRating = a.rating || -1;
+          const bRating = b.rating || -1;
+
+          // 둘 다 평점이 있거나 둘 다 평점이 없는 경우
+          if ((aRating >= 0 && bRating >= 0) || (aRating < 0 && bRating < 0)) {
+            return Number(bRating) - Number(aRating);
+          }
+          // 평점이 있는 것을 앞으로, 없는 것을 뒤로
+          return bRating - aRating;
+        }
+
         return Number(getSortValue(b)) - Number(getSortValue(a));
       });
     },

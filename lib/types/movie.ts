@@ -18,6 +18,7 @@ export interface Movie {
   feelterTime: string | string[]; // 필터 추천 시간대
   feelterPurpose: string | string[]; // 필터 추천 목적
   feelterOccasion: string | string[]; // 필터 추천 상황
+  rating?: number; // 네티즌 평점 (contents 테이블에서 가져옴)
   createdAt: Date;
   updatedAt: Date;
 }
