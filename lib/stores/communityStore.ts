@@ -214,10 +214,12 @@ export const useCommunityStore = create<CommunityState>()(
       },
 
       loadMorePosts: async () => {
-        const { hasMorePosts, filters } = get();
-        if (!hasMorePosts) return;
+        const { hasMorePosts, filters, postsLoading } = get();
 
-        set({ postsLoading: true });
+        // 이미 로딩 중이거나 더 이상 가져올 데이터가 없으면 중단
+        if (!hasMorePosts || postsLoading) return;
+
+        set({ postsLoading: true, postsError: null });
         try {
           const pageSize = 20;
           const offset = get().posts.length;
@@ -238,6 +240,7 @@ export const useCommunityStore = create<CommunityState>()(
             postsLoading: false,
           }));
         } catch (error) {
+          console.error("loadMorePosts error:", error);
           set({
             postsError:
               error instanceof Error

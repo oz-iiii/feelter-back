@@ -219,20 +219,39 @@ export default function FeedTab({
     setSortBy(sort);
   };
 
-  // Infinite scroll handler
+  // Infinite scroll handler with throttling
   useEffect(() => {
+    let isLoading = false;
+    let lastScrollTime = 0;
+    const THROTTLE_DELAY = 300; // 300ms throttle
+
     const handleScroll = () => {
+      const now = Date.now();
+
+      // Throttling: 마지막 스크롤 이벤트로부터 300ms가 지나지 않았으면 무시
+      if (now - lastScrollTime < THROTTLE_DELAY) {
+        return;
+      }
+      lastScrollTime = now;
+
+      // 이미 로딩 중이거나 더 이상 가져올 데이터가 없으면 중단
+      if (isLoading || postsLoading || !hasMorePosts) {
+        return;
+      }
+
+      // 스크롤이 페이지 하단 근처에 도달했는지 확인
       if (
         window.innerHeight + document.documentElement.scrollTop >=
-        document.documentElement.offsetHeight - 100
+        document.documentElement.offsetHeight - 200
       ) {
-        if (!postsLoading && hasMorePosts) {
-          loadMoreContent();
-        }
+        isLoading = true;
+        loadMoreContent().finally(() => {
+          isLoading = false;
+        });
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [postsLoading, hasMorePosts]);
 
