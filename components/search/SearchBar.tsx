@@ -18,13 +18,10 @@ function SearchBar({
 }: SearchBarProps) {
   const [query, setQuery] = useState(initialQuery);
 
-  // initialQuery가 변경되면 query 업데이트 (한 번만)
+  // initialQuery가 변경될 때만 query 동기화
   useEffect(() => {
-    if (initialQuery !== query) {
-      console.log("📝 SearchBar 검색어 업데이트:", initialQuery);
-      setQuery(initialQuery);
-    }
-  }, [initialQuery, query]);
+    setQuery(initialQuery);
+  }, [initialQuery]);
 
   // 300ms 디바운스 적용 (한글 입력 고려)
   const debouncedQuery = useDebounce(query, 300);
