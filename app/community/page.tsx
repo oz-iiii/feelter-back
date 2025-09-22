@@ -15,7 +15,7 @@ import SignUpModal from "@/components/auth/SignUpModal";
 export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState("feed");
   const router = useRouter();
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const [showLoginMessage, setShowLoginMessage] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
@@ -54,15 +54,6 @@ export default function CommunityPage() {
     setShowSignUpModal(false);
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      router.push("/community");
-    } catch (error) {
-      console.error("로그아웃 실패:", error);
-    }
-  };
-
   // 로딩 중일 때 표시할 스켈레톤 UI
   if (loading) {
     return (
@@ -84,14 +75,7 @@ export default function CommunityPage() {
   const renderActiveTab = () => {
     switch (activeTab) {
       case "feed":
-        return (
-          <FeedTab
-            onCreatePost={handleCreatePost}
-            onOpenSignIn={handleOpenSignIn}
-            onOpenSignUp={handleOpenSignUp}
-            onSignOut={handleSignOut}
-          />
-        );
+        return <FeedTab onCreatePost={handleCreatePost} />;
       case "discussion":
         return <DiscussionTab onCreatePost={handleCreatePost} />;
       case "review":
@@ -101,13 +85,7 @@ export default function CommunityPage() {
       case "emotions":
         return <EmotionsTab onCreatePost={handleCreatePost} />;
       default:
-        return (
-          <FeedTab
-            onCreatePost={handleCreatePost}
-            onOpenSignIn={handleOpenSignIn}
-            onOpenSignUp={handleOpenSignUp}
-          />
-        );
+        return <FeedTab onCreatePost={handleCreatePost} />;
     }
   };
 
