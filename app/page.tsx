@@ -34,7 +34,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#0c0c0c] text-[#f0f0f0] flex flex-col pt-20">
-      <header className="hero-section relative bg-gradient-to-b from-black/70 to-black/90 bg-cover bg-center text-white py-32 px-5 text-center overflow-hidden shadow-inner">
+      <header
+        className="hero-section relative text-white py-32 px-5 text-center overflow-hidden shadow-inner bg-cover bg-center"
+        style={{
+          background: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)), url('/img/ott-posters-bg.png') center center / cover no-repeat`,
+          boxShadow: `inset 0 -15px 30px rgba(0, 0, 0, 0.4)`,
+        }}
+      >
         <div className="hero-content max-w-5xl mx-auto">
           <h1 className="text-7xl mb-6 font-black leading-tight tracking-wide">
             이제는, 뭘 봐야 할지 모르겠다면?
