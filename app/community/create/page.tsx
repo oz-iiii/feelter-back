@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useCommunityStore } from "@/lib/stores/communityStore";
+import MovieSearchInput from "@/components/community/MovieSearchInput";
 
 type PostType = "review" | "discussion" | "emotion";
 
@@ -260,15 +261,10 @@ export default function CreatePage() {
             <label className="block text-lg font-bold text-white mb-3">
               {postType === "emotion" ? "영화 제목" : "영화/드라마 제목"}
             </label>
-            <input
-              type="text"
+            <MovieSearchInput
               value={movieTitle}
-              onChange={(e) => setMovieTitle(e.target.value)}
-              className="w-full p-4 border border-white/20 rounded-xl 
-                         text-white placeholder-gray-400 focus:outline-none 
-                         focus:bg-white/15"
-              style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
-              placeholder="영화 또는 드라마 제목을 입력하세요"
+              onChange={setMovieTitle}
+              placeholder="영화 또는 드라마 제목을 검색하세요"
               required
             />
           </div>
