@@ -69,7 +69,7 @@ export default function Home() {
             <div className="problem-item bg-[#222] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08]">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-10">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=😟"
+                  src="/img/icon-frustrated.png"
                   alt="고민하는 이모티콘"
                   width={144}
                   height={144}
@@ -83,7 +83,7 @@ export default function Home() {
             <div className="problem-item bg-[#222] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08]">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-10">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=💰"
+                  src="/img/icon-money.png"
                   alt="돈 이모티콘"
                   width={144}
                   height={144}
@@ -97,7 +97,7 @@ export default function Home() {
             <div className="problem-item bg-[#222] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08]">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-10">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=🤷"
+                  src="/img/icon-shrug.png"
                   alt="모르겠는 이모티콘"
                   width={144}
                   height={144}
@@ -122,7 +122,7 @@ export default function Home() {
             <div className="value-item bg-[#222] border border-white/[0.08] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=🤖"
+                  src="/img/icon-ai.png"
                   alt="아이디어 전구"
                   width={144}
                   height={144}
@@ -137,7 +137,7 @@ export default function Home() {
             <div className="value-item bg-[#222] border border-white/[0.08] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=🌐"
+                  src="/img/icon-globe.png"
                   alt="지구본 아이콘"
                   width={144}
                   height={144}
@@ -154,7 +154,7 @@ export default function Home() {
             <div className="value-item bg-[#222] border border-white/[0.08] rounded-lg p-12 flex-1 min-w-[300px] max-w-[380px] text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=👥"
+                  src="/img/icon-community.png"
                   alt="손 잡은 아이콘"
                   width={144}
                   height={144}
@@ -182,7 +182,7 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=🔍"
+                  src="/img/icon-search.png"
                   alt="검색 돋보기"
                   width={144}
                   height={144}
@@ -199,7 +199,7 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=📋"
+                  src="/img/icon-survey.png"
                   alt="설문지 아이콘"
                   width={144}
                   height={144}
@@ -216,7 +216,7 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=❤️"
+                  src="/img/icon-heart.png"
                   alt="하트 아이콘"
                   width={144}
                   height={144}
@@ -232,7 +232,7 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=📌"
+                  src="/img/icon-pin.png"
                   alt="핀 아이콘"
                   width={144}
                   height={144}
@@ -249,7 +249,7 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=📊"
+                  src="/img/icon-chart.png"
                   alt="차트 아이콘"
                   width={144}
                   height={144}
@@ -266,7 +266,7 @@ export default function Home() {
             <div className="feature-item bg-[#222] rounded-lg p-12 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-white/[0.08] w-full max-w-[380px] mx-auto">
               <div className="icon w-36 h-36 flex justify-center items-center mx-auto mb-9">
                 <Image
-                  src="https://via.placeholder.com/144x144/ccff00/000000?text=💬"
+                  src="/img/icon-chat.png"
                   alt="말풍선 아이콘"
                   width={144}
                   height={144}
