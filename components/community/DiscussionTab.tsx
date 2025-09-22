@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 import { useCommunityStore } from "@/lib/stores/communityStore";
 import { CommunityPost } from "@/lib/types/community";
-import FilterSidebar from "./FilterSidebar";
 
 interface Discussion {
   id: string;
@@ -103,9 +101,6 @@ const mockDiscussionData: Discussion[] = [
 
 interface DiscussionTabProps {
   onCreatePost: () => void;
-  onOpenSignIn?: () => void;
-  onOpenSignUp?: () => void;
-  onSignOut?: () => void;
 }
 
 // 시간 계산 함수
@@ -149,20 +144,12 @@ const convertPostToDiscussion = (post: CommunityPost): Discussion => {
   };
 };
 
-export default function DiscussionTab({
-  onCreatePost,
-  onOpenSignIn,
-  onOpenSignUp,
-  onSignOut,
-}: DiscussionTabProps) {
+export default function DiscussionTab({ onCreatePost }: DiscussionTabProps) {
   const router = useRouter();
-  const { user } = useAuth();
   const { posts, postsLoading, postsError, searchPosts } = useCommunityStore();
 
   const [discussionData, setDiscussionData] = useState<Discussion[]>([]);
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [showMyPosts, setShowMyPosts] = useState(false);
-  const [sortBy, setSortBy] = useState("최신순");
 
   // 컴포넌트 마운트 시 토론 게시글만 가져오기
   useEffect(() => {
@@ -171,12 +158,7 @@ export default function DiscussionTab({
 
   // posts가 변경될 때 discussionData 업데이트
   useEffect(() => {
-    let filteredPosts = posts.filter((post) => post.type === "discussion");
-
-    // 내 활동보기 모드인 경우 본인 게시글만 필터링
-    if (showMyPosts && user) {
-      filteredPosts = filteredPosts.filter((post) => post.authorId === user.id);
-    }
+    const filteredPosts = posts.filter((post) => post.type === "discussion");
 
     // 실제 데이터를 Discussion 형태로 변환
     const realDiscussionData = filteredPosts.map(convertPostToDiscussion);
@@ -192,23 +174,13 @@ export default function DiscussionTab({
       combinedData = combinedData.filter((item) => item.type === selectedType);
     }
 
-    // 정렬 적용
+    // 최신순 정렬 적용
     combinedData.sort((a, b) => {
-      switch (sortBy) {
-        case "인기순":
-          return b.likes - a.likes;
-        case "댓글순":
-          return b.comments - a.comments;
-        case "최신순":
-        default:
-          return (
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-          );
-      }
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
 
     setDiscussionData(combinedData);
-  }, [posts, selectedType, showMyPosts, user, sortBy]);
+  }, [posts, selectedType]);
 
   const getStatusBadge = (status?: string) => {
     if (!status) return null;
@@ -252,391 +224,351 @@ export default function DiscussionTab({
     router.push(`/community/${discussionId}`);
   };
 
-  const handleShowMyPosts = () => {
-    setShowMyPosts(true);
-  };
-
-  const handleShowAllPosts = () => {
-    setShowMyPosts(false);
-  };
-
-  const handleSortChange = (sort: string) => {
-    setSortBy(sort);
-  };
-
   return (
     <div className="w-full">
-      <div className="flex gap-6">
-        {/* Filter Sidebar */}
-        <div className="w-80 flex-shrink-0">
-          <FilterSidebar
-            sortBy={sortBy}
-            onSortChange={handleSortChange}
-            onShowMyPosts={handleShowMyPosts}
-            onShowAllPosts={handleShowAllPosts}
-            onOpenSignIn={onOpenSignIn}
-            onOpenSignUp={onOpenSignUp}
-            onSignOut={onSignOut}
-            showMyPosts={showMyPosts}
-          />
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1">
-          {/* Type Filter */}
-          <div className="mb-6 p-4 bg-gray-800 rounded-xl border border-white/10 shadow-sm">
-            <h3 className="text-sm font-medium text-gray-300 mb-3">
-              토론 유형
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setSelectedType(null)}
-                className={`px-4 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2 ${
-                  selectedType === null
-                    ? "text-black"
-                    : "text-gray-400 hover:text-white hover:bg-white/20"
-                }`}
-                style={{
-                  backgroundColor:
-                    selectedType === null ? "#CCFF00" : "transparent",
-                }}
-              >
-                <span>📋</span>
-                <span>전체</span>
-              </button>
-              {discussionTypes.map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => setSelectedType(type.id)}
-                  className={`px-4 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2 ${
-                    selectedType === type.id
-                      ? "text-black"
-                      : "text-white hover:bg-white/20"
-                  }`}
-                  style={{
-                    backgroundColor:
-                      selectedType === type.id
-                        ? "#CCFF00"
-                        : "rgba(255, 255, 255, 0.1)",
-                  }}
-                >
-                  <span>{type.icon}</span>
-                  <span>{type.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Create Discussion Button */}
+      {/* Type Filter */}
+      <div className="mb-6 p-4 bg-gray-800 rounded-xl border border-white/10 shadow-sm">
+        <h3 className="text-sm font-medium text-gray-300 mb-3">토론 유형</h3>
+        <div className="flex flex-wrap gap-2">
           <button
-            onClick={onCreatePost}
-            className="w-full mb-8 py-4 px-6 rounded-xl text-black 
-                   font-bold text-lg hover:shadow-lg transition-all duration-300 
-                   hover:-translate-y-1 border-2 border-transparent hover:border-white/20"
+            onClick={() => setSelectedType(null)}
+            className={`px-4 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2 ${
+              selectedType === null
+                ? "text-black"
+                : "text-gray-400 hover:text-white hover:bg-white/20"
+            }`}
             style={{
-              backgroundColor: "#CCFF00",
-              boxShadow: "0 4px 20px rgba(204, 255, 0, 0.3)",
+              backgroundColor:
+                selectedType === null ? "#CCFF00" : "transparent",
             }}
           >
-            💬 새 토론 시작하기
+            <span>📋</span>
+            <span>전체</span>
           </button>
+          {discussionTypes.map((type) => (
+            <button
+              key={type.id}
+              onClick={() => setSelectedType(type.id)}
+              className={`px-4 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2 ${
+                selectedType === type.id
+                  ? "text-black"
+                  : "text-white hover:bg-white/20"
+              }`}
+              style={{
+                backgroundColor:
+                  selectedType === type.id
+                    ? "#CCFF00"
+                    : "rgba(255, 255, 255, 0.1)",
+              }}
+            >
+              <span>{type.icon}</span>
+              <span>{type.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
-          {/* Error Message */}
-          {postsError && (
-            <div className="bg-red-600/20 border border-red-600 rounded-xl p-4 mb-6">
-              <p className="text-red-400">{postsError}</p>
-            </div>
-          )}
+      {/* Create Discussion Button */}
+      <button
+        onClick={onCreatePost}
+        className="w-full mb-8 py-4 px-6 rounded-xl text-black 
+                   font-bold text-lg hover:shadow-lg transition-all duration-300 
+                   hover:-translate-y-1 border-2 border-transparent hover:border-white/20"
+        style={{
+          backgroundColor: "#CCFF00",
+          boxShadow: "0 4px 20px rgba(204, 255, 0, 0.3)",
+        }}
+      >
+        💬 새 토론 시작하기
+      </button>
 
-          {/* Loading Indicator */}
-          {postsLoading && (
-            <div className="flex justify-center items-center py-8">
-              <div className="bg-gray-800 rounded-xl p-6 text-center border border-white/10 shadow-sm">
-                <div
-                  className="animate-spin w-8 h-8 border-2 border-t-transparent 
+      {/* Error Message */}
+      {postsError && (
+        <div className="bg-red-600/20 border border-red-600 rounded-xl p-4 mb-6">
+          <p className="text-red-400">{postsError}</p>
+        </div>
+      )}
+
+      {/* Loading Indicator */}
+      {postsLoading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="bg-gray-800 rounded-xl p-6 text-center border border-white/10 shadow-sm">
+            <div
+              className="animate-spin w-8 h-8 border-2 border-t-transparent 
                         rounded-full mx-auto mb-3"
-                  style={{
-                    borderColor: "#CCFF00",
-                    borderTopColor: "transparent",
-                  }}
-                ></div>
-                <p style={{ color: "#CCFF00" }}>토론을 불러오는 중...</p>
-              </div>
-            </div>
-          )}
+              style={{
+                borderColor: "#CCFF00",
+                borderTopColor: "transparent",
+              }}
+            ></div>
+            <p style={{ color: "#CCFF00" }}>토론을 불러오는 중...</p>
+          </div>
+        </div>
+      )}
 
-          {/* Discussion Cards */}
-          <div className="space-y-4">
-            {discussionData.map((discussion) => (
-              <article
-                key={discussion.id}
-                onClick={() => handleDiscussionClick(discussion.id)}
-                className={`
+      {/* Discussion Cards */}
+      <div className="space-y-4">
+        {discussionData.map((discussion) => (
+          <article
+            key={discussion.id}
+            onClick={() => handleDiscussionClick(discussion.id)}
+            className={`
               bg-gray-800 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-sm
               cursor-pointer transition-all duration-300 hover:-translate-y-1 
               hover:shadow-lg ${
                 discussion.isActive ? "ring-2 ring-blue-500/30" : ""
               }
             `}
-              >
-                {/* Header */}
-                <header className="flex items-center gap-4 mb-4">
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center text-lg"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #CCFF00 0%, #99CC00 100%)",
-                      color: "#111111",
-                    }}
-                  >
-                    {discussion.avatar}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-white">
-                        {discussion.username}
-                      </h3>
-                      {getStatusBadge(discussion.status)}
-                      {discussion.isActive && (
-                        <span
-                          className="px-2 py-1 rounded-full text-xs font-medium border"
-                          style={{
-                            backgroundColor: "rgba(204, 255, 0, 0.2)",
-                            color: "#CCFF00",
-                            borderColor: "rgba(204, 255, 0, 0.3)",
-                          }}
-                        >
-                          활발한 토론 중
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-400">
-                      {discussion.timestamp}
-                    </p>
-                  </div>
-                </header>
-
-                {/* Content */}
-                <div className="mb-4">
-                  <h2 className="text-lg font-bold text-white mb-3 leading-tight">
-                    {discussion.title}
-                  </h2>
-                  <p className="text-gray-300 leading-relaxed text-sm line-clamp-3 mb-3">
-                    {discussion.preview}
-                  </p>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {discussion.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="text-xs px-2 py-1 rounded-full"
-                        style={{
-                          backgroundColor: "rgba(204, 255, 0, 0.1)",
-                          color: "#CCFF00",
-                          border: "1px solid rgba(204, 255, 0, 0.3)",
-                        }}
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <footer className="flex items-center justify-between pt-4 border-t border-white/10">
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                      <span>👍</span>
-                      <span>{discussion.likes}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                      <span>💬</span>
-                      <span>{discussion.comments}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                      <span>👥</span>
-                      <span>{discussion.views}</span>
-                    </div>
-                  </div>
-
-                  {discussion.isActive && (
-                    <div
-                      className="flex items-center gap-2 text-sm"
-                      style={{ color: "#CCFF00" }}
-                    >
-                      <span
-                        className="w-2 h-2 rounded-full animate-pulse"
-                        style={{ backgroundColor: "#CCFF00" }}
-                      ></span>
-                      <span>실시간 토론</span>
-                    </div>
-                  )}
-                </footer>
-              </article>
-            ))}
-          </div>
-
-          {/* Hot Topics Section */}
-          <div className="mt-12 mb-8">
-            <h2
-              className="text-2xl font-bold mb-6 flex items-center gap-2"
-              style={{ color: "#CCFF00" }}
-            >
-              🔥 인기 토론 주제
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {discussionData
-                .filter((item) => item.status === "hot")
-                .slice(0, 4)
-                .map((discussion) => (
-                  <div
-                    key={`hot-${discussion.id}`}
-                    onClick={() => handleDiscussionClick(discussion.id)}
-                    className="bg-gray-800 border rounded-xl p-4 cursor-pointer transition-all duration-300 shadow-sm"
-                    style={{
-                      borderColor: "rgba(204, 255, 0, 0.3)",
-                    }}
-                  >
-                    <h3 className="font-bold text-white mb-2 text-sm line-clamp-2">
-                      {discussion.title}
-                    </h3>
-                    <div className="flex items-center justify-between text-xs text-gray-400">
-                      <span>💬 {discussion.comments}개 댓글</span>
-                      <span>👥 {discussion.views}명 참여</span>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-
-          {/* Statistics */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
-              <div className="text-2xl font-bold" style={{ color: "#CCFF00" }}>
-                {discussionData.length}
-              </div>
-              <div className="text-sm text-gray-400">총 토론 수</div>
-            </div>
-            <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
-              <div className="text-2xl font-bold" style={{ color: "#CCFF00" }}>
-                {discussionData.filter((item) => item.status === "hot").length}
-              </div>
-              <div className="text-sm text-gray-400">HOT 토론</div>
-            </div>
-            <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
-              <div className="text-2xl font-bold" style={{ color: "#CCFF00" }}>
-                {discussionData.reduce((sum, item) => sum + item.comments, 0)}
-              </div>
-              <div className="text-sm text-gray-400">총 댓글 수</div>
-            </div>
-            <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
-              <div className="text-2xl font-bold" style={{ color: "#CCFF00" }}>
-                {discussionData.filter((item) => item.isActive).length}
-              </div>
-              <div className="text-sm text-gray-400">활성 토론</div>
-            </div>
-          </div>
-
-          {/* Discussion Guidelines */}
-          <div
-            className="bg-gray-800 border rounded-2xl p-6 mb-8 shadow-sm"
-            style={{ borderColor: "rgba(204, 255, 0, 0.3)" }}
           >
-            <h3
-              className="text-lg font-bold mb-3 flex items-center gap-2"
-              style={{ color: "#CCFF00" }}
-            >
-              📋 토론 가이드라인
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
-              <div>
-                <h4 className="font-semibold mb-2" style={{ color: "#CCFF00" }}>
-                  토론 예절
-                </h4>
-                <ul className="space-y-1">
-                  <li>• 서로 다른 의견을 존중해주세요</li>
-                  <li>• 근거 있는 주장을 해주세요</li>
-                  <li>• 스포일러는 반드시 표시해주세요</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2" style={{ color: "#CCFF00" }}>
-                  금지사항
-                </h4>
-                <ul className="space-y-1">
-                  <li>• 인신공격 및 욕설 금지</li>
-                  <li>• 무분별한 스포일러 금지</li>
-                  <li>• 도배 및 광고성 글 금지</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Empty State */}
-          {discussionData.length === 0 && (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">💭</div>
-              <h3
-                className="text-xl font-bold mb-2"
-                style={{ color: "#CCFF00" }}
-              >
-                {selectedType
-                  ? "해당 유형의 토론이 없습니다"
-                  : "토론이 없습니다"}
-              </h3>
-              <p className="text-gray-400 mb-6">
-                {selectedType ? "다른 유형을 선택하거나" : ""} 새로운 토론을
-                시작해보세요.
-              </p>
-              <button
-                onClick={onCreatePost}
-                className="px-6 py-3 rounded-lg font-medium hover:shadow-lg 
-                       transition-all duration-300 border-2 border-transparent 
-                       hover:border-white/20"
+            {/* Header */}
+            <header className="flex items-center gap-4 mb-4">
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center text-lg"
                 style={{
-                  backgroundColor: "#CCFF00",
+                  background:
+                    "linear-gradient(135deg, #CCFF00 0%, #99CC00 100%)",
                   color: "#111111",
-                  boxShadow: "0 4px 20px rgba(204, 255, 0, 0.3)",
                 }}
               >
-                첫 토론 시작하기
-              </button>
-            </div>
-          )}
+                {discussion.avatar}
+              </div>
 
-          {/* Trending Topics */}
-          <div className="bg-gray-800 border border-white/10 rounded-2xl p-6 shadow-sm">
-            <h3
-              className="text-lg font-bold mb-4 flex items-center gap-2"
-              style={{ color: "#CCFF00" }}
-            >
-              📈 실시간 트렌드
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {[
-                "#MCU페이즈5",
-                "#넷플릭스오리지널",
-                "#2023베스트",
-                "#한국영화",
-                "#놀란감독",
-                "#디즈니실사화",
-              ].map((trend, index) => (
-                <button
-                  key={index}
-                  className="px-3 py-1 rounded-full text-sm transition-all duration-300"
-                  style={{
-                    backgroundColor: "rgba(204, 255, 0, 0.1)",
-                    color: "#CCFF00",
-                    border: "1px solid rgba(204, 255, 0, 0.3)",
-                  }}
-                >
-                  {trend}
-                </button>
-              ))}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-bold text-white">
+                    {discussion.username}
+                  </h3>
+                  {getStatusBadge(discussion.status)}
+                  {discussion.isActive && (
+                    <span
+                      className="px-2 py-1 rounded-full text-xs font-medium border"
+                      style={{
+                        backgroundColor: "rgba(204, 255, 0, 0.2)",
+                        color: "#CCFF00",
+                        borderColor: "rgba(204, 255, 0, 0.3)",
+                      }}
+                    >
+                      활발한 토론 중
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-400">{discussion.timestamp}</p>
+              </div>
+            </header>
+
+            {/* Content */}
+            <div className="mb-4">
+              <h2 className="text-lg font-bold text-white mb-3 leading-tight">
+                {discussion.title}
+              </h2>
+              <p className="text-gray-300 leading-relaxed text-sm line-clamp-3 mb-3">
+                {discussion.preview}
+              </p>
+
+              {/* Tags */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {discussion.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="text-xs px-2 py-1 rounded-full"
+                    style={{
+                      backgroundColor: "rgba(204, 255, 0, 0.1)",
+                      color: "#CCFF00",
+                      border: "1px solid rgba(204, 255, 0, 0.3)",
+                    }}
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
             </div>
+
+            {/* Stats */}
+            <footer className="flex items-center justify-between pt-4 border-t border-white/10">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <span>👍</span>
+                  <span>{discussion.likes}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <span>💬</span>
+                  <span>{discussion.comments}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <span>👥</span>
+                  <span>{discussion.views}</span>
+                </div>
+              </div>
+
+              {discussion.isActive && (
+                <div
+                  className="flex items-center gap-2 text-sm"
+                  style={{ color: "#CCFF00" }}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full animate-pulse"
+                    style={{ backgroundColor: "#CCFF00" }}
+                  ></span>
+                  <span>실시간 토론</span>
+                </div>
+              )}
+            </footer>
+          </article>
+        ))}
+      </div>
+
+      {/* Hot Topics Section */}
+      <div className="mt-12 mb-8">
+        <h2
+          className="text-2xl font-bold mb-6 flex items-center gap-2"
+          style={{ color: "#CCFF00" }}
+        >
+          🔥 인기 토론 주제
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {discussionData
+            .filter((item) => item.status === "hot")
+            .slice(0, 4)
+            .map((discussion) => (
+              <div
+                key={`hot-${discussion.id}`}
+                onClick={() => handleDiscussionClick(discussion.id)}
+                className="bg-gray-800 border rounded-xl p-4 cursor-pointer transition-all duration-300 shadow-sm"
+                style={{
+                  borderColor: "rgba(204, 255, 0, 0.3)",
+                }}
+              >
+                <h3 className="font-bold text-white mb-2 text-sm line-clamp-2">
+                  {discussion.title}
+                </h3>
+                <div className="flex items-center justify-between text-xs text-gray-400">
+                  <span>💬 {discussion.comments}개 댓글</span>
+                  <span>👥 {discussion.views}명 참여</span>
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      {/* Statistics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
+          <div className="text-2xl font-bold" style={{ color: "#CCFF00" }}>
+            {discussionData.length}
           </div>
+          <div className="text-sm text-gray-400">총 토론 수</div>
+        </div>
+        <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
+          <div className="text-2xl font-bold" style={{ color: "#CCFF00" }}>
+            {discussionData.filter((item) => item.status === "hot").length}
+          </div>
+          <div className="text-sm text-gray-400">HOT 토론</div>
+        </div>
+        <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
+          <div className="text-2xl font-bold" style={{ color: "#CCFF00" }}>
+            {discussionData.reduce((sum, item) => sum + item.comments, 0)}
+          </div>
+          <div className="text-sm text-gray-400">총 댓글 수</div>
+        </div>
+        <div className="bg-gray-800 rounded-xl p-4 text-center border border-white/10 shadow-sm">
+          <div className="text-2xl font-bold" style={{ color: "#CCFF00" }}>
+            {discussionData.filter((item) => item.isActive).length}
+          </div>
+          <div className="text-sm text-gray-400">활성 토론</div>
+        </div>
+      </div>
+
+      {/* Discussion Guidelines */}
+      <div
+        className="bg-gray-800 border rounded-2xl p-6 mb-8 shadow-sm"
+        style={{ borderColor: "rgba(204, 255, 0, 0.3)" }}
+      >
+        <h3
+          className="text-lg font-bold mb-3 flex items-center gap-2"
+          style={{ color: "#CCFF00" }}
+        >
+          📋 토론 가이드라인
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
+          <div>
+            <h4 className="font-semibold mb-2" style={{ color: "#CCFF00" }}>
+              토론 예절
+            </h4>
+            <ul className="space-y-1">
+              <li>• 서로 다른 의견을 존중해주세요</li>
+              <li>• 근거 있는 주장을 해주세요</li>
+              <li>• 스포일러는 반드시 표시해주세요</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-2" style={{ color: "#CCFF00" }}>
+              금지사항
+            </h4>
+            <ul className="space-y-1">
+              <li>• 인신공격 및 욕설 금지</li>
+              <li>• 무분별한 스포일러 금지</li>
+              <li>• 도배 및 광고성 글 금지</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Empty State */}
+      {discussionData.length === 0 && (
+        <div className="text-center py-16">
+          <div className="text-6xl mb-4">💭</div>
+          <h3 className="text-xl font-bold mb-2" style={{ color: "#CCFF00" }}>
+            {selectedType ? "해당 유형의 토론이 없습니다" : "토론이 없습니다"}
+          </h3>
+          <p className="text-gray-400 mb-6">
+            {selectedType ? "다른 유형을 선택하거나" : ""} 새로운 토론을
+            시작해보세요.
+          </p>
+          <button
+            onClick={onCreatePost}
+            className="px-6 py-3 rounded-lg font-medium hover:shadow-lg 
+                       transition-all duration-300 border-2 border-transparent 
+                       hover:border-white/20"
+            style={{
+              backgroundColor: "#CCFF00",
+              color: "#111111",
+              boxShadow: "0 4px 20px rgba(204, 255, 0, 0.3)",
+            }}
+          >
+            첫 토론 시작하기
+          </button>
+        </div>
+      )}
+
+      {/* Trending Topics */}
+      <div className="bg-gray-800 border border-white/10 rounded-2xl p-6 shadow-sm">
+        <h3
+          className="text-lg font-bold mb-4 flex items-center gap-2"
+          style={{ color: "#CCFF00" }}
+        >
+          📈 실시간 트렌드
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {[
+            "#MCU페이즈5",
+            "#넷플릭스오리지널",
+            "#2023베스트",
+            "#한국영화",
+            "#놀란감독",
+            "#디즈니실사화",
+          ].map((trend, index) => (
+            <button
+              key={index}
+              className="px-3 py-1 rounded-full text-sm transition-all duration-300"
+              style={{
+                backgroundColor: "rgba(204, 255, 0, 0.1)",
+                color: "#CCFF00",
+                border: "1px solid rgba(204, 255, 0, 0.3)",
+              }}
+            >
+              {trend}
+            </button>
+          ))}
         </div>
       </div>
     </div>

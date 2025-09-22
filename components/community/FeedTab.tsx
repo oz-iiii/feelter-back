@@ -1,17 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useCommunityStore } from "@/lib/stores/communityStore";
 import { CommunityPost } from "@/lib/types/community";
 import ActivityCard, { ActivityCardProps } from "./ActivityCard";
-import FilterSidebar from "./FilterSidebar";
 
 interface FeedTabProps {
   onCreatePost: () => void;
-  onOpenSignIn?: () => void;
-  onOpenSignUp?: () => void;
-  onSignOut?: () => void;
 }
 
 const mockFeedData: ActivityCardProps[] = [
@@ -138,13 +133,7 @@ const getTimeAgo = (date: Date | string): string => {
   return `${diffInDays}일 전`;
 };
 
-export default function FeedTab({
-  onCreatePost,
-  onOpenSignIn,
-  onOpenSignUp,
-  onSignOut,
-}: FeedTabProps) {
-  const { user } = useAuth();
+export default function FeedTab({ onCreatePost }: FeedTabProps) {
   const {
     posts,
     postsLoading,
@@ -155,8 +144,6 @@ export default function FeedTab({
   } = useCommunityStore();
 
   const [feedData, setFeedData] = useState<ActivityCardProps[]>([]);
-  const [showMyPosts, setShowMyPosts] = useState(false);
-  const [sortBy, setSortBy] = useState("최신순");
 
   // 컴포넌트 마운트 시 게시글 가져오기
   useEffect(() => {
@@ -171,26 +158,11 @@ export default function FeedTab({
       // 감정 게시글은 개인 전용이므로 피드에서 제외
       filteredPosts = filteredPosts.filter((post) => post.type !== "emotion");
 
-      // 내 활동보기 모드인 경우 본인 게시글만 필터링
-      if (showMyPosts && user) {
-        filteredPosts = filteredPosts.filter(
-          (post) => post.authorId === user.id
-        );
-      }
-
-      // 정렬 적용
+      // 최신순 정렬 적용
       filteredPosts.sort((a, b) => {
-        switch (sortBy) {
-          case "인기순":
-            return b.likes - a.likes;
-          case "댓글순":
-            return b.comments - a.comments;
-          case "최신순":
-          default:
-            return (
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-        }
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
       });
 
       const activityData = filteredPosts.map(convertPostToActivityCard);
@@ -199,24 +171,12 @@ export default function FeedTab({
       // posts가 비어있을 때 mock 데이터 사용 (처음 로드 시)
       setFeedData(mockFeedData);
     }
-  }, [posts, showMyPosts, user, sortBy]);
+  }, [posts]);
 
   const loadMoreContent = async () => {
     if (!postsLoading && hasMorePosts) {
       await loadMorePosts();
     }
-  };
-
-  const handleShowMyPosts = () => {
-    setShowMyPosts(true);
-  };
-
-  const handleShowAllPosts = () => {
-    setShowMyPosts(false);
-  };
-
-  const handleSortChange = (sort: string) => {
-    setSortBy(sort);
   };
 
   // Infinite scroll handler with throttling
@@ -257,44 +217,25 @@ export default function FeedTab({
 
   return (
     <div className="w-full">
-      <div className="flex gap-6">
-        {/* Filter Sidebar */}
-        <div className="w-80 flex-shrink-0">
-          <FilterSidebar
-            sortBy={sortBy}
-            onSortChange={handleSortChange}
-            onShowMyPosts={handleShowMyPosts}
-            onShowAllPosts={handleShowAllPosts}
-            onOpenSignIn={onOpenSignIn}
-            onOpenSignUp={onOpenSignUp}
-            onSignOut={onSignOut}
-            showMyPosts={showMyPosts}
-          />
-        </div>
+      {/* Create Post Button */}
+      <button
+        onClick={onCreatePost}
+        className="w-full mb-8 py-4 px-6 rounded-xl text-black 
+                   font-bold text-lg hover:shadow-lg transition-all duration-300 
+                   hover:-translate-y-1 border-2 border-transparent hover:border-white/20"
+        style={{
+          backgroundColor: "#CCFF00",
+          boxShadow: "0 4px 20px rgba(204, 255, 0, 0.3)",
+        }}
+      >
+        ✨ 새 글 작성하기
+      </button>
 
-        {/* Main Content */}
-        <div className="flex-1">
-          {/* Create Post Button */}
-          <button
-            onClick={onCreatePost}
-            className="w-full mb-8 py-4 px-6 rounded-xl text-black 
-                       font-bold text-lg hover:shadow-lg transition-all duration-300 
-                       hover:-translate-y-1 border-2 border-transparent hover:border-white/20"
-            style={{
-              backgroundColor: "#CCFF00",
-              boxShadow: "0 4px 20px rgba(204, 255, 0, 0.3)",
-            }}
-          >
-            ✨ 새 글 작성하기
-          </button>
-
-          {/* Feed Cards */}
-          <div className="space-y-6">
-            {feedData.map((item, index) => (
-              <ActivityCard key={index} {...item} />
-            ))}
-          </div>
-        </div>
+      {/* Feed Cards */}
+      <div className="space-y-6">
+        {feedData.map((item, index) => (
+          <ActivityCard key={index} {...item} />
+        ))}
       </div>
 
       {/* Error Message */}
