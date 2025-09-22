@@ -1,17 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
 
+// NEXT_PUBLIC_ 접두사가 붙은 환경 변수는 클라이언트와 서버 모두에서 접근 가능합니다.
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
-    "Supabase URL and Anon Key are required. Please check your .env.local file."
+    "Supabase URL and Role Key are required. Please check your .env.local file."
   );
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Server-only admin client (bypasses RLS). Do NOT expose the key to the client.
+// 이 키는 서버에서만 사용해야 하며, 클라이언트에 노출되면 안 됩니다.
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 export const supabaseAdmin = serviceRoleKey
   ? createClient(supabaseUrl, serviceRoleKey)
@@ -24,7 +25,7 @@ export type Database1 = {
         Row: {
           contentsid: number;
           title: string;
-          release: Date;
+          release: string;
           age: string;
           genres: string[];
           runningtime: string;
@@ -36,13 +37,15 @@ export type Database1 = {
           imgUrl: string;
           bgUrl: string;
           youtubeUrl: string;
-          platform: { name: string; url: string }[];
-          upload: Date;
+          ottplatforms: { name: string; url: string }[];
+          bestcoment: string;
+          upload: string;
+          update: string;
         };
         Insert: {
           contentsid: number;
           title: string;
-          release: Date;
+          release: string;
           age: string;
           genres: string[];
           runningtime: string;
@@ -54,13 +57,15 @@ export type Database1 = {
           imgUrl: string;
           bgUrl: string;
           youtubeUrl: string;
-          platform: { name: string; url: string }[];
-          upload: Date;
+          ottplatforms: { name: string; url: string }[];
+          bestcoment: string;
+          upload: string;
+          update: string;
         };
         Update: {
           contentsid?: number;
           title?: string;
-          release?: Date;
+          release?: string;
           age?: string;
           genres?: string[];
           runningtime?: string;
@@ -72,32 +77,39 @@ export type Database1 = {
           imgUrl?: string;
           bgUrl?: string;
           youtubeUrl?: string;
-          platform?: { name: string; url: string }[];
-          upload?: Date;
-          update: Date;
+          ottplatforms?: { name: string; url: string }[];
+          bestcoment: string;
+          upload?: string;
+          update: string;
         };
       };
       feelterTPO: {
         Row: {
           feelterid: number;
           contentsid: number;
-          feelterTime: string;
-          feelterPurpose: string;
-          feelterOccasion: string;
+          feelterTime: string[];
+          feelterPurpose: string[];
+          feelterOccasion: string[];
+          created_at?: string;
+          updated_at?: string;
         };
         Insert: {
-          feelterid: number;
+          feelterid?: number;
           contentsid: number;
-          feelterTime: string;
-          feelterPurpose: string;
-          feelterOccasion: string;
+          feelterTime: string[];
+          feelterPurpose: string[];
+          feelterOccasion: string[];
+          created_at?: string;
+          updated_at?: string;
         };
         Update: {
-          feelterid: number;
+          feelterid?: number;
           contentsid?: number;
-          feelterTime?: string;
-          feelterPurpose?: string;
-          feelterOccasion?: string;
+          feelterTime?: string[];
+          feelterPurpose?: string[];
+          feelterOccasion?: string[];
+          created_at?: string;
+          updated_at?: string;
         };
       };
     };

@@ -675,7 +675,7 @@ const CardCarousel = ({
         onTouchEnd={handleClick}
       >
         <Image
-          src={imageUrl}
+          src={imageUrl || ""}
           alt={title || "이미지 없음"}
           width={150}
           height={200}

@@ -30,6 +30,12 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "file.kinolights.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "www.themoviedb.org",
         pathname: "/t/p/**",
       },

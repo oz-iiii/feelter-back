@@ -135,12 +135,12 @@ const DetailsPanel = ({ item }: { item: RankingData | null }) => {
         </div>
 
         <div className="p-2 bg-neutral-800 rounded-lg">
-          <p>감 &nbsp; 독 : &nbsp; {item.director}</p>
-          <p>출 &nbsp; 연 : &nbsp; {item.actor}</p>
+          <p>{item.director}</p>
+          <p>{item.actor}</p>
         </div>
         <div className="p-2 bg-neutral-800 h-[115px] rounded-lg">
           <p className="text-sm leading-relaxed overflow-y-auto max-h-40">
-            줄거리 : &nbsp; {item.description}
+            {item.description}
           </p>
         </div>
       </div>

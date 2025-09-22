@@ -1,439 +1,613 @@
-import { supabase, supabaseAdmin, type Database } from "../supabase";
-import { Movie, MovieFilters, MovieRanking } from "../types/movie";
+import { supabase } from "@/lib/supabase";
+import type {
+  Content,
+  ContentFilters,
+  OTTPlatformInfo,
+} from "@/lib/types/content";
 
-type MovieRow = Database["public"]["Tables"]["movies"]["Row"];
-type MovieInsert = Database["public"]["Tables"]["movies"]["Insert"];
-type RankingRow = Database["public"]["Tables"]["rankings"]["Row"];
-type RankingInsert = Database["public"]["Tables"]["rankings"]["Insert"];
+class ContentService {
+  private readonly TABLE_NAME = "contents";
 
-// Centralized error logger for Supabase responses
-const logSupabaseError = (label: string, error: unknown) => {
-  // Attempt to surface useful fields commonly present on Supabase errors
-  const anyErr = error as {
-    code?: string;
-    message?: string;
-    details?: string;
-    hint?: string;
-    status?: number;
-  } | null;
-
-  const safeStringify = (value: unknown) => {
+  /**
+   * 모든 콘텐츠를 가져오는 함수
+   */
+  async getAllContents(): Promise<Content[]> {
     try {
-      return JSON.stringify(value);
-    } catch {
-      return String(value);
-    }
-  };
+      const { data, error } = await supabase.from(this.TABLE_NAME).select("*");
 
-  console.error(label, {
-    code: anyErr?.code,
-    status: anyErr?.status,
-    message: anyErr?.message,
-    details: anyErr?.details,
-    hint: anyErr?.hint,
-  });
-  console.error(`${label} (string):`, anyErr?.message ?? String(error));
-  console.error(`${label} (json):`, safeStringify(error));
-};
-
-// Helper function to generate feelter data based on genre
-const generateFeelterData = (
-  genres: string[]
-): {
-  feelterTime: string[];
-  feelterPurpose: string[];
-  feelterOccasion: string[];
-} => {
-  const genreList = Array.isArray(genres) ? genres : [genres];
-  const genreStr = genreList.join(" ").toLowerCase();
-
-  // 시간대 결정
-  let feelterTime: string[] = ["저녁"]; // 기본값
-  if (
-    genreStr.includes("공포") ||
-    genreStr.includes("스릴러") ||
-    genreStr.includes("horror") ||
-    genreStr.includes("thriller")
-  ) {
-    feelterTime = ["밤"];
-  } else if (
-    genreStr.includes("가족") ||
-    genreStr.includes("애니메이션") ||
-    genreStr.includes("family") ||
-    genreStr.includes("animation")
-  ) {
-    feelterTime = ["오후"];
-  } else if (genreStr.includes("로맨스") || genreStr.includes("romance")) {
-    feelterTime = ["저녁"];
-  }
-
-  // 목적 결정
-  let feelterPurpose: string[] = ["휴식"]; // 기본값
-  if (
-    genreStr.includes("공포") ||
-    genreStr.includes("스릴러") ||
-    genreStr.includes("horror") ||
-    genreStr.includes("thriller")
-  ) {
-    feelterPurpose = ["스릴"];
-  } else if (
-    genreStr.includes("로맨스") ||
-    genreStr.includes("romance") ||
-    genreStr.includes("드라마") ||
-    genreStr.includes("drama")
-  ) {
-    feelterPurpose = ["감동"];
-  } else if (
-    genreStr.includes("액션") ||
-    genreStr.includes("action") ||
-    genreStr.includes("모험") ||
-    genreStr.includes("adventure")
-  ) {
-    feelterPurpose = ["자극"];
-  } else if (genreStr.includes("코미디") || genreStr.includes("comedy")) {
-    feelterPurpose = ["유머"];
-  } else if (
-    genreStr.includes("다큐멘터리") ||
-    genreStr.includes("documentary")
-  ) {
-    feelterPurpose = ["학습"];
-  }
-
-  // 상황 결정
-  let feelterOccasion: string[] = ["혼자"]; // 기본값
-  if (
-    genreStr.includes("가족") ||
-    genreStr.includes("애니메이션") ||
-    genreStr.includes("family") ||
-    genreStr.includes("animation")
-  ) {
-    feelterOccasion = ["가족"];
-  } else if (genreStr.includes("로맨스") || genreStr.includes("romance")) {
-    feelterOccasion = ["연인"];
-  } else if (
-    genreStr.includes("액션") ||
-    genreStr.includes("action") ||
-    genreStr.includes("코미디") ||
-    genreStr.includes("comedy")
-  ) {
-    feelterOccasion = ["친구"];
-  }
-
-  return { feelterTime, feelterPurpose, feelterOccasion };
-};
-
-// Helper function to convert Supabase row to Movie type (updated for actual DB schema)
-const convertRowToMovie = (row: MovieRow): Movie => {
-  const r = row as unknown as Record<string, unknown>;
-
-  const genres = (r["genres"] as string[]) ?? [];
-  const feelterData = generateFeelterData(genres);
-
-  return {
-    id: String(r["id"])!,
-    tmdbid: (r["tmdb_id"] as number) ?? 0,
-    title: (r["title"] as string) ?? "",
-    release: r["release_date"]
-      ? new Date(r["release_date"] as string)
-      : new Date(),
-    age: (r["certification"] as string) ?? "전체관람가",
-    genre: genres,
-    runningTime: `${(r["runtime"] as number) || 120}분`,
-    country: (r["countries"] as string[]) ?? "",
-    director: (r["directors"] as string[]) ?? "",
-    actor: (r["actors"] as string[]) ?? "",
-    overview: (r["overview"] as string) ?? "",
-    streaming: (r["streaming_providers"] as string[]) ?? ["Netflix"],
-    streamingUrl: "", // Not in current schema
-    youtubeUrl: (r["videos"] as string) ?? "",
-    imgUrl: (r["poster_url"] as string) ?? "",
-    bgUrl: (r["poster_url"] as string) ?? "", // Use poster as background for now
-    feelterTime: feelterData.feelterTime,
-    feelterPurpose: feelterData.feelterPurpose,
-    feelterOccasion: feelterData.feelterOccasion,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-};
-
-// Helper function to convert Movie to Supabase insert type
-const convertMovieToInsert = (
-  movie: Omit<Movie, "id" | "createdAt" | "updatedAt">
-): MovieInsert => ({
-  tmdbid: movie.tmdbid,
-  title: movie.title,
-  release:
-    typeof movie.release === "string"
-      ? movie.release
-      : movie.release.toISOString(),
-  age: movie.age,
-  genre: movie.genre,
-  runningTime: movie.runningTime,
-  country: movie.country,
-  director: movie.director,
-  actor: movie.actor,
-  overview: movie.overview,
-  streaming: movie.streaming,
-  streamingUrl: movie.streamingUrl,
-  youtubeUrl: movie.youtubeUrl,
-  imgUrl: movie.imgUrl,
-  bgUrl: movie.bgUrl,
-  feelterTime: movie.feelterTime,
-  feelterPurpose: movie.feelterPurpose,
-  feelterOccasion: movie.feelterOccasion,
-});
-
-// 영화 관련 서비스
-export const movieService = {
-  // 모든 영화 가져오기
-  async getAllMovies(): Promise<Movie[]> {
-    const client = supabaseAdmin ?? supabase;
-    const { data, error } = await client.from("movies").select("*");
-
-    if (error) {
-      logSupabaseError("영화 데이터 조회 오류:", error);
-      throw new Error(`영화 데이터 조회 실패: ${error.message}`);
-    }
-
-    return data.map(convertRowToMovie);
-  },
-
-  // 영화 ID로 가져오기
-  async getMovieById(id: string): Promise<Movie | null> {
-    const { data, error } = await supabase
-      .from("movies")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) {
-      if (error.code === "PGRST116") {
-        return null; // 데이터가 없음
+      if (error) {
+        console.error("콘텐츠 가져오기 실패:", error);
+        throw new Error(error.message);
       }
-      console.error("영화 조회 오류:", error);
-      throw new Error(`영화 조회 실패: ${error.message}`);
-    }
 
-    return convertRowToMovie(data);
-  },
+      const contents = data || [];
 
-  // 필터링된 영화 가져오기
-  async getFilteredMovies(
-    filters: MovieFilters,
-    pageSize: number = 20,
-    page: number = 0
-  ): Promise<{
-    movies: Movie[];
-    hasMore: boolean;
-    total: number;
-  }> {
-    let query = supabase.from("movies").select("*", { count: "exact" });
+      // release 날짜 기준 내림차순 정렬 (최신순)
+      const sortedContents = contents.sort((a, b) => {
+        if (!a.release || !b.release) {
+          return 0;
+        }
 
-    // 필터 적용
-    if (filters.genre) {
-      query = query.ilike("genre", `%${filters.genre}%`);
+        const dateA = new Date(a.release);
+        const dateB = new Date(b.release);
+
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      return sortedContents;
+    } catch (error) {
+      console.error("getAllContents 에러:", error);
+      throw error;
     }
-    if (filters.streaming) {
-      query = query.eq("streaming", filters.streaming);
-    }
-    if (filters.age) {
-      query = query.eq("age", filters.age);
-    }
-    if (filters.country) {
-      query = query.ilike("country", `%${filters.country}%`);
-    }
-    if (filters.feelterTime) {
-      // Support both camelCase and snake_case columns
-      query = query.or(
-        `feelterTime.eq.${filters.feelterTime},feelter_time.eq.${filters.feelterTime}`
+  }
+
+  /**
+   * 선택된 필터에 따라 콘텐츠를 필터링하는 함수 (OTT 플랫폼 필터링 포함)
+   */
+  async getFilteredContents(
+    filters: ContentFilters,
+    selectedOtts?: string[]
+  ): Promise<Content[]> {
+    try {
+      console.log("🔍 필터링 시작:", { filters, selectedOtts });
+
+      // 먼저 모든 콘텐츠를 가져와서 구조 확인
+      const allContents = await this.getAllContents();
+      console.log("📊 전체 콘텐츠 수:", allContents.length);
+
+      if (allContents.length > 0) {
+        console.log("🎯 첫 번째 콘텐츠 샘플:", {
+          contentsid: allContents[0].contentsid,
+          title: allContents[0].title,
+          ottplatforms: allContents[0].ottplatforms,
+          ottplatformsType: typeof allContents[0].ottplatforms,
+          feelterTime: allContents[0].feelterTime,
+          feelterPurpose: allContents[0].feelterPurpose,
+          feelterOccasion: allContents[0].feelterOccasion,
+        });
+      }
+
+      // 필터가 모두 비어있고 OTT 필터도 전체 선택이면 전체 콘텐츠 반환
+      const hasNoFilters =
+        filters.time.length === 0 &&
+        filters.purpose.length === 0 &&
+        filters.occasion.length === 0;
+      const hasNoOttFilter = !selectedOtts || selectedOtts.length === 0;
+
+      if (hasNoFilters && hasNoOttFilter) {
+        console.log("📝 모든 필터가 비어있음, 전체 콘텐츠 반환");
+        return allContents;
+      }
+
+      const filteredResults = this.clientSideFilter(
+        allContents,
+        filters,
+        selectedOtts
       );
+      console.log("✅ 필터링 결과:", filteredResults.length, "개");
+
+      return filteredResults;
+    } catch (error) {
+      console.error("getFilteredContents 에러:", error);
+      throw error;
     }
-    if (filters.feelterPurpose) {
-      query = query.or(
-        `feelterPurpose.eq.${filters.feelterPurpose},feelter_purpose.eq.${filters.feelterPurpose}`
-      );
-    }
-    if (filters.feelterOccasion) {
-      query = query.or(
-        `feelterOccasion.eq.${filters.feelterOccasion},feelter_occasion.eq.${filters.feelterOccasion}`
-      );
-    }
+  }
 
-    // 정렬
-    const sortColumn = filters.sortBy || "release";
-    const sortOrder = filters.sortOrder || "desc";
-    const dbSortColumn = sortColumn === "release" ? "release_date" : sortColumn;
-    query = query.order(dbSortColumn, { ascending: sortOrder === "asc" });
-
-    // 페이지네이션
-    const from = page * pageSize;
-    const to = from + pageSize - 1;
-    query = query.range(from, to);
-
-    const { data, error, count } = await query;
-
-    if (error) {
-      console.error("필터링된 영화 조회 오류:", error);
-      throw new Error(`필터링된 영화 조회 실패: ${error.message}`);
+  /**
+   * 클라이언트 사이드에서 정확한 필터링을 수행하는 함수 (OTT 플랫폼 필터링 포함)
+   */
+  private clientSideFilter(
+    contents: Content[],
+    filters: ContentFilters,
+    selectedOtts?: string[]
+  ): Content[] {
+    if (!contents || contents.length === 0) {
+      console.log("❌ 콘텐츠 배열이 비어있음");
+      return [];
     }
 
-    const movies = (data as MovieRow[]).map(convertRowToMovie);
-    const total = count || 0;
-    const hasMore = from + pageSize < total;
+    console.log("🔧 클라이언트 필터링 시작:", {
+      총콘텐츠수: contents.length,
+      필터조건: filters,
+      선택된OTT: selectedOtts,
+    });
 
-    return { movies, hasMore, total };
-  },
+    // OTT 플랫폼 이름 매핑
+    const ottNameMapping: { [key: string]: string[] } = {
+      netflix: ["Netflix", "netflix", "NETFLIX", "넷플릭스"],
+      tving: ["Tving", "tving", "TVING", "티빙"],
+      coupang: ["Coupang Play", "coupang", "COUPANG", "쿠팡플레이", "쿠팡"],
+      wavve: ["Wavve", "wavve", "WAVVE", "웨이브"],
+      disney: ["Disney+", "disney", "DISNEY", "디즈니", "Disney Plus"],
+      watcha: ["Watcha", "watcha", "WATCHA", "왓챠"],
+    };
 
-  // 영화 추가
-  async addMovie(
-    movie: Omit<Movie, "id" | "createdAt" | "updatedAt">
-  ): Promise<string> {
-    const movieInsert = convertMovieToInsert(movie);
+    const matchingContents: Content[] = [];
+    const debugResults = {
+      totalProcessed: 0,
+      timeFilterPassed: 0,
+      purposeFilterPassed: 0,
+      occasionFilterPassed: 0,
+      ottFilterPassed: 0,
+      finalMatches: 0,
+      nullFieldsCount: {
+        feelterTime: 0,
+        feelterPurpose: 0,
+        feelterOccasion: 0,
+        ottplatforms: 0,
+      },
+    };
 
-    const { data, error } = await supabase
-      .from("movies")
-      .insert(movieInsert)
-      .select("id")
-      .single();
+    contents.forEach((content, index) => {
+      debugResults.totalProcessed++;
 
-    if (error) {
-      console.error("영화 추가 오류:", error);
-      throw new Error(`영화 추가 실패: ${error.message}`);
+      // null/undefined 필드 카운트
+      if (!content.feelterTime) debugResults.nullFieldsCount.feelterTime++;
+      if (!content.feelterPurpose)
+        debugResults.nullFieldsCount.feelterPurpose++;
+      if (!content.feelterOccasion)
+        debugResults.nullFieldsCount.feelterOccasion++;
+      if (!content.ottplatforms) debugResults.nullFieldsCount.ottplatforms++;
+
+      // 모든 필터가 비어있으면 모든 콘텐츠 반환
+      const hasNoFilters =
+        filters.time.length === 0 &&
+        filters.purpose.length === 0 &&
+        filters.occasion.length === 0;
+      const hasNoOttFilter = !selectedOtts || selectedOtts.length === 0;
+
+      if (hasNoFilters && hasNoOttFilter) {
+        matchingContents.push(content);
+        debugResults.finalMatches++;
+        return;
+      }
+
+      let matches = true;
+      const individualMatches = {
+        timeMatch: true,
+        purposeMatch: true,
+        occasionMatch: true,
+        ottMatch: true,
+      };
+
+      // OTT 플랫폼 필터 검사 (가장 먼저 실행)
+      if (selectedOtts && selectedOtts.length > 0) {
+        let contentOttPlatforms: OTTPlatformInfo[] = [];
+
+        if (!content.ottplatforms) {
+          contentOttPlatforms = [];
+        } else if (typeof content.ottplatforms === "string") {
+          try {
+            contentOttPlatforms = JSON.parse(content.ottplatforms);
+            // 파싱 결과가 배열이 아니면 빈 배열로 설정
+            if (!Array.isArray(contentOttPlatforms)) {
+              contentOttPlatforms = [];
+            }
+          } catch {
+            console.warn(
+              `OTT 플랫폼 JSON 파싱 실패 (${content.title}):`,
+              content.ottplatforms
+            );
+            contentOttPlatforms = [];
+          }
+        } else if (Array.isArray(content.ottplatforms)) {
+          contentOttPlatforms = content.ottplatforms;
+        } else {
+          contentOttPlatforms = [];
+        }
+
+        // OTT 플랫폼 이름 추출 및 매칭
+        const contentOttNames = contentOttPlatforms
+          .map((platform) => {
+            // platform이 객체인 경우 name 속성 추출, 아니면 그대로 사용
+            if (typeof platform === "object" && platform !== null) {
+              return platform.name || "";
+            }
+            return platform || "";
+          })
+          .filter((name) => name && typeof name === "string")
+          .map((name) => name.trim())
+          .filter((name) => name.length > 0);
+
+        individualMatches.ottMatch = selectedOtts.some((selectedOtt) => {
+          const possibleNames = ottNameMapping[selectedOtt] || [selectedOtt];
+          return contentOttNames.some((contentOttName) =>
+            possibleNames.some((possibleName) => {
+              const contentName = contentOttName.toLowerCase();
+              const searchName = possibleName.toLowerCase();
+              return (
+                contentName.includes(searchName) ||
+                searchName.includes(contentName)
+              );
+            })
+          );
+        });
+
+        if (individualMatches.ottMatch) debugResults.ottFilterPassed++;
+        matches = matches && individualMatches.ottMatch;
+
+        // OTT 필터 상세 디버깅 (처음 3개만)
+        if (index < 3) {
+          console.log(`🎬 OTT 필터 상세 (${content.title}):`, {
+            원본필드: content.ottplatforms,
+            원본타입: typeof content.ottplatforms,
+            파싱된배열: contentOttPlatforms,
+            추출된이름들: contentOttNames,
+            선택된OTT: selectedOtts,
+            가능한이름들: selectedOtts.map(
+              (ott) => ottNameMapping[ott] || [ott]
+            ),
+            매치결과: individualMatches.ottMatch,
+          });
+        }
+      }
+
+      // Time 필터 검사
+      if (filters.time.length > 0) {
+        let contentTimeArray: string[] = [];
+
+        if (!content.feelterTime) {
+          contentTimeArray = [];
+        } else if (typeof content.feelterTime === "string") {
+          try {
+            const parsed = JSON.parse(content.feelterTime);
+            contentTimeArray = Array.isArray(parsed)
+              ? parsed
+              : [content.feelterTime];
+          } catch {
+            if (content.feelterTime.includes(",")) {
+              contentTimeArray = content.feelterTime
+                .split(",")
+                .map((s) => s.trim());
+            } else {
+              contentTimeArray = [content.feelterTime.trim()];
+            }
+          }
+        } else if (Array.isArray(content.feelterTime)) {
+          contentTimeArray = content.feelterTime.map((s) => s.trim());
+        }
+
+        individualMatches.timeMatch = filters.time.some((selectedTime) =>
+          contentTimeArray.some(
+            (contentTime) =>
+              contentTime.trim().toLowerCase() ===
+              selectedTime.trim().toLowerCase()
+          )
+        );
+
+        if (individualMatches.timeMatch) debugResults.timeFilterPassed++;
+        matches = matches && individualMatches.timeMatch;
+
+        if (index < 3) {
+          console.log(`⏰ Time 필터 상세 (${content.title}):`, {
+            원본필드: content.feelterTime,
+            파싱된배열: contentTimeArray,
+            필터조건: filters.time,
+            매치결과: individualMatches.timeMatch,
+          });
+        }
+      }
+
+      // Purpose 필터 검사
+      if (filters.purpose.length > 0) {
+        let contentPurposeArray: string[] = [];
+
+        if (!content.feelterPurpose) {
+          contentPurposeArray = [];
+        } else if (typeof content.feelterPurpose === "string") {
+          try {
+            const parsed = JSON.parse(content.feelterPurpose);
+            contentPurposeArray = Array.isArray(parsed)
+              ? parsed
+              : [content.feelterPurpose];
+          } catch {
+            if (content.feelterPurpose.includes(",")) {
+              contentPurposeArray = content.feelterPurpose
+                .split(",")
+                .map((s) => s.trim());
+            } else {
+              contentPurposeArray = [content.feelterPurpose.trim()];
+            }
+          }
+        } else if (Array.isArray(content.feelterPurpose)) {
+          contentPurposeArray = content.feelterPurpose.map((s) => s.trim());
+        }
+
+        individualMatches.purposeMatch = filters.purpose.some(
+          (selectedPurpose) =>
+            contentPurposeArray.some(
+              (contentPurpose) =>
+                contentPurpose.trim().toLowerCase() ===
+                selectedPurpose.trim().toLowerCase()
+            )
+        );
+
+        if (individualMatches.purposeMatch) debugResults.purposeFilterPassed++;
+        matches = matches && individualMatches.purposeMatch;
+
+        if (index < 3) {
+          console.log(`🎯 Purpose 필터 상세 (${content.title}):`, {
+            원본필드: content.feelterPurpose,
+            파싱된배열: contentPurposeArray,
+            필터조건: filters.purpose,
+            매치결과: individualMatches.purposeMatch,
+          });
+        }
+      }
+
+      // Occasion 필터 검사
+      if (filters.occasion.length > 0) {
+        let contentOccasionArray: string[] = [];
+
+        if (!content.feelterOccasion) {
+          contentOccasionArray = [];
+        } else if (typeof content.feelterOccasion === "string") {
+          try {
+            const parsed = JSON.parse(content.feelterOccasion);
+            contentOccasionArray = Array.isArray(parsed)
+              ? parsed
+              : [content.feelterOccasion];
+          } catch {
+            if (content.feelterOccasion.includes(",")) {
+              contentOccasionArray = content.feelterOccasion
+                .split(",")
+                .map((s) => s.trim());
+            } else {
+              contentOccasionArray = [content.feelterOccasion.trim()];
+            }
+          }
+        } else if (Array.isArray(content.feelterOccasion)) {
+          contentOccasionArray = content.feelterOccasion.map((s) => s.trim());
+        }
+
+        individualMatches.occasionMatch = filters.occasion.some(
+          (selectedOccasion) =>
+            contentOccasionArray.some(
+              (contentOccasion) =>
+                contentOccasion.trim().toLowerCase() ===
+                selectedOccasion.trim().toLowerCase()
+            )
+        );
+
+        if (individualMatches.occasionMatch)
+          debugResults.occasionFilterPassed++;
+        matches = matches && individualMatches.occasionMatch;
+
+        if (index < 3) {
+          console.log(`👥 Occasion 필터 상세 (${content.title}):`, {
+            원본필드: content.feelterOccasion,
+            파싱된배열: contentOccasionArray,
+            필터조건: filters.occasion,
+            매치결과: individualMatches.occasionMatch,
+          });
+        }
+      }
+
+      if (matches) {
+        matchingContents.push(content);
+        debugResults.finalMatches++;
+      }
+
+      // 상세 디버깅 (처음 10개만)
+      if (index < 10) {
+        console.log(`🔍 ${content.title} 필터링 결과:`, {
+          ottMatch: individualMatches.ottMatch,
+          timeMatch: individualMatches.timeMatch,
+          purposeMatch: individualMatches.purposeMatch,
+          occasionMatch: individualMatches.occasionMatch,
+          최종결과: matches,
+        });
+      }
+    });
+
+    // 전체 디버깅 요약
+    console.log("📊 필터링 결과 요약:", debugResults);
+
+    // release 날짜 기준 내림차순 정렬 (최신순)
+    const sortedContents = matchingContents.sort((a, b) => {
+      // release 필드가 있는지 확인
+      if (!a.release || !b.release) {
+        return 0;
+      }
+
+      // 날짜 문자열을 Date 객체로 변환하여 비교
+      const dateA = new Date(a.release);
+      const dateB = new Date(b.release);
+
+      // 내림차순 정렬 (최신 날짜가 앞으로)
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    console.log("📅 release 날짜 기준 정렬 완료:", sortedContents.length, "개");
+
+    return sortedContents;
+  }
+
+  /**
+   * 특정 플랫폼의 콘텐츠만 가져오는 함수
+   */
+  async getContentsByPlatform(platform: string): Promise<Content[]> {
+    try {
+      const { data, error } = await supabase
+        .from(this.TABLE_NAME)
+        .select("*")
+        .eq("platform", platform);
+
+      if (error) {
+        console.error("플랫폼별 콘텐츠 가져오기 실패:", error);
+        throw new Error(error.message);
+      }
+
+      const contents = data || [];
+
+      // release 날짜 기준 내림차순 정렬 (최신순)
+      const sortedContents = contents.sort((a, b) => {
+        if (!a.release || !b.release) {
+          return 0;
+        }
+
+        const dateA = new Date(a.release);
+        const dateB = new Date(b.release);
+
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      return sortedContents;
+    } catch (error) {
+      console.error("getContentsByPlatform 에러:", error);
+      throw error;
     }
+  }
 
-    return data.id;
-  },
+  /**
+   * 콘텐츠 검색 함수
+   */
+  async searchContents(searchTerm: string): Promise<Content[]> {
+    try {
+      if (!searchTerm.trim()) return [];
 
-  // 영화 업데이트
-  async updateMovie(id: string, updates: Partial<Movie>): Promise<void> {
-    const updateData: Record<string, unknown> = { ...updates };
+      const { data, error } = await supabase
+        .from(this.TABLE_NAME)
+        .select("*")
+        .or(
+          `title.ilike.%${searchTerm}%,genre.ilike.%${searchTerm}%,platform.ilike.%${searchTerm}%`
+        );
 
-    // Date 객체를 ISO 문자열로 변환
-    if (updateData.release && updateData.release instanceof Date) {
-      updateData.release = updateData.release.toISOString();
+      if (error) {
+        console.error("콘텐츠 검색 실패:", error);
+        throw new Error(error.message);
+      }
+
+      const contents = data || [];
+
+      // release 날짜 기준 내림차순 정렬 (최신순)
+      const sortedContents = contents.sort((a, b) => {
+        if (!a.release || !b.release) {
+          return 0;
+        }
+
+        const dateA = new Date(a.release);
+        const dateB = new Date(b.release);
+
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      return sortedContents;
+    } catch (error) {
+      console.error("searchContents 에러:", error);
+      throw error;
     }
+  }
 
-    // ID, createdAt, updatedAt 제거
-    delete updateData.id;
-    delete updateData.createdAt;
-    delete updateData.updatedAt;
+  /**
+   * 인기 콘텐츠 가져오기 (평점 기준)
+   */
+  async getPopularContents(limit: number = 10): Promise<Content[]> {
+    try {
+      const { data, error } = await supabase
+        .from(this.TABLE_NAME)
+        .select("*")
+        .order("rating", { ascending: false })
+        .limit(limit);
 
-    const { error } = await supabase
-      .from("movies")
-      .update(updateData)
-      .eq("id", id);
+      if (error) {
+        console.error("인기 콘텐츠 가져오기 실패:", error);
+        throw new Error(error.message);
+      }
 
-    if (error) {
-      console.error("영화 업데이트 오류:", error);
-      throw new Error(`영화 업데이트 실패: ${error.message}`);
+      return data || [];
+    } catch (error) {
+      console.error("getPopularContents 에러:", error);
+      throw error;
     }
-  },
+  }
 
-  // 영화 삭제
-  async deleteMovie(id: string): Promise<void> {
-    const { error } = await supabase.from("movies").delete().eq("id", id);
+  /**
+   * 최신 콘텐츠 가져오기 (release 날짜 기준)
+   */
+  async getLatestContents(limit: number = 10): Promise<Content[]> {
+    try {
+      const { data, error } = await supabase.from(this.TABLE_NAME).select("*");
 
-    if (error) {
-      console.error("영화 삭제 오류:", error);
-      throw new Error(`영화 삭제 실패: ${error.message}`);
+      if (error) {
+        console.error("최신 콘텐츠 가져오기 실패:", error);
+        throw new Error(error.message);
+      }
+
+      const contents = data || [];
+
+      // release 날짜 기준 내림차순 정렬 후 limit 적용 (최신순)
+      const sortedContents = contents
+        .sort((a, b) => {
+          if (!a.release || !b.release) {
+            return 0;
+          }
+
+          const dateA = new Date(a.release);
+          const dateB = new Date(b.release);
+
+          return dateB.getTime() - dateA.getTime();
+        })
+        .slice(0, limit);
+
+      return sortedContents;
+    } catch (error) {
+      console.error("getLatestContents 에러:", error);
+      throw error;
     }
-  },
+  }
 
-  // 배치로 영화 추가 (초기 데이터 입력용)
-  async addMoviesBatch(
-    movies: Omit<Movie, "id" | "createdAt" | "updatedAt">[]
-  ): Promise<void> {
-    console.log(`Supabase에 ${movies.length}개 영화 배치 추가 시작...`);
+  /**
+   * 단일 콘텐츠 상세 정보 가져오기
+   */
+  async getContentById(contentId: number): Promise<Content | null> {
+    try {
+      const { data, error } = await supabase
+        .from(this.TABLE_NAME)
+        .select("*")
+        .eq("contentsid", contentId)
+        .single();
 
-    const movieInserts: MovieInsert[] = movies.map(convertMovieToInsert);
+      if (error) {
+        console.error("콘텐츠 상세 정보 가져오기 실패:", error);
+        throw new Error(error.message);
+      }
 
-    const { data, error } = await supabase
-      .from("movies")
-      .insert(movieInserts)
-      .select("id");
-
-    if (error) {
-      console.error("영화 배치 추가 오류:", error);
-      throw new Error(`영화 배치 추가 실패: ${error.message}`);
+      return data;
+    } catch (error) {
+      console.error("getContentById 에러:", error);
+      throw error;
     }
+  }
 
-    console.log(`✅ ${data?.length || 0}개 영화가 성공적으로 추가되었습니다.`);
-  },
-};
+  /**
+   * 랜덤 콘텐츠 추천
+   */
+  async getRandomRecommendations(count: number = 5): Promise<Content[]> {
+    try {
+      // 모든 콘텐츠를 가져와서 클라이언트에서 랜덤 선택
+      // Supabase의 RANDOM() 함수 대신 클라이언트 랜덤 사용
+      const allContents = await this.getAllContents();
 
-// 영화 순위 관련 서비스
-export const movieRankingService = {
-  // 모든 순위 가져오기
-  async getAllRankings(): Promise<MovieRanking[]> {
-    const { data, error } = await supabase
-      .from("rankings")
-      .select(
-        `
-        *,
-        movies (*)
-      `
-      )
-      .order("rank", { ascending: true });
+      if (allContents.length === 0) return [];
 
-    if (error) {
-      console.error("순위 데이터 조회 오류:", error);
-      throw new Error(`순위 데이터 조회 실패: ${error.message}`);
+      // Fisher-Yates 셔플 알고리즘
+      const shuffled = [...allContents];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+
+      return shuffled.slice(0, count);
+    } catch (error) {
+      console.error("getRandomRecommendations 에러:", error);
+      throw error;
     }
+  }
+}
 
-    return (data as (RankingRow & { movies: MovieRow })[]).map((row) => ({
-      id: row.id,
-      rank: row.rank,
-      movieId: row.movieId,
-      movie: convertRowToMovie(row.movies),
-      bestComment: row.bestComment,
-      createdAt: new Date(row.createdAt),
-    }));
-  },
+// 싱글톤 인스턴스 생성 및 내보내기
+const contentService = new ContentService();
+export default contentService;
 
-  // 순위 추가
-  async addRanking(
-    ranking: Omit<MovieRanking, "id" | "createdAt" | "movie">
-  ): Promise<string> {
-    const { data, error } = await supabase
-      .from("rankings")
-      .insert({
-        rank: ranking.rank,
-        movieId: ranking.movieId,
-        bestComment: ranking.bestComment,
-      } as RankingInsert)
-      .select("id")
-      .single();
-
-    if (error) {
-      console.error("순위 추가 오류:", error);
-      throw new Error(`순위 추가 실패: ${error.message}`);
-    }
-
-    return data.id;
-  },
-
-  // 배치로 순위 추가
-  async addRankingsBatch(
-    rankings: Omit<MovieRanking, "id" | "createdAt" | "movie">[]
-  ): Promise<void> {
-    console.log(`Supabase에 ${rankings.length}개 순위 배치 추가 시작...`);
-
-    const rankingInserts: RankingInsert[] = rankings.map((ranking) => ({
-      rank: ranking.rank,
-      movieId: ranking.movieId,
-      bestComment: ranking.bestComment,
-    }));
-
-    const { data, error } = await supabase
-      .from("rankings")
-      .insert(rankingInserts)
-      .select("id");
-
-    if (error) {
-      console.error("순위 배치 추가 오류:", error);
-      throw new Error(`순위 배치 추가 실패: ${error.message}`);
-    }
-
-    console.log(`✅ ${data?.length || 0}개 순위가 성공적으로 추가되었습니다.`);
-  },
-};
+export { ContentService };

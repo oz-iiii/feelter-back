@@ -1,6 +1,6 @@
 /*import Image from "next/image";*/
-import FeelterCheck from "@/components/main/FeelterCheck";
-import FeelterGrid from "@/components/main/FeelterGrid";
+import FeelterCheck from "@/components/main/Feelter/FeelterCheck";
+
 import LatestSlide from "@/components/main/LatestSlide";
 import Ranking from "@/components/main/Ranking";
 
@@ -11,9 +11,7 @@ export default function Home() {
       <div className="w-full max-w-7xl">
         <FeelterCheck />
       </div>
-      <div className="w-full max-w-7xl mt-4">
-        <FeelterGrid />
-      </div>
+
       <div className="w-full max-w-7xl">
         <LatestSlide />
       </div>

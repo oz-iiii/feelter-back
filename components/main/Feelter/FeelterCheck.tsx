@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import styles from "./FeelterCheck.module.css";
-
+import FeelterGrid from "./FeelterGrid";
 
 type FilterData = {
   time: string[];
@@ -12,13 +11,15 @@ type FilterData = {
 
 export default function FeelterCheck() {
   const [filters] = useState<FilterData>({
-    time: ["이동", "취침", "식사", "심심", "주말/휴일"],
+    time: ["이동", "취침", "식사", "심심", "휴일/주말"],
     purpose: ["감동", "설렘", "웃음", "몰입", "통쾌"],
     occasion: ["혼자", "연인", "친구", "가족", "아이"],
   });
 
   const [selectedFilters, setSelectedFilters] = useState<{
-    [key: string]: string;
+    time: string;
+    purpose: string;
+    occasion: string;
   }>({
     time: "심심",
     purpose: "통쾌",
@@ -62,12 +63,18 @@ export default function FeelterCheck() {
   );
 
   return (
-    <div className={styles.bgimage}>
-      <div className="flex flex-col gap-4 max-w-[500px] w-full">
-        {renderFilterSection("time", filters.time, "Time")}
-        {renderFilterSection("purpose", filters.purpose, "Purpose")}
-        {renderFilterSection("occasion", filters.occasion, "Occasion")}
+    <>
+      <div
+        className="bg-[url('https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/wyCQovekJ10HnmqCE3lPNaoGDde.jpg')] 
+      bg-cover bg-center bg-no-repeat w-full max-w-7xl"
+      >
+        <div className="flex flex-col gap-4 max-w-[500px] w-full">
+          {renderFilterSection("time", filters.time, "Time")}
+          {renderFilterSection("purpose", filters.purpose, "Purpose")}
+          {renderFilterSection("occasion", filters.occasion, "Occasion")}
+        </div>
       </div>
-    </div>
+      <FeelterGrid filters={selectedFilters} />
+    </>
   );
 }

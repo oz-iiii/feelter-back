@@ -1,6 +1,0 @@
-.bgimage {
-  background-image: url("https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/wyCQovekJ10HnmqCE3lPNaoGDde.jpg");
-  background-size: cover; /* 배경 이미지가 컨테이너를 꽉 채우도록 설정 /
-    background-position: center; / 배경 이미지 중앙 정렬 /
-    background-repeat: no-repeat; / 배경 이미지 반복 방지 */
-}
