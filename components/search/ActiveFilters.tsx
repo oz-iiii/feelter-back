@@ -6,13 +6,28 @@ import { useFilter } from "@/lib/contexts/FilterContext";
 import { FilterState } from "@/lib/types/filter";
 
 const ActiveFilters: React.FC = () => {
-  const { platforms, genres, years, ratings, removeFilter, clearFilters, hasActiveFilters } = useFilter();
+  const {
+    platforms,
+    genres,
+    years,
+    ratings,
+    ages,
+    countries,
+    runtimes,
+    removeFilter,
+    clearFilters,
+    hasActiveFilters,
+  } = useFilter();
 
   if (!hasActiveFilters()) {
     return null;
   }
 
-  const renderFilterTags = (category: keyof FilterState, items: string[], label: string) => {
+  const renderFilterTags = (
+    category: keyof FilterState,
+    items: string[],
+    label: string
+  ) => {
     if (items.length === 0) return null;
 
     return items.map((item) => (
@@ -49,6 +64,9 @@ const ActiveFilters: React.FC = () => {
         {renderFilterTags("genres", genres, "장르")}
         {renderFilterTags("years", years, "연도")}
         {renderFilterTags("ratings", ratings, "평점")}
+        {renderFilterTags("ages", ages, "연령")}
+        {renderFilterTags("countries", countries, "제작국가")}
+        {renderFilterTags("runtimes", runtimes, "상영시간")}
       </div>
     </div>
   );

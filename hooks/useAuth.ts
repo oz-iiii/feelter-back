@@ -175,14 +175,55 @@ export const useAuth = () => {
   }
 
   const signOut = async () => {
+    console.log('Starting signOut process...')
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        throw new Error(`로그아웃 실패: ${error.message}`)
+      const currentUserId = user?.id
+
+      // 즉시 로컬 상태 초기화 (네트워크 오류와 관계없이)
+      setUser(null)
+      setSession(null)
+
+      // localStorage 정리
+      if (typeof window !== 'undefined') {
+        try {
+          const keysToRemove = [
+            'sb-auth-token',
+            'supabase.auth.token',
+            `profile_${currentUserId}`,
+            `ott_platforms_${currentUserId}`
+          ]
+
+          keysToRemove.forEach(key => {
+            localStorage.removeItem(key)
+          })
+
+          // 모든 supabase 관련 키 찾아서 제거
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sb-') || key.includes('supabase')) {
+              localStorage.removeItem(key)
+            }
+          })
+        } catch (localError) {
+          console.warn('localStorage 정리 중 오류:', localError)
+        }
       }
+
+      // Supabase 로그아웃 시도 (네트워크 오류 시에도 로컬 상태는 이미 초기화됨)
+      try {
+        const { error } = await supabase.auth.signOut()
+        if (error) {
+          console.warn('Supabase 로그아웃 실패 (로컬 상태는 이미 초기화됨):', error.message)
+        }
+      } catch (networkError) {
+        console.warn('네트워크 오류로 Supabase 로그아웃 실패 (로컬 상태는 이미 초기화됨):', networkError)
+      }
+
+      console.log('SignOut completed - local state cleared')
+
     } catch (error) {
       console.error('로그아웃 오류:', error)
-      throw error instanceof Error ? error : new Error('로그아웃 중 알 수 없는 오류가 발생했습니다.')
+      // 로컬 상태는 이미 초기화되었으므로 오류를 던지지 않음
+      console.log('Local state cleared despite error')
     }
   }
 

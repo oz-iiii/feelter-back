@@ -1,14 +1,36 @@
 "use client";
 
 import Image from "next/image";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  // 로그인된 사용자는 자동으로 홈페이지로 리다이렉션
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/home");
+    }
+  }, [user, loading, router]);
+
   const handleStartClick = (e: React.MouseEvent) => {
     e.preventDefault();
     alert(
       "서비스 페이지로 이동합니다! (30초 설문을 통해 취향 맞춤 추천을 받아보세요!)"
     );
   };
+
+  // 로딩 중이거나 로그인된 사용자인 경우 빈 화면 표시
+  if (loading || user) {
+    return (
+      <div className="min-h-screen bg-[#0c0c0c] flex items-center justify-center">
+        <div className="text-white text-xl">로딩 중...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0c0c0c] text-[#f0f0f0] flex flex-col pt-20">

@@ -20,7 +20,7 @@ export const COMMUNITY_CONFIG = {
 
 // 환경에 따른 자동 설정
 if (typeof window !== "undefined") {
-  // 개발 환경에서도 Supabase 사용하도록 변경
+  // 개발 환경에서도 Supabase 사용 (public.users 테이블 삭제로 문제 해결)
   // if (process.env.NODE_ENV === "development") {
   //   COMMUNITY_CONFIG.USE_LOCAL_STORAGE = true;
   // }

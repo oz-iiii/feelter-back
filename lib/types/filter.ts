@@ -5,6 +5,9 @@ export interface FilterState {
   genres: string[];
   years: string[];
   ratings: string[];
+  ages: string[];
+  countries: string[];
+  runtimes: string[];
 }
 
 export interface FilterActions {

@@ -9,7 +9,7 @@ import {
 
 // 게시글 관련 서비스
 export const postService = {
-  // 모든 게시글 가져오기 (페이지네이션 포함)
+  // 모든 게시글 가져오기 (페이지네이션 포함, 감정 게시글 제외)
   async getAllPosts(
     pageSize: number = 20,
     offset: number = 0
@@ -19,15 +19,17 @@ export const postService = {
     total: number;
   }> {
     try {
-      // 전체 개수 가져오기
+      // 전체 개수 가져오기 (감정 게시글 제외)
       const { count } = await supabase
         .from("posts")
-        .select("*", { count: "exact", head: true });
+        .select("*", { count: "exact", head: true })
+        .neq("type", "emotion");
 
-      // 게시글 데이터 가져오기
+      // 게시글 데이터 가져오기 (감정 게시글 제외)
       const { data, error } = await supabase
         .from("posts")
         .select("*")
+        .neq("type", "emotion")
         .order("created_at", { ascending: false })
         .range(offset, offset + pageSize - 1);
 
@@ -62,6 +64,9 @@ export const postService = {
       // 필터 적용
       if (filters.type) {
         query = query.eq("type", filters.type);
+      } else {
+        // 타입 필터가 없으면 감정 게시글 제외 (공개 게시글만)
+        query = query.neq("type", "emotion");
       }
 
       if (filters.status) {
@@ -132,22 +137,48 @@ export const postService = {
     post: Omit<CommunityPost, "id" | "createdAt" | "updatedAt">
   ): Promise<string> {
     try {
-      const postData = this.mapPostToDb(post);
+      console.log("🔄 Supabase addPost 시작", post);
 
+      const postData = this.mapPostToDb(post);
+      console.log("📋 DB 매핑 데이터", postData);
+
+      console.log("📡 Supabase에 데이터 삽입 중...");
       const { data, error } = await supabase
         .from("posts")
         .insert([postData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("💥 Supabase 삽입 에러:", error);
+        throw error;
+      }
 
-      // 사용자 통계 업데이트
-      await userStatsService.incrementPostCount(post.authorId, post.type);
+      console.log("✅ Supabase 삽입 성공:", data);
+
+      // 사용자 통계 업데이트 (에러 발생시 무시)
+      try {
+        console.log("📊 사용자 통계 업데이트 중...");
+        await userStatsService.incrementPostCount(post.authorId, post.type);
+        console.log("✅ 사용자 통계 업데이트 완료");
+      } catch (statsError) {
+        console.warn(
+          "⚠️ 사용자 통계 업데이트 실패 (무시하고 계속):",
+          statsError
+        );
+        // 통계 업데이트 실패는 무시하고 계속 진행
+      }
 
       return data.id;
     } catch (error) {
-      console.error("Error adding post:", error);
+      console.error("❌ Supabase addPost 실패:", error);
+      console.error("에러 세부사항:", {
+        name: error instanceof Error ? error.name : "Unknown",
+        message: error instanceof Error ? error.message : String(error),
+        code: (error as any)?.code,
+        details: (error as any)?.details,
+        hint: (error as any)?.hint,
+      });
       throw new Error("게시글 작성에 실패했습니다.");
     }
   },
@@ -182,7 +213,7 @@ export const postService = {
   },
 
   // 좋아요 토글
-  async toggleLike(postId: string, userId: string): Promise<void> {
+  async toggleLike(postId: string, userId: string): Promise<CommunityPost> {
     try {
       const { data: currentPost, error: fetchError } = await supabase
         .from("posts")
@@ -220,11 +251,26 @@ export const postService = {
       // 게시글 작성자의 받은 좋아요 수 업데이트 (본인 제외)
       if (currentPost.author_id !== userId) {
         const incrementValue = isCurrentlyLiked ? -1 : 1;
-        await userStatsService.incrementLikesReceived(
-          currentPost.author_id,
-          incrementValue
+        // await userStatsService.incrementLikesReceived(
+        //   currentPost.author_id,
+        //   incrementValue
+        // );
+        console.log(
+          `좋아요 통계: ${currentPost.author_id}님이 좋아요 ${
+            incrementValue > 0 ? "받음" : "취소됨"
+          }`
         );
       }
+
+      // 업데이트된 게시글 반환
+      const { data: updatedPost, error: fetchUpdatedError } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("id", postId)
+        .single();
+
+      if (fetchUpdatedError) throw fetchUpdatedError;
+      return this.mapPostFromDb(updatedPost);
     } catch (error) {
       console.error("Error toggling like:", error);
       throw new Error("좋아요 처리에 실패했습니다.");
@@ -303,39 +349,8 @@ export const userStatsService = {
     userId: string,
     postType: "review" | "discussion" | "emotion"
   ): Promise<void> {
-    try {
-      const { data: user, error } = await supabase
-        .from("users")
-        .select("stats")
-        .eq("id", userId)
-        .single();
-
-      if (error) throw error;
-
-      const stats = user.stats || {};
-      stats.postsCount = (stats.postsCount || 0) + 1;
-
-      switch (postType) {
-        case "review":
-          stats.reviewsCount = (stats.reviewsCount || 0) + 1;
-          break;
-        case "discussion":
-          stats.discussionsCount = (stats.discussionsCount || 0) + 1;
-          break;
-        case "emotion":
-          stats.emotionsCount = (stats.emotionsCount || 0) + 1;
-          break;
-      }
-
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({ stats })
-        .eq("id", userId);
-
-      if (updateError) throw updateError;
-    } catch (error) {
-      console.error("Error incrementing post count:", error);
-    }
+    // users 테이블이 삭제되어 통계 기능 임시 비활성화
+    console.log(`📊 사용자 통계: ${userId}님이 ${postType} 글을 작성했습니다.`);
   },
 
   async incrementLikesReceived(
@@ -563,6 +578,47 @@ export const commentService = {
       liked_by: comment.likedBy || [],
       parent_comment_id: comment.parentCommentId,
     };
+  },
+
+  // 댓글 좋아요 토글
+  async toggleLike(commentId: string, userId: string): Promise<void> {
+    try {
+      const { data: currentComment, error: fetchError } = await supabase
+        .from("comments")
+        .select("likes, liked_by")
+        .eq("id", commentId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const likedBy = currentComment.liked_by || [];
+      const isCurrentlyLiked = likedBy.includes(userId);
+
+      let newLikedBy: string[];
+      let newLikes: number;
+
+      if (isCurrentlyLiked) {
+        newLikedBy = likedBy.filter((id: string) => id !== userId);
+        newLikes = Math.max(0, currentComment.likes - 1);
+      } else {
+        newLikedBy = [...likedBy, userId];
+        newLikes = currentComment.likes + 1;
+      }
+
+      const { error: updateError } = await supabase
+        .from("comments")
+        .update({
+          likes: newLikes,
+          liked_by: newLikedBy,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", commentId);
+
+      if (updateError) throw updateError;
+    } catch (error) {
+      console.error("Error toggling comment like:", error);
+      throw new Error("댓글 좋아요 처리에 실패했습니다.");
+    }
   },
 };
 

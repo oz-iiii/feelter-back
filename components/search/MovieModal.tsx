@@ -159,11 +159,13 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
                   <div>
                     <h3 className="text-lg text-gray-400">장르</h3>
                     <p className="text-xl text-gray-200">
-                      {movieData?.genre 
-                        ? (Array.isArray(movieData.genre) 
-                           ? movieData.genre.join(", ") 
+                      {movieData?.genre
+                        ? (Array.isArray(movieData.genre)
+                           ? movieData.genre.join(", ")
                            : movieData.genre)
-                        : (content.genre || "기타")
+                        : (Array.isArray(content.genre)
+                           ? content.genre.join(", ")
+                           : content.genre || "기타")
                       }
                     </p>
                   </div>

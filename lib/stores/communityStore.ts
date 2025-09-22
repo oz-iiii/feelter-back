@@ -7,12 +7,7 @@ import {
   EmotionRecord,
   CommunityFilters,
 } from "../types/community";
-import {
-  postService,
-  commentService,
-  catService,
-  emotionService,
-} from "../services/communityService";
+import { postService, commentService } from "../services/communityService";
 import {
   localPostService,
   localUserStatsService,
@@ -73,26 +68,16 @@ interface CommunityState {
   ) => Promise<string>;
   updatePost: (id: string, updates: Partial<CommunityPost>) => Promise<void>;
   deletePost: (id: string) => Promise<void>;
-  togglePostLike: (postId: string) => Promise<void>;
+  togglePostLike: (postId: string, user: any) => Promise<void>;
   incrementPostViews: (postId: string) => Promise<void>;
   setCurrentPost: (post: CommunityPost | null) => void;
   setFilters: (filters: CommunityFilters) => void;
 
   fetchComments: (postId: string) => Promise<void>;
-  addComment: (
-    comment: Omit<
-      Comment,
-      | "id"
-      | "createdAt"
-      | "updatedAt"
-      | "authorId"
-      | "authorName"
-      | "authorAvatar"
-    >
-  ) => Promise<string>;
+  addComment: (postId: string, content: string, user: any) => Promise<string>;
   updateComment: (id: string, updates: Partial<Comment>) => Promise<void>;
   deleteComment: (id: string, postId: string) => Promise<void>;
-  toggleCommentLike: (commentId: string) => Promise<void>;
+  toggleCommentLike: (commentId: string, user: any) => Promise<void>;
 
   fetchCats: (userId?: string) => Promise<void>;
   addCat: (
@@ -229,10 +214,12 @@ export const useCommunityStore = create<CommunityState>()(
       },
 
       loadMorePosts: async () => {
-        const { hasMorePosts, filters } = get();
-        if (!hasMorePosts) return;
+        const { hasMorePosts, filters, postsLoading } = get();
 
-        set({ postsLoading: true });
+        // 이미 로딩 중이거나 더 이상 가져올 데이터가 없으면 중단
+        if (!hasMorePosts || postsLoading) return;
+
+        set({ postsLoading: true, postsError: null });
         try {
           const pageSize = 20;
           const offset = get().posts.length;
@@ -253,6 +240,7 @@ export const useCommunityStore = create<CommunityState>()(
             postsLoading: false,
           }));
         } catch (error) {
+          console.error("loadMorePosts error:", error);
           set({
             postsError:
               error instanceof Error
@@ -393,12 +381,27 @@ export const useCommunityStore = create<CommunityState>()(
         }
       },
 
-      togglePostLike: async (postId) => {
+      togglePostLike: async (postId, user) => {
         try {
-          // 좋아요 기능은 기본 기능으로 남겨두되, 사용자 ID는 별도 전달받도록 수정 예정
-          console.log(
-            "좋아요 기능은 사용자 인증이 완전히 연동된 후 활성화됩니다."
+          if (!user) {
+            throw new Error("로그인이 필요합니다.");
+          }
+
+          const updatedPost = await getPostService().toggleLike(
+            postId,
+            user.id
           );
+
+          // 현재 포스트가 수정된 포스트라면 상태 업데이트
+          set((state) => ({
+            currentPost:
+              state.currentPost?.id === postId
+                ? updatedPost
+                : state.currentPost,
+            posts: state.posts.map((post) =>
+              post.id === postId ? updatedPost : post
+            ),
+          }));
         } catch (error) {
           set({
             postsError:
@@ -454,11 +457,44 @@ export const useCommunityStore = create<CommunityState>()(
         }
       },
 
-      addComment: async (commentData) => {
+      addComment: async (postId, content, user) => {
         try {
-          // 댓글 기능은 추후 구현
-          console.log("댓글 기능은 추후 구현 예정입니다.");
-          throw new Error("댓글 기능은 추후 구현 예정입니다.");
+          if (!user) {
+            throw new Error("로그인이 필요합니다.");
+          }
+
+          const commentData = {
+            postId,
+            content,
+            authorId: user.id,
+            authorName: user.nickname || user.email?.split("@")[0] || "사용자",
+            authorAvatar: user.profile_image || "",
+            likes: 0,
+            likedBy: [],
+          };
+
+          const commentId = await commentService.addComment(commentData);
+
+          // 댓글 목록 새로고침
+          await get().fetchComments(postId);
+
+          // 게시글의 댓글 수 증가
+          set((state) => ({
+            currentPost:
+              state.currentPost?.id === postId
+                ? {
+                    ...state.currentPost,
+                    comments: state.currentPost.comments + 1,
+                  }
+                : state.currentPost,
+            posts: state.posts.map((post) =>
+              post.id === postId
+                ? { ...post, comments: post.comments + 1 }
+                : post
+            ),
+          }));
+
+          return commentId;
         } catch (error) {
           set({
             commentsError:
@@ -502,10 +538,19 @@ export const useCommunityStore = create<CommunityState>()(
         }
       },
 
-      toggleCommentLike: async (commentId) => {
+      toggleCommentLike: async (commentId, user) => {
         try {
-          // 댓글 기능은 추후 구현
-          console.log("댓글 기능은 추후 구현 예정입니다.");
+          if (!user) {
+            throw new Error("로그인이 필요합니다.");
+          }
+
+          await commentService.toggleLike(commentId, user.id);
+
+          // 댓글 목록 새로고침
+          const currentPost = get().currentPost;
+          if (currentPost) {
+            await get().fetchComments(currentPost.id);
+          }
         } catch (error) {
           set({
             commentsError:

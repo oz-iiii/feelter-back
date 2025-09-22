@@ -37,19 +37,31 @@ const logSupabaseError = (label: string, error: unknown) => {
 };
 
 // Helper function to generate feelter data based on genre
-const generateFeelterData = (genres: string[]): {
+const generateFeelterData = (
+  genres: string[]
+): {
   feelterTime: string[];
   feelterPurpose: string[];
   feelterOccasion: string[];
 } => {
   const genreList = Array.isArray(genres) ? genres : [genres];
   const genreStr = genreList.join(" ").toLowerCase();
-  
+
   // 시간대 결정
   let feelterTime: string[] = ["저녁"]; // 기본값
-  if (genreStr.includes("공포") || genreStr.includes("스릴러") || genreStr.includes("horror") || genreStr.includes("thriller")) {
+  if (
+    genreStr.includes("공포") ||
+    genreStr.includes("스릴러") ||
+    genreStr.includes("horror") ||
+    genreStr.includes("thriller")
+  ) {
     feelterTime = ["밤"];
-  } else if (genreStr.includes("가족") || genreStr.includes("애니메이션") || genreStr.includes("family") || genreStr.includes("animation")) {
+  } else if (
+    genreStr.includes("가족") ||
+    genreStr.includes("애니메이션") ||
+    genreStr.includes("family") ||
+    genreStr.includes("animation")
+  ) {
     feelterTime = ["오후"];
   } else if (genreStr.includes("로맨스") || genreStr.includes("romance")) {
     feelterTime = ["저녁"];
@@ -57,25 +69,53 @@ const generateFeelterData = (genres: string[]): {
 
   // 목적 결정
   let feelterPurpose: string[] = ["휴식"]; // 기본값
-  if (genreStr.includes("공포") || genreStr.includes("스릴러") || genreStr.includes("horror") || genreStr.includes("thriller")) {
+  if (
+    genreStr.includes("공포") ||
+    genreStr.includes("스릴러") ||
+    genreStr.includes("horror") ||
+    genreStr.includes("thriller")
+  ) {
     feelterPurpose = ["스릴"];
-  } else if (genreStr.includes("로맨스") || genreStr.includes("romance") || genreStr.includes("드라마") || genreStr.includes("drama")) {
+  } else if (
+    genreStr.includes("로맨스") ||
+    genreStr.includes("romance") ||
+    genreStr.includes("드라마") ||
+    genreStr.includes("drama")
+  ) {
     feelterPurpose = ["감동"];
-  } else if (genreStr.includes("액션") || genreStr.includes("action") || genreStr.includes("모험") || genreStr.includes("adventure")) {
+  } else if (
+    genreStr.includes("액션") ||
+    genreStr.includes("action") ||
+    genreStr.includes("모험") ||
+    genreStr.includes("adventure")
+  ) {
     feelterPurpose = ["자극"];
   } else if (genreStr.includes("코미디") || genreStr.includes("comedy")) {
     feelterPurpose = ["유머"];
-  } else if (genreStr.includes("다큐멘터리") || genreStr.includes("documentary")) {
+  } else if (
+    genreStr.includes("다큐멘터리") ||
+    genreStr.includes("documentary")
+  ) {
     feelterPurpose = ["학습"];
   }
 
   // 상황 결정
   let feelterOccasion: string[] = ["혼자"]; // 기본값
-  if (genreStr.includes("가족") || genreStr.includes("애니메이션") || genreStr.includes("family") || genreStr.includes("animation")) {
+  if (
+    genreStr.includes("가족") ||
+    genreStr.includes("애니메이션") ||
+    genreStr.includes("family") ||
+    genreStr.includes("animation")
+  ) {
     feelterOccasion = ["가족"];
   } else if (genreStr.includes("로맨스") || genreStr.includes("romance")) {
     feelterOccasion = ["연인"];
-  } else if (genreStr.includes("액션") || genreStr.includes("action") || genreStr.includes("코미디") || genreStr.includes("comedy")) {
+  } else if (
+    genreStr.includes("액션") ||
+    genreStr.includes("action") ||
+    genreStr.includes("코미디") ||
+    genreStr.includes("comedy")
+  ) {
     feelterOccasion = ["친구"];
   }
 
@@ -85,7 +125,7 @@ const generateFeelterData = (genres: string[]): {
 // Helper function to convert Supabase row to Movie type (updated for actual DB schema)
 const convertRowToMovie = (row: MovieRow): Movie => {
   const r = row as unknown as Record<string, unknown>;
-  
+
   const genres = (r["genres"] as string[]) ?? [];
   const feelterData = generateFeelterData(genres);
 
@@ -111,6 +151,8 @@ const convertRowToMovie = (row: MovieRow): Movie => {
     feelterTime: feelterData.feelterTime,
     feelterPurpose: feelterData.feelterPurpose,
     feelterOccasion: feelterData.feelterOccasion,
+    rating:
+      (r["rating"] as number) ?? (r["user_rating"] as number) ?? undefined, // 네티즌 평점 매핑
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -148,7 +190,7 @@ export const movieService = {
   // 모든 영화 가져오기
   async getAllMovies(): Promise<Movie[]> {
     const client = supabaseAdmin ?? supabase;
-    const { data, error } = await client.from("movies").select("*");
+    const { data, error } = await client.from("movie_with_rating").select("*");
 
     if (error) {
       logSupabaseError("영화 데이터 조회 오류:", error);
@@ -187,7 +229,9 @@ export const movieService = {
     hasMore: boolean;
     total: number;
   }> {
-    let query = supabase.from("movies").select("*", { count: "exact" });
+    let query = supabase
+      .from("movie_with_rating")
+      .select("*", { count: "exact" });
 
     // 필터 적용
     if (filters.genre) {

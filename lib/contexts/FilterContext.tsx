@@ -1,7 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { FilterState, FilterActions, FilterContextType } from '@/lib/types/filter';
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import {
+  FilterState,
+  FilterActions,
+  FilterContextType,
+} from "@/lib/types/filter";
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
@@ -14,33 +18,36 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
     platforms: [],
     genres: [],
     years: [],
-    ratings: []
+    ratings: [],
+    ages: [],
+    countries: [],
+    runtimes: [],
   });
 
   const addFilter = (category: keyof FilterState, value: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [category]: [...prev[category], value]
+      [category]: [...prev[category], value],
     }));
   };
 
   const removeFilter = (category: keyof FilterState, value: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [category]: prev[category].filter(item => item !== value)
+      [category]: prev[category].filter((item) => item !== value),
     }));
   };
 
   const toggleFilter = (category: keyof FilterState, value: string) => {
-    setFilters(prev => {
+    setFilters((prev) => {
       const categoryItems = prev[category];
       const isSelected = categoryItems.includes(value);
 
       return {
         ...prev,
         [category]: isSelected
-          ? categoryItems.filter(item => item !== value)
-          : [...categoryItems, value]
+          ? categoryItems.filter((item) => item !== value)
+          : [...categoryItems, value],
       };
     });
   };
@@ -50,23 +57,29 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
       platforms: [],
       genres: [],
       years: [],
-      ratings: []
+      ratings: [],
+      ages: [],
+      countries: [],
+      runtimes: [],
     });
   };
 
   const clearCategory = (category: keyof FilterState) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [category]: []
+      [category]: [],
     }));
   };
 
   const hasActiveFilters = () => {
-    return Object.values(filters).some(category => category.length > 0);
+    return Object.values(filters).some((category) => category.length > 0);
   };
 
   const getActiveFilterCount = () => {
-    return Object.values(filters).reduce((total, category) => total + category.length, 0);
+    return Object.values(filters).reduce(
+      (total, category) => total + category.length,
+      0
+    );
   };
 
   const value: FilterContextType = {
@@ -77,20 +90,18 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
     clearFilters,
     clearCategory,
     hasActiveFilters,
-    getActiveFilterCount
+    getActiveFilterCount,
   };
 
   return (
-    <FilterContext.Provider value={value}>
-      {children}
-    </FilterContext.Provider>
+    <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
   );
 };
 
 export const useFilter = (): FilterContextType => {
   const context = useContext(FilterContext);
   if (context === undefined) {
-    throw new Error('useFilter must be used within a FilterProvider');
+    throw new Error("useFilter must be used within a FilterProvider");
   }
   return context;
 };
