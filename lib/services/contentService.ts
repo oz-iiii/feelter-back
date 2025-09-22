@@ -13,17 +13,17 @@ class ContentService {
    */
   async getAllContents(): Promise<Content[]> {
     try {
-      const { data, error } = await supabase.from(this.TABLE_NAME).select("*");
+      const response = await fetch("/api/contents");
+      const result = await response.json();
 
-      if (error) {
-        console.error("콘텐츠 가져오기 실패:", error);
-        throw new Error(error.message);
+      if (!result.success) {
+        throw new Error(result.error || "Failed to fetch contents");
       }
 
-      const contents = data || [];
+      const contents = result.data || [];
 
       // release 날짜 기준 내림차순 정렬 (최신순)
-      const sortedContents = contents.sort((a, b) => {
+      const sortedContents = contents.sort((a: any, b: any) => {
         if (!a.release || !b.release) {
           return 0;
         }
