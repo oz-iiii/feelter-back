@@ -68,7 +68,7 @@ export default function FeelterCheck() {
         className="bg-[url('https://media.themoviedb.org/t/p/w1066_and_h600_bestv2/wyCQovekJ10HnmqCE3lPNaoGDde.jpg')] 
       bg-cover bg-center bg-no-repeat w-full max-w-7xl"
       >
-        <div className="flex flex-col gap-4 max-w-[500px] w-full">
+        <div className="flex flex-col gap-4 px-4 pt-10 pb-8 max-w-[500px] w-full">
           {renderFilterSection("time", filters.time, "Time")}
           {renderFilterSection("purpose", filters.purpose, "Purpose")}
           {renderFilterSection("occasion", filters.occasion, "Occasion")}

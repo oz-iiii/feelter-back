@@ -108,9 +108,6 @@ export default function FeelterGrid({
 
   const handleContentClick = (content: Content) => {
     setSelectedContent(content);
-
-    // 기존 시청 기록 로직이 있다면 여기에 추가
-    // addToWatchHistory(content);
   };
 
   // '전체' 버튼 클릭 핸들러
@@ -153,7 +150,7 @@ export default function FeelterGrid({
 
   return (
     <section>
-      <div className="flex flex-col md:flex-row md:items-center my-8">
+      <div className="flex flex-col md:flex-row md:items-center my-4">
         {/* 1. 필터 추천 글씨 섹션 */}
         <h2 className="text-lg font-semibold flex items-center space-x-2">
           <IoFilmOutline size={32} />

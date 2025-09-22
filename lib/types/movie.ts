@@ -38,7 +38,7 @@ export interface MovieFilters {
 }
 
 export interface MovieRanking {
-  id: number;
+  id: string | number;
   rank: number;
   movieId: string;
   movie: Movie;
@@ -47,7 +47,7 @@ export interface MovieRanking {
 }
 
 export interface Category {
-  id: number;
+  id: string | number;
   name: string;
   description: string;
   movieCount: number;
@@ -57,14 +57,14 @@ export interface Category {
 }
 
 export interface CategoryMovie {
-  id: number;
+  id: string | number;
   title: string;
   poster: string;
 }
 
 // 데이터 타입 정의
 export interface ContentData {
-  id: number;
+  id: string | number;
   ott_name: string;
   title: string;
   year: string;
@@ -82,7 +82,7 @@ export interface ContentData {
 
 // HeroCarousel 컴포넌트의 데이터 타입 정의
 export interface HeroData {
-  id: number;
+  id: string | number;
   title: string;
   year: string;
   age: string;
@@ -98,7 +98,7 @@ export interface HeroData {
 
 // CardCarousel 슬라이드 아이템의 데이터 타입 정의
 export interface SlideData extends HeroData {
-  id: number;
+  id: string | number;
 }
 
 // OTT별 콘텐츠 데이터의 전체 타입 정의

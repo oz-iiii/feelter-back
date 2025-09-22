@@ -12,7 +12,9 @@ export default function FavoritesPage() {
     useCategoryStore();
   const [sortBy, setSortBy] = useState("recent");
   const [viewMode, setViewMode] = useState("grid");
-  const [selectedMovies, setSelectedMovies] = useState<Set<number>>(new Set());
+  const [selectedMovies, setSelectedMovies] = useState<Set<string | number>>(
+    new Set()
+  );
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -23,11 +25,11 @@ export default function FavoritesPage() {
     setMounted(true);
   }, []);
 
-  const removeFavorite = (id: number) => {
+  const removeFavorite = (id: string | number) => {
     removeFromFavorites(id);
   };
 
-  const toggleMovieSelection = (movieId: number) => {
+  const toggleMovieSelection = (movieId: string | number) => {
     const newSelection = new Set(selectedMovies);
     if (newSelection.has(movieId)) {
       newSelection.delete(movieId);

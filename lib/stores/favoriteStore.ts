@@ -7,9 +7,9 @@ interface FavoriteState {
 
   // Actions
   addToFavorites: (movie: Movie) => void;
-  removeFromFavorites: (movieId: number) => void;
+  removeFromFavorites: (movieId: string | number) => void;
   toggleFavorite: (movie: Movie) => void;
-  isFavorite: (movieId: number) => boolean;
+  isFavorite: (movieId: string | number) => boolean;
   clearFavorites: () => void;
 }
 
@@ -32,7 +32,7 @@ export const useFavoriteStore = create<FavoriteState>()(
           }
         },
 
-        removeFromFavorites: (movieId: number) => {
+        removeFromFavorites: (movieId: string | number) => {
           set((state) => ({
             favorites: state.favorites.filter((movie) => movie.id !== movieId),
           }));
@@ -51,7 +51,7 @@ export const useFavoriteStore = create<FavoriteState>()(
           }
         },
 
-        isFavorite: (movieId: number) => {
+        isFavorite: (movieId: string | number) => {
           const { favorites } = get();
           return favorites.some((fav) => fav.id === movieId);
         },

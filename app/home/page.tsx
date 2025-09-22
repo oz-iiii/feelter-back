@@ -7,7 +7,7 @@ import Ranking from "@/components/main/Ranking";
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen p-8">
-      <h2 className="text-2xl font-semibold mb-8">| 당신의 지금</h2>
+      <h2 className="text-2xl font-semibold mb-4">| 당신의 지금</h2>
       <div className="w-full max-w-7xl">
         <FeelterCheck />
       </div>
