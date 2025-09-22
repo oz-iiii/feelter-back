@@ -93,23 +93,9 @@ export default function CommunityPage() {
           />
         );
       case "discussion":
-        return (
-          <DiscussionTab
-            onCreatePost={handleCreatePost}
-            onOpenSignIn={handleOpenSignIn}
-            onOpenSignUp={handleOpenSignUp}
-            onSignOut={handleSignOut}
-          />
-        );
+        return <DiscussionTab onCreatePost={handleCreatePost} />;
       case "review":
-        return (
-          <ReviewTab
-            onCreatePost={handleCreatePost}
-            onOpenSignIn={handleOpenSignIn}
-            onOpenSignUp={handleOpenSignUp}
-            onSignOut={handleSignOut}
-          />
-        );
+        return <ReviewTab onCreatePost={handleCreatePost} />;
       case "cats":
         return <CatsTab />;
       case "emotions":
