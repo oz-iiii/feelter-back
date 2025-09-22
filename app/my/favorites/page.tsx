@@ -41,12 +41,12 @@ export default function FavoritesPage() {
     if (selectedMovies.size === favorites.length) {
       setSelectedMovies(new Set());
     } else {
-      setSelectedMovies(new Set(favorites.map((movie) => movie.id)));
+      setSelectedMovies(new Set(favorites.map((movie) => Number(movie.id))));
     }
   };
 
   const getSelectedMovieObjects = (): Movie[] => {
-    return favorites.filter((movie) => selectedMovies.has(movie.id));
+    return favorites.filter((movie) => selectedMovies.has(Number(movie.id)));
   };
 
   const handleAddToCategory = (categoryId?: string, categoryName?: string) => {
@@ -230,7 +230,7 @@ export default function FavoritesPage() {
               <div
                 key={movie.id}
                 className={`bg-gray-800 rounded-lg shadow-sm overflow-hidden group hover:shadow-lg transition-all ${
-                  isSelectionMode && selectedMovies.has(movie.id)
+                  isSelectionMode && selectedMovies.has(Number(movie.id))
                     ? "ring-2 ring-blue-500 scale-105"
                     : ""
                 }`}
@@ -245,10 +245,10 @@ export default function FavoritesPage() {
                   />
                   {isSelectionMode ? (
                     <button
-                      onClick={() => toggleMovieSelection(movie.id)}
+                      onClick={() => toggleMovieSelection(Number(movie.id))}
                       className="absolute top-2 left-2 w-6 h-6 rounded-full border-2 border-white bg-black bg-opacity-50 flex items-center justify-center transition-all"
                     >
-                      {selectedMovies.has(movie.id) && (
+                      {selectedMovies.has(Number(movie.id)) && (
                         <svg
                           className="w-4 h-4 text-blue-500"
                           fill="currentColor"
@@ -264,7 +264,7 @@ export default function FavoritesPage() {
                     </button>
                   ) : (
                     <button
-                      onClick={() => removeFavorite(movie.id)}
+                      onClick={() => removeFavorite(Number(movie.id))}
                       className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <svg
@@ -326,7 +326,7 @@ export default function FavoritesPage() {
                 <div
                   key={movie.id}
                   className={`p-6 hover:bg-gray-700 transition-colors ${
-                    isSelectionMode && selectedMovies.has(movie.id)
+                    isSelectionMode && selectedMovies.has(Number(movie.id))
                       ? "bg-gray-700 border-l-4 border-blue-500"
                       : ""
                   }`}
@@ -334,10 +334,10 @@ export default function FavoritesPage() {
                   <div className="flex items-center space-x-4">
                     {isSelectionMode && (
                       <button
-                        onClick={() => toggleMovieSelection(movie.id)}
+                        onClick={() => toggleMovieSelection(Number(movie.id))}
                         className="w-6 h-6 rounded border-2 border-gray-400 flex items-center justify-center transition-all"
                       >
-                        {selectedMovies.has(movie.id) && (
+                        {selectedMovies.has(Number(movie.id)) && (
                           <svg
                             className="w-4 h-4 text-blue-500"
                             fill="currentColor"
@@ -402,7 +402,7 @@ export default function FavoritesPage() {
                       </div>
                       {!isSelectionMode && (
                         <button
-                          onClick={() => removeFavorite(movie.id)}
+                          onClick={() => removeFavorite(Number(movie.id))}
                           className="px-3 py-1 text-sm text-red-600 hover:text-red-700 border border-red-300 hover:border-red-400 rounded transition-colors"
                         >
                           삭제

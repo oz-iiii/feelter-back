@@ -6,14 +6,19 @@ import MyLayout from "@/components/my/MyLayout";
 import { useCategoryStore } from "@/lib/stores";
 
 export default function CategoriesPage() {
-  const { categories, updateCategory, deleteCategory, removeMovieFromCategory } = useCategoryStore();
+  const {
+    categories,
+    updateCategory,
+    deleteCategory,
+    removeMovieFromCategory,
+  } = useCategoryStore();
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   const handleEditCategory = (categoryId: string) => {
-    const category = categories.find(cat => cat.id === categoryId);
+    const category = categories.find((cat) => cat.id === categoryId);
     if (category) {
       setEditingCategory(categoryId);
       setEditName(category.name);
@@ -24,7 +29,7 @@ export default function CategoriesPage() {
   const handleSaveEdit = (categoryId: string) => {
     updateCategory(categoryId, {
       name: editName,
-      description: editDescription || undefined
+      description: editDescription || undefined,
     });
     setEditingCategory(null);
     setEditName("");
@@ -79,7 +84,9 @@ export default function CategoriesPage() {
             <h3 className="text-lg font-medium text-white mb-2">
               생성된 카테고리가 없습니다
             </h3>
-            <p className="text-gray-400">즐겨찾기에서 영화를 선택하여 카테고리를 만들어보세요.</p>
+            <p className="text-gray-400">
+              즐겨찾기에서 영화를 선택하여 카테고리를 만들어보세요.
+            </p>
           </div>
         )}
 
@@ -138,10 +145,17 @@ export default function CategoriesPage() {
                             </span>
                           </div>
                           {category.description && (
-                            <p className="text-gray-400 mb-2">{category.description}</p>
+                            <p className="text-gray-400 mb-2">
+                              {category.description}
+                            </p>
                           )}
                           <p className="text-sm text-gray-500">
-                            생성일: {category.createdAt instanceof Date ? category.createdAt.toLocaleDateString() : new Date(category.createdAt).toLocaleDateString()}
+                            생성일:{" "}
+                            {category.createdAt instanceof Date
+                              ? category.createdAt.toLocaleDateString()
+                              : new Date(
+                                  category.createdAt
+                                ).toLocaleDateString()}
                           </p>
                         </div>
                       )}
@@ -195,7 +209,12 @@ export default function CategoriesPage() {
                                 className="w-full h-48 object-cover"
                               />
                               <button
-                                onClick={() => removeMovieFromCategory(category.id, movie.id)}
+                                onClick={() =>
+                                  removeMovieFromCategory(
+                                    category.id,
+                                    Number(movie.id)
+                                  )
+                                }
                                 className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                               >
                                 <svg
@@ -216,7 +235,9 @@ export default function CategoriesPage() {
                                 {movie.title}
                               </h3>
                               <p className="text-xs text-gray-400">
-                                {movie.release instanceof Date ? movie.release.getFullYear() : new Date(movie.release).getFullYear()}
+                                {movie.release instanceof Date
+                                  ? movie.release.getFullYear()
+                                  : new Date(movie.release).getFullYear()}
                               </p>
                             </div>
                           </div>

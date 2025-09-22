@@ -1,9 +1,9 @@
 // 로컬 스토리지를 사용한 임시 커뮤니티 서비스
-import { CommunityPost, Comment, CommunityFilters } from "../types/community";
+import { CommunityPost, CommunityFilters } from "../types/community";
 
 // 로컬 스토리지 키
 const POSTS_STORAGE_KEY = "feelter_community_posts";
-const COMMENTS_STORAGE_KEY = "feelter_community_comments";
+// const COMMENTS_STORAGE_KEY = "feelter_community_comments"; // 현재 미사용
 
 // 로컬 스토리지 헬퍼 함수들
 const getFromLocalStorage = <T>(key: string, defaultValue: T): T => {
@@ -17,7 +17,7 @@ const getFromLocalStorage = <T>(key: string, defaultValue: T): T => {
 
     // CommunityPost 배열인 경우 Date 객체 복원
     if (key === POSTS_STORAGE_KEY && Array.isArray(parsed)) {
-      return parsed.map((post: any) => ({
+      return parsed.map((post: CommunityPost) => ({
         ...post,
         createdAt: new Date(post.createdAt),
         updatedAt: new Date(post.updatedAt),
@@ -123,10 +123,14 @@ export const localPostService = {
       const sortOrder = filters.sortOrder || "desc";
 
       allPosts.sort((a, b) => {
-        let aValue: any = a[sortBy as keyof CommunityPost];
-        let bValue: any = b[sortBy as keyof CommunityPost];
+        let aValue: string | number | Date = a[
+          sortBy as keyof CommunityPost
+        ] as string | number | Date;
+        let bValue: string | number | Date = b[
+          sortBy as keyof CommunityPost
+        ] as string | number | Date;
 
-        if (sortBy === "createdAt" || sortBy === "updatedAt") {
+        if (sortBy === "createdAt") {
           aValue = new Date(aValue).getTime();
           bValue = new Date(bValue).getTime();
         }

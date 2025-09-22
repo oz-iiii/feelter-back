@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import SearchBar from "@/components/search/SearchBar";
 import ContentGrid from "@/components/search/ContentGrid";
@@ -363,7 +363,19 @@ function SearchPageContent() {
 export default function SearchPage() {
   return (
     <FilterProvider>
-      <SearchPageContent />
+      <Suspense
+        fallback={
+          <div className="text-[#B0B3B8] font-sans min-h-screen bg-[#0A0F1C]">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="flex justify-center items-center h-64">
+                <div className="text-lg text-white">로딩 중...</div>
+              </div>
+            </div>
+          </div>
+        }
+      >
+        <SearchPageContent />
+      </Suspense>
     </FilterProvider>
   );
 }

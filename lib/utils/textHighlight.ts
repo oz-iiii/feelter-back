@@ -1,16 +1,20 @@
-import { advancedKoreanSearch, decomposeText } from './koreanSearch';
+import { advancedKoreanSearch } from "./koreanSearch";
+// decomposeText는 현재 사용하지 않음
 
 /**
  * 텍스트에서 검색어에 해당하는 부분을 찾아 하이라이팅 정보를 반환
  */
-export function getHighlightInfo(text: string, searchTerm: string): {
+export function getHighlightInfo(
+  text: string,
+  searchTerm: string
+): {
   isMatch: boolean;
   highlightedText: string;
 } {
   if (!text || !searchTerm.trim()) {
     return {
       isMatch: false,
-      highlightedText: text
+      highlightedText: text,
     };
   }
 
@@ -19,7 +23,7 @@ export function getHighlightInfo(text: string, searchTerm: string): {
   if (!isMatch) {
     return {
       isMatch: false,
-      highlightedText: text
+      highlightedText: text,
     };
   }
 
@@ -36,14 +40,14 @@ export function getHighlightInfo(text: string, searchTerm: string): {
 
     return {
       isMatch: true,
-      highlightedText: `${before}<mark class="bg-yellow-300 text-black px-1 rounded">${matched}</mark>${after}`
+      highlightedText: `${before}<mark class="bg-yellow-300 text-black px-1 rounded">${matched}</mark>${after}`,
     };
   }
 
   // 정확한 매치가 없으면 원본 텍스트 반환 (하지만 매치된 상태로)
   return {
     isMatch: true,
-    highlightedText: text
+    highlightedText: text,
   };
 }
 
@@ -55,6 +59,6 @@ export function createHighlightProps(text: string, searchTerm: string) {
 
   // DOM 요소에 전달될 props만 반환 (isMatch는 제외)
   return {
-    dangerouslySetInnerHTML: { __html: highlightedText }
+    dangerouslySetInnerHTML: { __html: highlightedText },
   };
 }

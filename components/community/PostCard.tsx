@@ -136,12 +136,14 @@ export default function PostCard({ post, onPostUpdate }: PostCardProps) {
                 <div
                   key={i}
                   className={`w-3 h-3 rounded-full ${
-                    i < post.emotionIntensity ? "bg-[#CCFF00]" : "bg-gray-600"
+                    i < (post.emotionIntensity || 0)
+                      ? "bg-[#CCFF00]"
+                      : "bg-gray-600"
                   }`}
                 />
               ))}
               <span className="text-gray-400 text-sm ml-2">
-                강도 {post.emotionIntensity}/5
+                강도 {post.emotionIntensity || 0}/5
               </span>
             </div>
           )}

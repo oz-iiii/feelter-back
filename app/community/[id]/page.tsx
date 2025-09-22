@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useCommunityStore } from "@/lib/stores/communityStore";
-import { CommunityPost, Comment } from "@/lib/types/community";
+// 타입들은 store에서 가져오므로 별도 import 불필요
 
 export default function PostDetailPage() {
   const params = useParams();

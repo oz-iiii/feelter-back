@@ -7,6 +7,52 @@ import {
   CommunityFilters,
 } from "../types/community";
 
+// Database record types for type safety
+interface PostDbRecord {
+  id: string;
+  type: "review" | "discussion" | "emotion" | "general";
+  author_id: string;
+  author_name: string;
+  author_avatar: string | null;
+  title: string;
+  content: string;
+  movie_title?: string;
+  rating?: number;
+  emotion?: string;
+  emotion_emoji?: string;
+  emotion_intensity?: number;
+  tags: string[];
+  likes: number;
+  liked_by: string[];
+  comments: number;
+  views: number;
+  is_active?: boolean;
+  status?: "hot" | "new" | "solved";
+  created_at: string;
+  updated_at: string;
+}
+
+interface CommentDbRecord {
+  id: string;
+  post_id: string;
+  author_id: string;
+  author_name: string;
+  author_avatar: string | null;
+  content: string;
+  likes: number;
+  liked_by: string[];
+  parent_comment_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface SupabaseError {
+  code?: string;
+  details?: unknown;
+  hint?: string;
+  message?: string;
+}
+
 // 게시글 관련 서비스
 export const postService = {
   // 모든 게시글 가져오기 (페이지네이션 포함, 감정 게시글 제외)
@@ -159,7 +205,9 @@ export const postService = {
       // 사용자 통계 업데이트 (에러 발생시 무시)
       try {
         console.log("📊 사용자 통계 업데이트 중...");
-        await userStatsService.incrementPostCount(post.authorId, post.type);
+        if (post.type !== "general") {
+          await userStatsService.incrementPostCount(post.authorId, post.type);
+        }
         console.log("✅ 사용자 통계 업데이트 완료");
       } catch (statsError) {
         console.warn(
@@ -175,9 +223,9 @@ export const postService = {
       console.error("에러 세부사항:", {
         name: error instanceof Error ? error.name : "Unknown",
         message: error instanceof Error ? error.message : String(error),
-        code: (error as any)?.code,
-        details: (error as any)?.details,
-        hint: (error as any)?.hint,
+        code: (error as SupabaseError)?.code,
+        details: (error as SupabaseError)?.details,
+        hint: (error as SupabaseError)?.hint,
       });
       throw new Error("게시글 작성에 실패했습니다.");
     }
@@ -186,8 +234,24 @@ export const postService = {
   // 게시글 업데이트
   async updatePost(id: string, updates: Partial<CommunityPost>): Promise<void> {
     try {
-      const updateData = this.mapPostToDb(updates);
-      updateData.updated_at = new Date().toISOString();
+      const updateData: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+
+      // Partial 업데이트를 위한 수동 매핑
+      if (updates.type !== undefined) updateData.type = updates.type;
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.content !== undefined) updateData.content = updates.content;
+      if (updates.movieTitle !== undefined)
+        updateData.movie_title = updates.movieTitle;
+      if (updates.rating !== undefined) updateData.rating = updates.rating;
+      if (updates.emotion !== undefined) updateData.emotion = updates.emotion;
+      if (updates.emotionEmoji !== undefined)
+        updateData.emotion_emoji = updates.emotionEmoji;
+      if (updates.emotionIntensity !== undefined)
+        updateData.emotion_intensity = updates.emotionIntensity;
+      if (updates.tags !== undefined) updateData.tags = updates.tags;
+      if (updates.status !== undefined) updateData.status = updates.status;
 
       const { error } = await supabase
         .from("posts")
@@ -292,7 +356,7 @@ export const postService = {
   },
 
   // DB 데이터를 앱 모델로 매핑
-  mapPostFromDb(data: any): CommunityPost {
+  mapPostFromDb(data: PostDbRecord): CommunityPost {
     return {
       id: data.id,
       type: data.type,
@@ -319,7 +383,9 @@ export const postService = {
   },
 
   // 앱 모델을 DB 형식으로 매핑
-  mapPostToDb(post: any): any {
+  mapPostToDb(
+    post: Omit<CommunityPost, "id" | "createdAt" | "updatedAt">
+  ): Omit<PostDbRecord, "id" | "created_at" | "updated_at"> {
     return {
       type: post.type,
       author_id: post.authorId,
@@ -478,8 +544,14 @@ export const commentService = {
 
   async updateComment(id: string, updates: Partial<Comment>): Promise<void> {
     try {
-      const updateData = this.mapCommentToDb(updates);
-      updateData.updated_at = new Date().toISOString();
+      const updateData: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+
+      // Partial 업데이트를 위한 수동 매핑
+      if (updates.content !== undefined) updateData.content = updates.content;
+      if (updates.parentCommentId !== undefined)
+        updateData.parent_comment_id = updates.parentCommentId;
 
       const { error } = await supabase
         .from("comments")
@@ -551,7 +623,7 @@ export const commentService = {
     }
   },
 
-  mapCommentFromDb(data: any): Comment {
+  mapCommentFromDb(data: CommentDbRecord): Comment {
     return {
       id: data.id,
       postId: data.post_id,
@@ -567,7 +639,9 @@ export const commentService = {
     };
   },
 
-  mapCommentToDb(comment: any): any {
+  mapCommentToDb(
+    comment: Omit<Comment, "id" | "createdAt" | "updatedAt">
+  ): Omit<CommentDbRecord, "id" | "created_at" | "updated_at"> {
     return {
       post_id: comment.postId,
       author_id: comment.authorId,
@@ -663,8 +737,26 @@ export const catService = {
 
   async updateCat(id: string, updates: Partial<Cat>): Promise<void> {
     try {
-      const updateData = this.mapCatToDb(updates);
-      updateData.updated_at = new Date().toISOString();
+      const updateData: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+
+      // Partial 업데이트를 위한 수동 매핑
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.emoji !== undefined) updateData.emoji = updates.emoji;
+      if (updates.level !== undefined) updateData.level = updates.level;
+      if (updates.type !== undefined) updateData.type = updates.type;
+      if (updates.experience !== undefined)
+        updateData.experience = updates.experience;
+      if (updates.maxExperience !== undefined)
+        updateData.max_experience = updates.maxExperience;
+      if (updates.description !== undefined)
+        updateData.description = updates.description;
+      if (updates.specialty !== undefined)
+        updateData.specialty = updates.specialty;
+      if (updates.achievements !== undefined)
+        updateData.achievements = updates.achievements;
+      if (updates.stats !== undefined) updateData.stats = updates.stats;
 
       const { error } = await supabase
         .from("cats")
@@ -712,26 +804,45 @@ export const catService = {
     }
   },
 
-  mapCatFromDb(data: any): Cat {
+  mapCatFromDb(data: unknown): Cat {
+    const dbRecord = data as {
+      id: string;
+      user_id: string;
+      name: string;
+      emoji: string;
+      level: number;
+      type: string;
+      experience: number;
+      max_experience: number;
+      description: string;
+      specialty: string;
+      achievements: string[];
+      stats: { reviews: number; discussions: number; emotions: number };
+      created_at: string;
+      updated_at: string;
+    };
+
     return {
-      id: data.id,
-      userId: data.user_id,
-      name: data.name,
-      emoji: data.emoji,
-      level: data.level,
-      type: data.type,
-      experience: data.experience,
-      maxExperience: data.max_experience,
-      description: data.description,
-      specialty: data.specialty,
-      achievements: data.achievements || [],
-      stats: data.stats || { reviews: 0, discussions: 0, emotions: 0 },
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
+      id: dbRecord.id,
+      userId: dbRecord.user_id,
+      name: dbRecord.name,
+      emoji: dbRecord.emoji,
+      level: dbRecord.level,
+      type: dbRecord.type,
+      experience: dbRecord.experience,
+      maxExperience: dbRecord.max_experience,
+      description: dbRecord.description,
+      specialty: dbRecord.specialty,
+      achievements: dbRecord.achievements || [],
+      stats: dbRecord.stats || { reviews: 0, discussions: 0, emotions: 0 },
+      createdAt: new Date(dbRecord.created_at),
+      updatedAt: new Date(dbRecord.updated_at),
     };
   },
 
-  mapCatToDb(cat: any): any {
+  mapCatToDb(
+    cat: Omit<Cat, "id" | "createdAt" | "updatedAt">
+  ): Record<string, unknown> {
     return {
       user_id: cat.userId,
       name: cat.name,
@@ -796,8 +907,19 @@ export const emotionService = {
     updates: Partial<EmotionRecord>
   ): Promise<void> {
     try {
-      const updateData = this.mapEmotionToDb(updates);
-      updateData.updated_at = new Date().toISOString();
+      const updateData: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+
+      // Partial 업데이트를 위한 수동 매핑
+      if (updates.movieTitle !== undefined)
+        updateData.movie_title = updates.movieTitle;
+      if (updates.emotion !== undefined) updateData.emotion = updates.emotion;
+      if (updates.emoji !== undefined) updateData.emoji = updates.emoji;
+      if (updates.text !== undefined) updateData.text = updates.text;
+      if (updates.intensity !== undefined)
+        updateData.intensity = updates.intensity;
+      if (updates.tags !== undefined) updateData.tags = updates.tags;
 
       const { error } = await supabase
         .from("emotions")
@@ -821,22 +943,37 @@ export const emotionService = {
     }
   },
 
-  mapEmotionFromDb(data: any): EmotionRecord {
+  mapEmotionFromDb(data: unknown): EmotionRecord {
+    const dbRecord = data as {
+      id: string;
+      user_id: string;
+      movie_title: string;
+      emotion: string;
+      emoji: string;
+      text: string;
+      intensity: number;
+      tags: string[];
+      created_at: string;
+      updated_at: string;
+    };
+
     return {
-      id: data.id,
-      userId: data.user_id,
-      movieTitle: data.movie_title,
-      emotion: data.emotion,
-      emoji: data.emoji,
-      text: data.text,
-      intensity: data.intensity,
-      tags: data.tags || [],
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
+      id: dbRecord.id,
+      userId: dbRecord.user_id,
+      movieTitle: dbRecord.movie_title,
+      emotion: dbRecord.emotion,
+      emoji: dbRecord.emoji,
+      text: dbRecord.text,
+      intensity: dbRecord.intensity,
+      tags: dbRecord.tags || [],
+      createdAt: new Date(dbRecord.created_at),
+      updatedAt: new Date(dbRecord.updated_at),
     };
   },
 
-  mapEmotionToDb(emotion: any): any {
+  mapEmotionToDb(
+    emotion: Omit<EmotionRecord, "id" | "createdAt" | "updatedAt">
+  ): Record<string, unknown> {
     return {
       user_id: emotion.userId,
       movie_title: emotion.movieTitle,

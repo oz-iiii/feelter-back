@@ -13,7 +13,8 @@ import {
   localUserStatsService,
 } from "../services/localCommunityService";
 import { COMMUNITY_CONFIG } from "../config/community";
-import { useAuth } from "../../hooks/useAuth";
+// import { useAuth } from "../../hooks/useAuth"; // 현재 store에서 직접 사용 안함
+import { AuthUser } from "../../hooks/useAuth";
 
 // 설정에 따라 서비스 선택
 const getPostService = () =>
@@ -64,20 +65,24 @@ interface CommunityState {
       | "authorName"
       | "authorAvatar"
     >,
-    user: any
+    user: AuthUser
   ) => Promise<string>;
   updatePost: (id: string, updates: Partial<CommunityPost>) => Promise<void>;
   deletePost: (id: string) => Promise<void>;
-  togglePostLike: (postId: string, user: any) => Promise<void>;
+  togglePostLike: (postId: string, user: AuthUser) => Promise<void>;
   incrementPostViews: (postId: string) => Promise<void>;
   setCurrentPost: (post: CommunityPost | null) => void;
   setFilters: (filters: CommunityFilters) => void;
 
   fetchComments: (postId: string) => Promise<void>;
-  addComment: (postId: string, content: string, user: any) => Promise<string>;
+  addComment: (
+    postId: string,
+    content: string,
+    user: AuthUser
+  ) => Promise<string>;
   updateComment: (id: string, updates: Partial<Comment>) => Promise<void>;
   deleteComment: (id: string, postId: string) => Promise<void>;
-  toggleCommentLike: (commentId: string, user: any) => Promise<void>;
+  toggleCommentLike: (commentId: string, user: AuthUser) => Promise<void>;
 
   fetchCats: (userId?: string) => Promise<void>;
   addCat: (

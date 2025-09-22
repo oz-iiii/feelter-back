@@ -169,20 +169,32 @@ const convertMovieToInsert = (
       ? movie.release
       : movie.release.toISOString(),
   age: movie.age,
-  genre: movie.genre,
+  genre: Array.isArray(movie.genre) ? movie.genre.join(", ") : movie.genre,
   runningTime: movie.runningTime,
-  country: movie.country,
-  director: movie.director,
-  actor: movie.actor,
+  country: Array.isArray(movie.country)
+    ? movie.country.join(", ")
+    : movie.country,
+  director: Array.isArray(movie.director)
+    ? movie.director.join(", ")
+    : movie.director,
+  actor: Array.isArray(movie.actor) ? movie.actor.join(", ") : movie.actor,
   overview: movie.overview,
-  streaming: movie.streaming,
+  streaming: Array.isArray(movie.streaming)
+    ? movie.streaming.join(", ")
+    : movie.streaming,
   streamingUrl: movie.streamingUrl,
   youtubeUrl: movie.youtubeUrl,
   imgUrl: movie.imgUrl,
   bgUrl: movie.bgUrl,
-  feelterTime: movie.feelterTime,
-  feelterPurpose: movie.feelterPurpose,
-  feelterOccasion: movie.feelterOccasion,
+  feelterTime: Array.isArray(movie.feelterTime)
+    ? movie.feelterTime.join(", ")
+    : movie.feelterTime,
+  feelterPurpose: Array.isArray(movie.feelterPurpose)
+    ? movie.feelterPurpose.join(", ")
+    : movie.feelterPurpose,
+  feelterOccasion: Array.isArray(movie.feelterOccasion)
+    ? movie.feelterOccasion.join(", ")
+    : movie.feelterOccasion,
 });
 
 // 영화 관련 서비스
@@ -385,7 +397,7 @@ export const movieRankingService = {
     }
 
     return (data as (RankingRow & { movies: MovieRow })[]).map((row) => ({
-      id: row.id,
+      id: Number(row.id),
       rank: row.rank,
       movieId: row.movieId,
       movie: convertRowToMovie(row.movies),
