@@ -30,10 +30,6 @@ export const useWatchHistoryStore = create<WatchHistoryState>()(
 
         addToWatchHistory: (movie: Movie, rating?: number) => {
           const { watchHistory } = get();
-<<<<<<< HEAD
-
-=======
->>>>>>> abe31258be7325e87a802d924333371afb885adb
           const currentDate = new Date()
             .toLocaleDateString("ko-KR", {
               year: "numeric",
@@ -49,11 +45,8 @@ export const useWatchHistoryStore = create<WatchHistoryState>()(
           );
 
           const newItem: WatchHistoryItem = {
-<<<<<<< HEAD
             id: movie.id.toString(), // 확실히 string으로 변환
-=======
-            id: String(movie.id),
->>>>>>> abe31258be7325e87a802d924333371afb885adb
+
             title: movie.title,
             poster: movie.imgUrl,
             watchDate: currentDate,
