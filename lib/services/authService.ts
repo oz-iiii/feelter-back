@@ -117,7 +117,7 @@ class AuthService {
   ): Promise<UserProfile> {
     const userProfile: UserProfile = {
       uid: user.id,
-      email: user.email,
+      email: user.email || null,
       displayName:
         user.user_metadata?.display_name ||
         additionalData?.displayName ||
@@ -242,7 +242,7 @@ class AuthService {
     updates: Partial<UserProfile>
   ): Promise<void> {
     try {
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       };
 
@@ -283,7 +283,7 @@ class AuthService {
       const fileName = `${uid}/${Date.now()}.${fileExt}`;
 
       // Supabase Storage에 업로드
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("profile-images")
         .upload(fileName, file, {
           cacheControl: "3600",
@@ -376,8 +376,8 @@ class AuthService {
   }
 
   // 에러 처리
-  private handleAuthError(error: any): Error {
-    const message = error?.message || "";
+  private handleAuthError(error: unknown): Error {
+    const message = (error as { message?: string })?.message || "";
 
     if (message.includes("Invalid login credentials")) {
       return new Error("이메일 또는 비밀번호가 올바르지 않습니다.");

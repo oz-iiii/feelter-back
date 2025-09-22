@@ -45,7 +45,7 @@ export const useFavoriteStore = create<FavoriteState>()(
           );
 
           if (isAlreadyFavorite) {
-            removeFromFavorites(movie.id);
+            removeFromFavorites(Number(movie.id));
           } else {
             addToFavorites(movie);
           }

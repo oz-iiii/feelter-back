@@ -261,7 +261,7 @@ export const useAuthStore = create<AuthStore>()(
         },
 
         // 인증 초기화
-        initializeAuth: () => {
+        initializeAuth: (): (() => void) | void => {
           if (get().isInitialized) return;
 
           set({ loading: true });
@@ -276,7 +276,7 @@ export const useAuthStore = create<AuthStore>()(
           });
 
           // Cleanup function 반환
-          return unsubscribe;
+          return () => unsubscribe.unsubscribe();
         },
 
         // 유틸리티 함수들

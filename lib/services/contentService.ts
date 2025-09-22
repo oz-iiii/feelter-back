@@ -23,7 +23,7 @@ class ContentService {
       const contents = result.data || [];
 
       // release 날짜 기준 내림차순 정렬 (최신순)
-      const sortedContents = contents.sort((a: any, b: any) => {
+      const sortedContents = contents.sort((a: Content, b: Content) => {
         if (!a.release || !b.release) {
           return 0;
         }

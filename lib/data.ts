@@ -2,7 +2,7 @@
 export interface ContentItem {
   title: string;
   year?: number;
-
+  rating?: number;
   genre?: string | string[];
   poster?: string;
   popularity?: number;
