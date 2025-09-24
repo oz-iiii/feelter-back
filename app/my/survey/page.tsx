@@ -152,10 +152,28 @@ export default function SurveyPage() {
           </div>
         </div>
 
+        {/* Stats */}
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">완료한 설문:</span>
+            <span className="text-lg font-bold text-[#ccff00] ml-2">{completedSurveys.length}개</span>
+          </div>
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">적립 포인트:</span>
+            <span className="text-lg font-bold text-yellow-500 ml-2">{completedSurveys.reduce((total, survey) => total + survey.reward, 0)}P</span>
+          </div>
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">진행 가능:</span>
+            <span className="text-lg font-bold text-green-600 ml-2">{isCurrentSurveyCompleted ? 0 : 1}개</span>
+          </div>
+        </div>
+
         {!showSurveyDetail ? (
           <div className="space-y-8">
             {/* Current Survey */}
-            <div className={`bg-gray-800 rounded-lg shadow-sm p-6 ${isCurrentSurveyCompleted ? 'opacity-60' : ''}`}>
+            <div className={`bg-neutral-900 rounded-lg
+            inset-shadow-xs inset-shadow-white/30
+            shadow-xs shadow-white/30 p-6 ${isCurrentSurveyCompleted ? 'opacity-60' : ''}`}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h2 className="text-xl font-semibold text-white mb-2">
@@ -247,7 +265,11 @@ export default function SurveyPage() {
             </div>
 
             {/* Completed Surveys */}
-            <div className="bg-gray-800 rounded-lg shadow-sm p-6">
+            <div
+              className="bg-neutral-900 rounded-lg
+              inset-shadow-xs inset-shadow-white/30
+              shadow-xs shadow-white/30 p-6"
+            >
               <h2 className="text-xl font-semibold text-white mb-6">
                 완료한 설문조사
               </h2>
@@ -274,7 +296,7 @@ export default function SurveyPage() {
                   {completedSurveys.map((survey) => (
                     <div
                       key={survey.id}
-                      className="border border-gray-700 rounded-lg p-4 hover:bg-gray-700 transition-colors"
+                      className="border border-neutral-700 rounded-lg p-4 hover:bg-neutral-800 transition-colors bg-neutral-800"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -299,9 +321,13 @@ export default function SurveyPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-gray-800 rounded-lg shadow-sm">
+          <div
+            className="bg-neutral-900 rounded-lg
+            inset-shadow-xs inset-shadow-white/30
+            shadow-xs shadow-white/30"
+          >
             {/* Survey Header */}
-            <div className="p-6 border-b border-gray-700">
+            <div className="p-6 border-b border-neutral-700">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-white">
                   {currentSurvey.title}

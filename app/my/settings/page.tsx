@@ -49,9 +49,14 @@ export default function SettingsPage() {
 					</div>
 				</div>
 
+
 				<div className="space-y-8">
 					{/* Notifications Settings */}
-					<div className="bg-gray-800 rounded-lg shadow-sm p-6">
+					<div
+						className="bg-neutral-900 rounded-lg
+						inset-shadow-xs inset-shadow-white/30
+						shadow-xs shadow-white/30 p-6"
+					>
 						<h2 className="text-xl font-semibold text-white mb-6">알림 설정</h2>
 
 						<div className="space-y-4">
@@ -213,7 +218,11 @@ export default function SettingsPage() {
 					</div>
 
 					{/* Privacy Settings */}
-					<div className="bg-gray-800 rounded-lg shadow-sm p-6">
+					<div
+						className="bg-neutral-900 rounded-lg
+						inset-shadow-xs inset-shadow-white/30
+						shadow-xs shadow-white/30 p-6"
+					>
 						<h2 className="text-xl font-semibold text-white mb-6">
 							개인정보 설정
 						</h2>
@@ -340,7 +349,11 @@ export default function SettingsPage() {
 					</div>
 
 					{/* Display Settings */}
-					<div className="bg-gray-800 rounded-lg shadow-sm p-6">
+					<div
+						className="bg-neutral-900 rounded-lg
+						inset-shadow-xs inset-shadow-white/30
+						shadow-xs shadow-white/30 p-6"
+					>
 						<h2 className="text-xl font-semibold text-white mb-6">화면 설정</h2>
 
 						<div className="space-y-6">
@@ -381,7 +394,11 @@ export default function SettingsPage() {
 					</div>
 
 					{/* Account Management */}
-					<div className="bg-gray-800 rounded-lg shadow-sm p-6">
+					<div
+						className="bg-neutral-900 rounded-lg
+						inset-shadow-xs inset-shadow-white/30
+						shadow-xs shadow-white/30 p-6"
+					>
 						<h2 className="text-xl font-semibold text-white mb-6">계정 관리</h2>
 
 						<div className="space-y-4">

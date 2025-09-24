@@ -59,9 +59,22 @@ export default function CategoriesPage() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <h1 className="text-3xl font-bold text-white">나의 카테고리</h1>
-            <span className="bg-[#404400] text-[#e6ff4d] text-sm font-medium px-2.5 py-0.5 rounded">
-              {categories.length}개
-            </span>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">총 카테고리:</span>
+            <span className="text-lg font-bold text-[#ccff00] ml-2">{categories.length}개</span>
+          </div>
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">총 영화:</span>
+            <span className="text-lg font-bold text-yellow-500 ml-2">{categories.reduce((total, cat) => total + cat.movies.length, 0)}편</span>
+          </div>
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">평균:</span>
+            <span className="text-lg font-bold text-green-600 ml-2">{categories.length > 0 ? Math.round(categories.reduce((total, cat) => total + cat.movies.length, 0) / categories.length) : 0}편</span>
           </div>
         </div>
 
@@ -96,10 +109,12 @@ export default function CategoriesPage() {
             {categories.map((category) => (
               <div
                 key={category.id}
-                className="bg-gray-800 rounded-lg shadow-sm overflow-hidden"
+                className="bg-neutral-900 rounded-lg
+                inset-shadow-xs inset-shadow-white/30
+                shadow-xs shadow-white/30 overflow-hidden"
               >
                 {/* Category Header */}
-                <div className="p-6 border-b border-gray-700">
+                <div className="p-6 border-b border-neutral-700">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       {editingCategory === category.id ? (
