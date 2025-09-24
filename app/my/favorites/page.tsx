@@ -216,40 +216,18 @@ export default function FavoritesPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
-          <div
-            className="bg-neutral-900 rounded-lg
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">
-              총 즐겨찾기
-            </h3>
-            <p className="text-3xl font-bold text-[#ccff00]">
-              {favorites.length}편
-            </p>
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">총 즐겨찾기:</span>
+            <span className="text-lg font-bold text-[#ccff00] ml-2">{favorites.length}편</span>
           </div>
-          <div
-            className="bg-neutral-900 rounded-lg
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">최근 추가</h3>
-            <p className="text-3xl font-bold text-yellow-500">
-              {favorites.length > 0 ? '1편' : '0편'}
-            </p>
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">최근 추가:</span>
+            <span className="text-lg font-bold text-yellow-500 ml-2">{favorites.length > 0 ? '1편' : '0편'}</span>
           </div>
-          <div
-            className="bg-neutral-900 rounded-lg
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">
-              이번 달 추가
-            </h3>
-            <p className="text-3xl font-bold text-green-600">
-              {favorites.length}편
-            </p>
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">이번 달:</span>
+            <span className="text-lg font-bold text-green-600 ml-2">{favorites.length}편</span>
           </div>
         </div>
 

@@ -63,40 +63,18 @@ export default function CategoriesPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
-          <div
-            className="bg-neutral-900 rounded-lg
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">
-              총 카테고리
-            </h3>
-            <p className="text-3xl font-bold text-[#ccff00]">
-              {categories.length}개
-            </p>
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">총 카테고리:</span>
+            <span className="text-lg font-bold text-[#ccff00] ml-2">{categories.length}개</span>
           </div>
-          <div
-            className="bg-neutral-900 rounded-lg
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">총 영화</h3>
-            <p className="text-3xl font-bold text-yellow-500">
-              {categories.reduce((total, cat) => total + cat.movies.length, 0)}편
-            </p>
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">총 영화:</span>
+            <span className="text-lg font-bold text-yellow-500 ml-2">{categories.reduce((total, cat) => total + cat.movies.length, 0)}편</span>
           </div>
-          <div
-            className="bg-neutral-900 rounded-lg
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">
-              평균 영화 수
-            </h3>
-            <p className="text-3xl font-bold text-green-600">
-              {categories.length > 0 ? Math.round(categories.reduce((total, cat) => total + cat.movies.length, 0) / categories.length) : 0}편
-            </p>
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">평균:</span>
+            <span className="text-lg font-bold text-green-600 ml-2">{categories.length > 0 ? Math.round(categories.reduce((total, cat) => total + cat.movies.length, 0) / categories.length) : 0}편</span>
           </div>
         </div>
 

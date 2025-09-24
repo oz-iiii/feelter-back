@@ -102,43 +102,23 @@ export default function HistoryPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
-          <div
-            className="bg-neutral-900 rounded-lg 
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">
-              총 시청 영화
-            </h3>
-            <p className="text-3xl font-bold text-[#ccff00]">
-              {historyItems.length}편
-            </p>
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">총 시청:</span>
+            <span className="text-lg font-bold text-[#ccff00] ml-2">{historyItems.length}편</span>
           </div>
-          <div
-            className="bg-neutral-900 rounded-lg 
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">평균 평점</h3>
-            <p className="text-3xl font-bold text-yellow-500">
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">평균 평점:</span>
+            <span className="text-lg font-bold text-yellow-500 ml-2">
               {historyItems.length > 0 ? (
                 (historyItems.reduce((sum, movie) => sum + movie.rating, 0) /
                 historyItems.length) / 10
               ).toFixed(1) : "0.0"}
-            </p>
+            </span>
           </div>
-          <div
-            className="bg-neutral-900 rounded-lg 
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">
-              이번 달 시청
-            </h3>
-            <p className="text-3xl font-bold text-green-600">
-              {historyItems.length}편
-            </p>
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">이번 달:</span>
+            <span className="text-lg font-bold text-green-600 ml-2">{historyItems.length}편</span>
           </div>
         </div>
 

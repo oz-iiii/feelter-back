@@ -153,40 +153,18 @@ export default function SurveyPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
-          <div
-            className="bg-neutral-900 rounded-lg
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">
-              완료한 설문
-            </h3>
-            <p className="text-3xl font-bold text-[#ccff00]">
-              {completedSurveys.length}개
-            </p>
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">완료한 설문:</span>
+            <span className="text-lg font-bold text-[#ccff00] ml-2">{completedSurveys.length}개</span>
           </div>
-          <div
-            className="bg-neutral-900 rounded-lg
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">적립 포인트</h3>
-            <p className="text-3xl font-bold text-yellow-500">
-              {completedSurveys.reduce((total, survey) => total + survey.reward, 0)}P
-            </p>
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">적립 포인트:</span>
+            <span className="text-lg font-bold text-yellow-500 ml-2">{completedSurveys.reduce((total, survey) => total + survey.reward, 0)}P</span>
           </div>
-          <div
-            className="bg-neutral-900 rounded-lg
-            inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 p-6"
-          >
-            <h3 className="text-lg font-semibold text-white mb-2">
-              진행 가능한 설문
-            </h3>
-            <p className="text-3xl font-bold text-green-600">
-              {isCurrentSurveyCompleted ? 0 : 1}개
-            </p>
+          <div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+            <span className="text-sm text-gray-400">진행 가능:</span>
+            <span className="text-lg font-bold text-green-600 ml-2">{isCurrentSurveyCompleted ? 0 : 1}개</span>
           </div>
         </div>
 

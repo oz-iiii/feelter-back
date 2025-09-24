@@ -25,40 +25,18 @@ export default function PointsPage() {
 				</div>
 
 				{/* Points Summary */}
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
-					<div
-						className="bg-neutral-900 rounded-lg
-						inset-shadow-xs inset-shadow-white/30
-						shadow-xs shadow-white/30 p-6"
-					>
-						<h3 className="text-lg font-semibold text-white mb-2">
-							현재 포인트
-						</h3>
-						<p className="text-3xl font-bold text-[#ccff00]">
-							{currentPoints.toLocaleString()}P
-						</p>
+				<div className="flex flex-wrap gap-4 mb-6">
+					<div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+						<span className="text-sm text-gray-400">현재 포인트:</span>
+						<span className="text-lg font-bold text-[#ccff00] ml-2">{currentPoints.toLocaleString()}P</span>
 					</div>
-
-					<div
-						className="bg-neutral-900 rounded-lg
-						inset-shadow-xs inset-shadow-white/30
-						shadow-xs shadow-white/30 p-6"
-					>
-						<h3 className="text-lg font-semibold text-white mb-2">총 적립</h3>
-						<p className="text-3xl font-bold text-green-600">
-							+{totalEarned.toLocaleString()}P
-						</p>
+					<div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+						<span className="text-sm text-gray-400">총 적립:</span>
+						<span className="text-lg font-bold text-green-600 ml-2">+{totalEarned.toLocaleString()}P</span>
 					</div>
-
-					<div
-						className="bg-neutral-900 rounded-lg
-						inset-shadow-xs inset-shadow-white/30
-						shadow-xs shadow-white/30 p-6"
-					>
-						<h3 className="text-lg font-semibold text-white mb-2">총 사용</h3>
-						<p className="text-3xl font-bold text-red-600">
-							-{totalUsed.toLocaleString()}P
-						</p>
+					<div className="bg-neutral-900 rounded-lg inset-shadow-xs inset-shadow-white/30 shadow-xs shadow-white/30 px-4 py-2">
+						<span className="text-sm text-gray-400">총 사용:</span>
+						<span className="text-lg font-bold text-red-600 ml-2">-{totalUsed.toLocaleString()}P</span>
 					</div>
 				</div>
 
