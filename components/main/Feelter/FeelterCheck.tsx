@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FeelterGrid from "./FeelterGrid";
 
 type FilterData = {
@@ -21,8 +21,8 @@ export default function FeelterCheck() {
     purpose: string;
     occasion: string;
   }>({
-    time: "심심",
-    purpose: "통쾌",
+    time: "휴일/주말",
+    purpose: "웃음",
     occasion: "혼자",
   });
 

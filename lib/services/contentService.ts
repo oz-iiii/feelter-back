@@ -20,21 +20,7 @@ class ContentService {
         throw new Error(result.error || "Failed to fetch contents");
       }
 
-      const contents = result.data || [];
-
-      // release 날짜 기준 내림차순 정렬 (최신순)
-      const sortedContents = contents.sort((a: Content, b: Content) => {
-        if (!a.release || !b.release) {
-          return 0;
-        }
-
-        const dateA = new Date(a.release);
-        const dateB = new Date(b.release);
-
-        return dateB.getTime() - dateA.getTime();
-      });
-
-      return sortedContents;
+      return result.data || [];
     } catch (error) {
       console.error("getAllContents 에러:", error);
       throw error;
@@ -49,23 +35,7 @@ class ContentService {
     selectedOtts?: string[]
   ): Promise<Content[]> {
     try {
-      console.log("🔍 필터링 시작:", { filters, selectedOtts });
-
-      // 먼저 모든 콘텐츠를 가져와서 구조 확인
       const allContents = await this.getAllContents();
-      console.log("📊 전체 콘텐츠 수:", allContents.length);
-
-      if (allContents.length > 0) {
-        console.log("🎯 첫 번째 콘텐츠 샘플:", {
-          contentsid: allContents[0].contentsid,
-          title: allContents[0].title,
-          ottplatforms: allContents[0].ottplatforms,
-          ottplatformsType: typeof allContents[0].ottplatforms,
-          feelterTime: allContents[0].feelterTime,
-          feelterPurpose: allContents[0].feelterPurpose,
-          feelterOccasion: allContents[0].feelterOccasion,
-        });
-      }
 
       // 필터가 모두 비어있고 OTT 필터도 전체 선택이면 전체 콘텐츠 반환
       const hasNoFilters =
@@ -75,18 +45,10 @@ class ContentService {
       const hasNoOttFilter = !selectedOtts || selectedOtts.length === 0;
 
       if (hasNoFilters && hasNoOttFilter) {
-        console.log("📝 모든 필터가 비어있음, 전체 콘텐츠 반환");
         return allContents;
       }
 
-      const filteredResults = this.clientSideFilter(
-        allContents,
-        filters,
-        selectedOtts
-      );
-      console.log("✅ 필터링 결과:", filteredResults.length, "개");
-
-      return filteredResults;
+      return this.clientSideFilter(allContents, filters, selectedOtts);
     } catch (error) {
       console.error("getFilteredContents 에러:", error);
       throw error;
@@ -102,15 +64,8 @@ class ContentService {
     selectedOtts?: string[]
   ): Content[] {
     if (!contents || contents.length === 0) {
-      console.log("❌ 콘텐츠 배열이 비어있음");
       return [];
     }
-
-    console.log("🔧 클라이언트 필터링 시작:", {
-      총콘텐츠수: contents.length,
-      필터조건: filters,
-      선택된OTT: selectedOtts,
-    });
 
     // OTT 플랫폼 이름 매핑
     const ottNameMapping: { [key: string]: string[] } = {
@@ -123,32 +78,8 @@ class ContentService {
     };
 
     const matchingContents: Content[] = [];
-    const debugResults = {
-      totalProcessed: 0,
-      timeFilterPassed: 0,
-      purposeFilterPassed: 0,
-      occasionFilterPassed: 0,
-      ottFilterPassed: 0,
-      finalMatches: 0,
-      nullFieldsCount: {
-        feelterTime: 0,
-        feelterPurpose: 0,
-        feelterOccasion: 0,
-        ottplatforms: 0,
-      },
-    };
 
-    contents.forEach((content, index) => {
-      debugResults.totalProcessed++;
-
-      // null/undefined 필드 카운트
-      if (!content.feelterTime) debugResults.nullFieldsCount.feelterTime++;
-      if (!content.feelterPurpose)
-        debugResults.nullFieldsCount.feelterPurpose++;
-      if (!content.feelterOccasion)
-        debugResults.nullFieldsCount.feelterOccasion++;
-      if (!content.ottplatforms) debugResults.nullFieldsCount.ottplatforms++;
-
+    contents.forEach((content) => {
       // 모든 필터가 비어있으면 모든 콘텐츠 반환
       const hasNoFilters =
         filters.time.length === 0 &&
@@ -158,7 +89,6 @@ class ContentService {
 
       if (hasNoFilters && hasNoOttFilter) {
         matchingContents.push(content);
-        debugResults.finalMatches++;
         return;
       }
 
@@ -223,23 +153,7 @@ class ContentService {
           );
         });
 
-        if (individualMatches.ottMatch) debugResults.ottFilterPassed++;
         matches = matches && individualMatches.ottMatch;
-
-        // OTT 필터 상세 디버깅 (처음 3개만)
-        if (index < 3) {
-          console.log(`🎬 OTT 필터 상세 (${content.title}):`, {
-            원본필드: content.ottplatforms,
-            원본타입: typeof content.ottplatforms,
-            파싱된배열: contentOttPlatforms,
-            추출된이름들: contentOttNames,
-            선택된OTT: selectedOtts,
-            가능한이름들: selectedOtts.map(
-              (ott) => ottNameMapping[ott] || [ott]
-            ),
-            매치결과: individualMatches.ottMatch,
-          });
-        }
       }
 
       // Time 필터 검사
@@ -275,17 +189,7 @@ class ContentService {
           )
         );
 
-        if (individualMatches.timeMatch) debugResults.timeFilterPassed++;
         matches = matches && individualMatches.timeMatch;
-
-        if (index < 3) {
-          console.log(`⏰ Time 필터 상세 (${content.title}):`, {
-            원본필드: content.feelterTime,
-            파싱된배열: contentTimeArray,
-            필터조건: filters.time,
-            매치결과: individualMatches.timeMatch,
-          });
-        }
       }
 
       // Purpose 필터 검사
@@ -322,17 +226,7 @@ class ContentService {
             )
         );
 
-        if (individualMatches.purposeMatch) debugResults.purposeFilterPassed++;
         matches = matches && individualMatches.purposeMatch;
-
-        if (index < 3) {
-          console.log(`🎯 Purpose 필터 상세 (${content.title}):`, {
-            원본필드: content.feelterPurpose,
-            파싱된배열: contentPurposeArray,
-            필터조건: filters.purpose,
-            매치결과: individualMatches.purposeMatch,
-          });
-        }
       }
 
       // Occasion 필터 검사
@@ -369,58 +263,15 @@ class ContentService {
             )
         );
 
-        if (individualMatches.occasionMatch)
-          debugResults.occasionFilterPassed++;
         matches = matches && individualMatches.occasionMatch;
-
-        if (index < 3) {
-          console.log(`👥 Occasion 필터 상세 (${content.title}):`, {
-            원본필드: content.feelterOccasion,
-            파싱된배열: contentOccasionArray,
-            필터조건: filters.occasion,
-            매치결과: individualMatches.occasionMatch,
-          });
-        }
       }
 
       if (matches) {
         matchingContents.push(content);
-        debugResults.finalMatches++;
-      }
-
-      // 상세 디버깅 (처음 10개만)
-      if (index < 10) {
-        console.log(`🔍 ${content.title} 필터링 결과:`, {
-          ottMatch: individualMatches.ottMatch,
-          timeMatch: individualMatches.timeMatch,
-          purposeMatch: individualMatches.purposeMatch,
-          occasionMatch: individualMatches.occasionMatch,
-          최종결과: matches,
-        });
       }
     });
 
-    // 전체 디버깅 요약
-    console.log("📊 필터링 결과 요약:", debugResults);
-
-    // release 날짜 기준 내림차순 정렬 (최신순)
-    const sortedContents = matchingContents.sort((a, b) => {
-      // release 필드가 있는지 확인
-      if (!a.release || !b.release) {
-        return 0;
-      }
-
-      // 날짜 문자열을 Date 객체로 변환하여 비교
-      const dateA = new Date(a.release);
-      const dateB = new Date(b.release);
-
-      // 내림차순 정렬 (최신 날짜가 앞으로)
-      return dateB.getTime() - dateA.getTime();
-    });
-
-    console.log("📅 release 날짜 기준 정렬 완료:", sortedContents.length, "개");
-
-    return sortedContents;
+    return matchingContents;
   }
 
   /**

@@ -29,6 +29,8 @@ export default function FeelterGrid({
     occasion: string;
   };
 }) {
+  // 초기 필터 적용 완료 상태
+  const [isInitialFilterApplied, setIsInitialFilterApplied] = useState(false);
   const {
     filteredContents,
     isFilterLoading,
@@ -62,42 +64,58 @@ export default function FeelterGrid({
       .map(([ottName]) => ottName);
   };
 
-  // 필터나 OTT 선택이 변경될 때 콘텐츠 재조회
+  // 컴포넌트 마운트 시와 필터 변경 시 콘텐츠 재조회
   useEffect(() => {
+    // 필터값이 모두 설정되었는지 확인 (빈 문자열이 아닌 경우)
+    if (!filters.time || !filters.purpose || !filters.occasion) {
+      return;
+    }
+
     const contentFilters = convertFiltersToContentFilters(filters);
     const selectedOttArray = getSelectedOttArray();
 
-    console.log("🔄 필터 변경됨:", {
-      contentFilters,
-      selectedOttArray,
-      isAllSelected,
-    });
-
+    // 항상 필터링된 콘텐츠를 가져옴 (기본 필터값 포함)
     fetchFilteredContents(contentFilters, selectedOttArray);
-  }, [filters, selectedOtts, isAllSelected, fetchFilteredContents]);
 
-  // 콘텐츠 데이터가 로드될 때마다 콘솔에 출력하여 디버깅합니다.
-  useEffect(() => {
-    if (filteredContents && filteredContents.length > 0) {
-      console.log(
-        "✅ 콘텐츠 데이터가 성공적으로 로드되었습니다:",
-        filteredContents.length,
-        "개"
-      );
-      console.log("첫 번째 콘텐츠의 이미지 URL:", filteredContents[0].imgUrl);
-    } else if (!isFilterLoading && !error) {
-      console.log(
-        "⚠️ 콘텐츠가 없습니다. 필터링 조건 또는 데이터 소스를 확인하세요."
-      );
+    // 초기 필터 적용 완료 표시
+    if (!isInitialFilterApplied) {
+      setIsInitialFilterApplied(true);
     }
-  }, [filteredContents, isFilterLoading, error]);
+  }, [
+    filters.time,
+    filters.purpose,
+    filters.occasion,
+    selectedOtts,
+    isAllSelected,
+    fetchFilteredContents,
+  ]);
 
-  // 에러 상태 처리
+  // 강제로 초기 필터를 적용하는 useEffect (백업)
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     if (
+  //       !isInitialFilterApplied &&
+  //       filters.time &&
+  //       filters.purpose &&
+  //       filters.occasion
+  //     ) {
+  //       const contentFilters = convertFiltersToContentFilters(filters);
+  //       console.log("초기contentFilters", contentFilters);
+  //       fetchFilteredContents(contentFilters, []);
+  //       setIsInitialFilterApplied(true);
+  //     }
+  //   }, 100); // 100ms 후 실행
+
+  //   return () => clearTimeout(timer);
+  // }, [filters, isInitialFilterApplied, fetchFilteredContents]);
+
   useEffect(() => {
-    if (error) {
-      console.error("❌ 콘텐츠 로딩 중 오류 발생:", error);
+    if (filters.time && filters.purpose && filters.occasion) {
+      const contentFilters = convertFiltersToContentFilters(filters);
+      fetchFilteredContents(contentFilters, []);
+      setIsInitialFilterApplied(true);
     }
-  }, [error]);
+  }, [filters, fetchFilteredContents]);
 
   const handleCloseModal = () => {
     setSelectedContent(null);
@@ -348,7 +366,6 @@ export default function FeelterGrid({
                 className="bg-gray-300 aspect-[2/3] rounded-lg cursor-pointer relative group overflow-hidden"
                 onClick={() => handleContentClick(content)}
               >
-                {/* 이미지가 유효한 경우에만 Image 컴포넌트 렌더링 */}
                 {content.imgUrl && (
                   <Image
                     src={content.imgUrl}

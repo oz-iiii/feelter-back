@@ -65,7 +65,7 @@ export interface ContentFilters {
  */
 export const FILTER_OPTIONS = {
   time: ["이동", "취침", "식사", "심심", "휴일/주말"] as const,
-  purpose: ["감동", "웃음", "통쾌", "몰입", "설렘"] as const,
+  purpose: ["감동", "설렘", "웃음", "몰입", "통쾌"] as const,
   occasion: ["혼자", "연인", "친구", "가족", "아이"] as const,
 } as const;
 

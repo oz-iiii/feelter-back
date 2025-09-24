@@ -119,8 +119,6 @@ export const useContentStore = create<ContentStore>()(
           const contents = await contentService.getAllContents();
           set({
             contents,
-            filteredContents: contents,
-            totalItems: contents.length,
             isLoading: false,
           });
         } catch (error) {
@@ -146,7 +144,6 @@ export const useContentStore = create<ContentStore>()(
             filtersToUse,
             selectedOtts
           );
-
           set({
             filteredContents,
             totalItems: filteredContents.length,
@@ -314,6 +311,7 @@ export const useContentStore = create<ContentStore>()(
           const recommendations = await contentService.getRandomRecommendations(
             count
           );
+          console.log("recommendations", recommendations);
           set({
             filteredContents: recommendations,
             totalItems: recommendations.length,
@@ -335,6 +333,7 @@ export const useContentStore = create<ContentStore>()(
         set({ isLoading: true, error: null });
         try {
           const contents = await contentService.getContentsByPlatform(platform);
+          console.log("fetchContentsByPlatformcontents", contents);
           set({
             filteredContents: contents,
             totalItems: contents.length,
