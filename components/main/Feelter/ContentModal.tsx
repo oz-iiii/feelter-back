@@ -269,7 +269,7 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose }) => {
                   </div>
 
                   {/* OTT Platform Buttons */}
-                  <div className="flex flex-wrap gap-2 h-7">
+                  <div className="flex flex-wrap gap-2 h-8">
                     {/* 플랫폼 URL이 있는 경우에만 버튼 표시 */}
                     {(() => {
                       const platforms =
@@ -360,32 +360,34 @@ const ContentModal: React.FC<ContentModalProps> = ({ content, onClose }) => {
 
                   {/* Director */}
                   <div>
-                    <h3 className="text-sm text-gray-400 mb-1">감독</h3>
-                    <p className="text-sm text-gray-200">
-                      {content?.directors
-                        ? Array.isArray(content.actors)
-                          ? content.directors.join(", ")
-                          : content.directors
-                        : "정보 없음"}
-                    </p>
-                    <br />
+                    <h3 className="text-sm text-[#DDE66E] mb-1">
+                      감독 &nbsp;&nbsp;&nbsp;
+                      <span className="text-sm text-white">
+                        {content?.directors
+                          ? Array.isArray(content.actors)
+                            ? content.directors.join(", ")
+                            : content.directors
+                          : "정보 없음"}
+                      </span>
+                    </h3>
                     {/* Cast */}
-                    <h3 className="text-sm text-gray-400 mb-1">출연</h3>
-                    <p className="text-sm text-gray-200">
-                      {content?.actors
-                        ? Array.isArray(content.actors)
-                          ? content.actors.join(", ")
-                          : content.actors
-                        : "정보 없음"}
-                    </p>
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <h3 className="text-sm text-gray-400 mb-1">줄거리</h3>
-                    <p className="text-sm text-gray-200 leading-relaxed">
-                      {displayedOverview}
-                    </p>
+                    <h3 className="text-sm text-[#DDE66E] mb-1">
+                      출연 &nbsp;&nbsp;&nbsp;
+                      <span className="text-sm text-white">
+                        {content?.actors
+                          ? Array.isArray(content.actors)
+                            ? content.actors.join(", ")
+                            : content.actors
+                          : "정보 없음"}
+                      </span>
+                    </h3>
+                    {/* Description */}
+                    <h3 className="text-sm text-[#DDE66E] mb-1">
+                      줄거리 &nbsp;&nbsp;&nbsp;
+                      <span className="text-sm text-white">
+                        {displayedOverview}
+                      </span>
+                    </h3>
                     {showReadMore && (
                       <button
                         onClick={() =>

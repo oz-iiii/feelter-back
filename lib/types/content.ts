@@ -33,6 +33,24 @@ export interface Content {
   is_featured?: boolean;
 }
 
+// 콘텐츠 데이터 타입 정의
+export interface RankingData {
+  id: number;
+  rank: number;
+  title: string;
+  year: string;
+  age: string;
+  genre: string;
+  country: string;
+  runningtime: string;
+  director: string;
+  actor: string;
+  description: string;
+  imageUrl?: string;
+  videoUrl: string;
+  bestComment: string;
+}
+
 /**
  * 콘텐츠 필터 인터페이스
  */
@@ -127,7 +145,7 @@ export type ContentType = "movie" | "series" | "documentary" | "show" | "anime";
 /**
  * 연령 등급
  */
-export type AgeRating = "ALL" | "7+" | "12+" | "15+" | "18+" | "R";
+export type AgeRating = "ALL" | "7+" | "12+" | "15+" | "19+" | "R";
 
 /**
  * API 응답 래퍼 인터페이스

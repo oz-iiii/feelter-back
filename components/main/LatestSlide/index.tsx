@@ -32,13 +32,6 @@ interface SlideData extends HeroData {
   id: number;
 }
 
-// OTT별 콘텐츠 데이터의 전체 타입 정의
-interface OttContent {
-  name: string;
-  hero: HeroData;
-  slides: SlideData[];
-}
-
 // Content를 HeroData/SlideData로 변환하는 유틸 함수
 const convertContentToHeroData = (content: Content): HeroData => {
   return {
@@ -251,7 +244,7 @@ const InfoGrid = ({
       {/* 상세 정보 섹션: isDetailVisible 상태에 따라 표시/숨김 */}
       {isDetailVisible && (
         <div className="grid grid-col gap-2 text-sm">
-          <div className="p-2 bg-neutral-800 text-xs rounded-lg">
+          <div className="p-2 bg-neutral-800 text-xs text-gray-400 rounded-lg">
             <p>
               · {year}
               &nbsp;&nbsp;&nbsp;&nbsp; · {age}
@@ -262,14 +255,21 @@ const InfoGrid = ({
           </div>
 
           <div className="p-2 bg-neutral-800 rounded-lg">
-            <p>{director}</p>
-            <p>{actor}</p>
+            <h3 className="text-sm text-[#DDE66E] mb-1">
+              감독 &nbsp;&nbsp;&nbsp;
+              <span className="text-sm text-white">{director}</span>
+            </h3>
+            <h3 className="text-sm text-[#DDE66E] mb-1">
+              출연 &nbsp;&nbsp;&nbsp;
+              <span className="text-sm text-white">{actor}</span>
+            </h3>
           </div>
 
           <div className="p-2 bg-neutral-800 rounded-lg">
-            <p className="text-sm leading-relaxed overflow-y-auto">
-              {description}
-            </p>
+            <h3 className="text-sm text-[#DDE66E] mb-1">
+              줄거리 &nbsp;&nbsp;&nbsp;
+              <span className="text-sm text-white">{description}</span>
+            </h3>
           </div>
         </div>
       )}
