@@ -3,13 +3,15 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
-import { useFavoriteStore, useCategoryStore } from "@/lib/stores";
+import { useFavoriteStore, useCategoryStore, useWatchHistoryStore } from "@/lib/stores";
+import { handleOTTRedirect } from "@/lib/utils/ottRedirect";
 import { Movie } from "@/lib/types/movie";
 
 export default function FavoritesPage() {
   const { favorites, removeFromFavorites } = useFavoriteStore();
   const { categories, createCategory, addMoviesToCategory } =
     useCategoryStore();
+  const { addToWatchHistory } = useWatchHistoryStore();
   const [sortBy, setSortBy] = useState("recent");
   const [viewMode, setViewMode] = useState("grid");
   const [selectedMovies, setSelectedMovies] = useState<Set<string | number>>(
@@ -367,7 +369,10 @@ export default function FavoritesPage() {
                     {movie.genre}
                   </p>
                   <div className="flex space-x-1 mt-3">
-                    <button className="flex-1 px-2 py-1 text-xs bg-[#dde66e] hover:bg-[#b8e600] text-black rounded transition-colors">
+                    <button
+                      onClick={() => handleOTTRedirect(movie, addToWatchHistory)}
+                      className="flex-1 px-2 py-1 text-xs bg-[#dde66e] hover:bg-[#b8e600] text-black rounded transition-colors"
+                    >
                       보러가기
                     </button>
                     {!isSelectionMode && (
@@ -491,7 +496,10 @@ export default function FavoritesPage() {
                             </div>
                           )}
                           <div className="flex space-x-2">
-                            <button className="px-3 py-1 text-sm bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded transition-colors">
+                            <button
+                              onClick={() => handleOTTRedirect(movie, addToWatchHistory)}
+                              className="px-3 py-1 text-sm bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded transition-colors"
+                            >
                               보러가기
                             </button>
                             {!isSelectionMode && (

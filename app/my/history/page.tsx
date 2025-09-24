@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import MyLayout from "@/components/my/MyLayout";
 import { useWatchHistoryStore } from "@/lib/stores/watchHistoryStore";
+import { handleOTTRedirect } from "@/lib/utils/ottRedirect";
 
 type HistoryItem = {
   id: string;
@@ -19,7 +20,7 @@ type HistoryItem = {
 export default function HistoryPage() {
   const [viewMode, setViewMode] = useState("grid");
   const [filter, setFilter] = useState("all");
-  const { watchHistory, removeFromWatchHistory, clearWatchHistory } = useWatchHistoryStore();
+  const { watchHistory, removeFromWatchHistory, clearWatchHistory, addToWatchHistory } = useWatchHistoryStore();
   
   // watchHistoryStore의 데이터를 HistoryItem 형식으로 변환
   const historyItems: HistoryItem[] = watchHistory.map((item) => ({
@@ -185,7 +186,10 @@ export default function HistoryPage() {
                     {movie.genre?.join(", ") || "기타"}
                   </p>
                   <div className="flex space-x-1 mt-3">
-                    <button className="flex-1 px-2 py-1 text-xs bg-[#dde66e] hover:bg-[#b8e600] text-black rounded transition-colors">
+                    <button
+                      onClick={() => handleOTTRedirect(movie.movieData, addToWatchHistory)}
+                      className="flex-1 px-2 py-1 text-xs bg-[#dde66e] hover:bg-[#b8e600] text-black rounded transition-colors"
+                    >
                       보러가기
                     </button>
                     <button 
@@ -266,7 +270,10 @@ export default function HistoryPage() {
                             </div>
                           )}
                           <div className="flex space-x-2">
-                            <button className="px-3 py-1 text-sm bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded transition-colors">
+                            <button
+                              onClick={() => handleOTTRedirect(movie.movieData, addToWatchHistory)}
+                              className="px-3 py-1 text-sm bg-[#DDE66E] hover:bg-[#b8e600] text-black rounded transition-colors"
+                            >
                               보러가기
                             </button>
                             <button 
