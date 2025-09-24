@@ -15,11 +15,12 @@ type HistoryItem = {
   genre: string[];
   director?: string[];
   watchDate?: string;
+  movieData?: any;
 };
 
 export default function HistoryPage() {
   const [viewMode, setViewMode] = useState("grid");
-  const [filter, setFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("recent");
   const [selectedMovies, setSelectedMovies] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const { watchHistory, removeFromWatchHistory, clearWatchHistory, addToWatchHistory } = useWatchHistoryStore();
@@ -34,6 +35,7 @@ export default function HistoryPage() {
     genre: Array.isArray(item.movieData.genre) ? item.movieData.genre : [item.movieData.genre || "드라마"],
     director: Array.isArray(item.movieData.director) ? item.movieData.director : [item.movieData.director || "미상"],
     watchDate: item.watchDate,
+    movieData: item.movieData,
   }));
 
   const toggleMovieSelection = (movieId: string) => {
@@ -64,17 +66,27 @@ export default function HistoryPage() {
     }
   };
 
-  const filteredHistory = historyItems.filter((movie) => {
-    if (filter === "all") return true;
-    if (filter === "recent") {
-      // 최근 7일 내 시청한 영화
-      const today = new Date();
-      const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const watchDate = new Date(movie.watchDate?.replace(/\./g, '-') || '');
-      return watchDate >= sevenDaysAgo;
+  const sortedHistory = historyItems.sort((a, b) => {
+    try {
+      if (sortBy === "recent") {
+        // 최신 시청일 순으로 정렬
+        const aTime = new Date(a.watchDate?.replace(/\./g, '-') || '').getTime();
+        const bTime = new Date(b.watchDate?.replace(/\./g, '-') || '').getTime();
+        return bTime - aTime;
+      }
+      if (sortBy === "rating") {
+        // 평점 순으로 정렬 (높은 순)
+        return b.rating - a.rating;
+      }
+      if (sortBy === "title") {
+        // 제목 순으로 정렬
+        return a.title.localeCompare(b.title);
+      }
+      return 0;
+    } catch (error) {
+      console.warn("Sorting error:", error);
+      return 0;
     }
-    if (filter === "high-rated") return movie.rating >= 4.0;
-    return true;
   });
 
   return (
@@ -91,14 +103,15 @@ export default function HistoryPage() {
             {!isSelectionMode ? (
               <>
                 <select
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
                   className="px-3 py-2 border border-gray-200 rounded-lg text-white text-center text-sm"
                 >
-                  <option value="all">전체</option>
-                  <option value="recent">최근 시청</option>
-                  <option value="high-rated">높은 평점</option>
+                  <option value="recent">최신순</option>
+                  <option value="rating">평점순</option>
+                  <option value="title">제목순</option>
                 </select>
+
 
                 <div className="flex overflow-hidden">
                   <button
@@ -146,7 +159,7 @@ export default function HistoryPage() {
                   onClick={selectAllMovies}
                   className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
                 >
-                  {selectedMovies.size === filteredHistory.length ? "전체 해제" : "전체 선택"}
+                  {selectedMovies.size === sortedHistory.length ? "전체 해제" : "전체 선택"}
                 </button>
                 {selectedMovies.size > 0 && (
                   <button
@@ -194,7 +207,7 @@ export default function HistoryPage() {
         {/* Grid View */}
         {viewMode === "grid" && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {filteredHistory.map((movie) => (
+            {sortedHistory.map((movie) => (
               <div
                 key={movie.id}
                 className={`group bg-neutral-900 rounded-lg
@@ -306,11 +319,11 @@ export default function HistoryPage() {
           >
             <div className="p-6 border-b border-neutral-700">
               <h2 className="text-xl font-semibold text-white">
-                시청 목록 ({filteredHistory.length}편)
+                시청 목록 ({sortedHistory.length}편)
               </h2>
             </div>
             <div className="divide-y divide-neutral-700">
-              {filteredHistory.map((movie) => (
+              {sortedHistory.map((movie) => (
                 <div
                   key={movie.id}
                   className={`p-6 hover:bg-neutral-800 transition-colors ${
