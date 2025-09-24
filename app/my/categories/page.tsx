@@ -59,9 +59,44 @@ export default function CategoriesPage() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <h1 className="text-3xl font-bold text-white">나의 카테고리</h1>
-            <span className="bg-[#404400] text-[#e6ff4d] text-sm font-medium px-2.5 py-0.5 rounded">
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
+          <div
+            className="bg-neutral-900 rounded-lg
+            inset-shadow-xs inset-shadow-white/30
+            shadow-xs shadow-white/30 p-6"
+          >
+            <h3 className="text-lg font-semibold text-white mb-2">
+              총 카테고리
+            </h3>
+            <p className="text-3xl font-bold text-[#ccff00]">
               {categories.length}개
-            </span>
+            </p>
+          </div>
+          <div
+            className="bg-neutral-900 rounded-lg
+            inset-shadow-xs inset-shadow-white/30
+            shadow-xs shadow-white/30 p-6"
+          >
+            <h3 className="text-lg font-semibold text-white mb-2">총 영화</h3>
+            <p className="text-3xl font-bold text-yellow-500">
+              {categories.reduce((total, cat) => total + cat.movies.length, 0)}편
+            </p>
+          </div>
+          <div
+            className="bg-neutral-900 rounded-lg
+            inset-shadow-xs inset-shadow-white/30
+            shadow-xs shadow-white/30 p-6"
+          >
+            <h3 className="text-lg font-semibold text-white mb-2">
+              평균 영화 수
+            </h3>
+            <p className="text-3xl font-bold text-green-600">
+              {categories.length > 0 ? Math.round(categories.reduce((total, cat) => total + cat.movies.length, 0) / categories.length) : 0}편
+            </p>
           </div>
         </div>
 
@@ -96,10 +131,12 @@ export default function CategoriesPage() {
             {categories.map((category) => (
               <div
                 key={category.id}
-                className="bg-gray-800 rounded-lg shadow-sm overflow-hidden"
+                className="bg-neutral-900 rounded-lg
+                inset-shadow-xs inset-shadow-white/30
+                shadow-xs shadow-white/30 overflow-hidden"
               >
                 {/* Category Header */}
-                <div className="p-6 border-b border-gray-700">
+                <div className="p-6 border-b border-neutral-700">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       {editingCategory === category.id ? (
