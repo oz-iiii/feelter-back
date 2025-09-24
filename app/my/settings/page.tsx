@@ -49,43 +49,6 @@ export default function SettingsPage() {
 					</div>
 				</div>
 
-				{/* Stats */}
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
-					<div
-						className="bg-neutral-900 rounded-lg
-						inset-shadow-xs inset-shadow-white/30
-						shadow-xs shadow-white/30 p-6"
-					>
-						<h3 className="text-lg font-semibold text-white mb-2">
-							알림 설정
-						</h3>
-						<p className="text-3xl font-bold text-[#ccff00]">
-							{Object.values(settings.notifications).filter(Boolean).length}개 활성
-						</p>
-					</div>
-					<div
-						className="bg-neutral-900 rounded-lg
-						inset-shadow-xs inset-shadow-white/30
-						shadow-xs shadow-white/30 p-6"
-					>
-						<h3 className="text-lg font-semibold text-white mb-2">개인정보</h3>
-						<p className="text-3xl font-bold text-yellow-500">
-							{settings.privacy.profileVisibility === 'public' ? '공개' : settings.privacy.profileVisibility === 'friends' ? '친구만' : '비공개'}
-						</p>
-					</div>
-					<div
-						className="bg-neutral-900 rounded-lg
-						inset-shadow-xs inset-shadow-white/30
-						shadow-xs shadow-white/30 p-6"
-					>
-						<h3 className="text-lg font-semibold text-white mb-2">
-							화면 테마
-						</h3>
-						<p className="text-3xl font-bold text-green-600">
-							{settings.display.theme === 'system' ? '시스템' : settings.display.theme === 'light' ? '밝음' : '어둠'}
-						</p>
-					</div>
-				</div>
 
 				<div className="space-y-8">
 					{/* Notifications Settings */}
