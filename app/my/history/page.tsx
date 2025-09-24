@@ -20,6 +20,8 @@ type HistoryItem = {
 export default function HistoryPage() {
   const [viewMode, setViewMode] = useState("grid");
   const [filter, setFilter] = useState("all");
+  const [selectedMovies, setSelectedMovies] = useState<Set<string>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
   const { watchHistory, removeFromWatchHistory, clearWatchHistory, addToWatchHistory } = useWatchHistoryStore();
   
   // watchHistoryStore의 데이터를 HistoryItem 형식으로 변환
@@ -33,6 +35,34 @@ export default function HistoryPage() {
     director: Array.isArray(item.movieData.director) ? item.movieData.director : [item.movieData.director || "미상"],
     watchDate: item.watchDate,
   }));
+
+  const toggleMovieSelection = (movieId: string) => {
+    const newSelection = new Set(selectedMovies);
+    if (newSelection.has(movieId)) {
+      newSelection.delete(movieId);
+    } else {
+      newSelection.add(movieId);
+    }
+    setSelectedMovies(newSelection);
+  };
+
+  const selectAllMovies = () => {
+    if (selectedMovies.size === historyItems.length) {
+      setSelectedMovies(new Set());
+    } else {
+      setSelectedMovies(new Set(historyItems.map((movie) => movie.id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (window.confirm(`선택된 ${selectedMovies.size}개의 시청 이력을 삭제하시겠습니까?`)) {
+      selectedMovies.forEach(movieId => {
+        removeFromWatchHistory(movieId);
+      });
+      setSelectedMovies(new Set());
+      setIsSelectionMode(false);
+    }
+  };
 
   const filteredHistory = historyItems.filter((movie) => {
     if (filter === "all") return true;
@@ -56,48 +86,87 @@ export default function HistoryPage() {
             <h1 className="text-3xl font-bold text-white">시청 이력</h1>
           </div>
 
-          {/* Filter Options */}
           {/* Controls */}
           <div className="flex items-center space-x-4">
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-white text-center text-sm"
-            >
-              <option value="all">전체</option>
-              <option value="recent">최근 시청</option>
-              <option value="high-rated">높은 평점</option>
-            </select>
+            {!isSelectionMode ? (
+              <>
+                <select
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-white text-center text-sm"
+                >
+                  <option value="all">전체</option>
+                  <option value="recent">최근 시청</option>
+                  <option value="high-rated">높은 평점</option>
+                </select>
 
-            <div className="flex overflow-hidden">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`px-3 py-1 border-r border-gray-200 text-sm ${
-                  viewMode === "grid"
-                    ? "text-white"
-                    : "text-neutral-400 text-xs"
-                }`}
-              >
-                격자
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`px-3 py-1 text-sm ${
-                  viewMode === "list"
-                    ? "text-white"
-                    : "text-neutral-400 text-xs"
-                }`}
-              >
-                목록
-              </button>
-            </div>
+                <div className="flex overflow-hidden">
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`px-3 py-1 border-r border-gray-200 text-sm ${
+                      viewMode === "grid"
+                        ? "text-white"
+                        : "text-neutral-400 text-xs"
+                    }`}
+                  >
+                    격자
+                  </button>
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`px-3 py-1 text-sm ${
+                      viewMode === "list"
+                        ? "text-white"
+                        : "text-neutral-400 text-xs"
+                    }`}
+                  >
+                    목록
+                  </button>
+                </div>
 
-            <button 
-              onClick={clearWatchHistory}
-              className="px-4 py-2 bg-rose-800 text-sm text-neutral-300 hover:bg-rose-600 hover:text-white rounded-lg transition-colors"
-            >
-              전체 삭제
-            </button>
+                <button
+                  onClick={() => setIsSelectionMode(true)}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                >
+                  선택 모드
+                </button>
+
+                <button
+                  onClick={clearWatchHistory}
+                  className="px-4 py-2 bg-rose-800 text-sm text-neutral-300 hover:bg-rose-600 hover:text-white rounded-lg transition-colors"
+                >
+                  전체 삭제
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="text-sm text-white">
+                  {selectedMovies.size}개 선택됨
+                </span>
+                <button
+                  onClick={selectAllMovies}
+                  className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
+                >
+                  {selectedMovies.size === filteredHistory.length ? "전체 해제" : "전체 선택"}
+                </button>
+                {selectedMovies.size > 0 && (
+                  <button
+                    onClick={handleBulkDelete}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
+                  >
+                    선택 삭제
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setIsSelectionMode(false);
+                    setSelectedMovies(new Set());
+                  }}
+                  className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
+                >
+                  취소
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -128,9 +197,13 @@ export default function HistoryPage() {
             {filteredHistory.map((movie) => (
               <div
                 key={movie.id}
-                className="group bg-neutral-900 rounded-lg 
+                className={`group bg-neutral-900 rounded-lg
             inset-shadow-xs inset-shadow-white/30
-            shadow-xs shadow-white/30 overflow-hidden border-0 outline-none"
+            shadow-xs shadow-white/30 overflow-hidden border-0 outline-none ${
+              isSelectionMode && selectedMovies.has(movie.id)
+                ? "ring-2 ring-blue-500 scale-105"
+                : ""
+            }`}
               >
                 <div className="relative w-full aspect-[2/3] overflow-hidden">
                   <Image
@@ -140,6 +213,43 @@ export default function HistoryPage() {
                     sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className="object-cover"
                   />
+                  {isSelectionMode ? (
+                    <button
+                      onClick={() => toggleMovieSelection(movie.id)}
+                      className="absolute top-2 left-2 w-6 h-6 rounded-full border-2 border-white bg-black bg-opacity-50 flex items-center justify-center transition-all"
+                    >
+                      {selectedMovies.has(movie.id) && (
+                        <svg
+                          className="w-4 h-4 text-blue-500"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => removeFromWatchHistory(movie.id)}
+                      className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  )}
                 </div>
                 <div className="p-4">
                   <h3 className="text-white font-semibold mb-2 truncate">
@@ -172,12 +282,14 @@ export default function HistoryPage() {
                     >
                       보러가기
                     </button>
-                    <button 
-                      onClick={() => removeFromWatchHistory(movie.id)}
-                      className="px-2 py-1 text-xs border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors"
-                    >
-                      삭제
-                    </button>
+                    {!isSelectionMode && (
+                      <button
+                        onClick={() => removeFromWatchHistory(movie.id)}
+                        className="px-2 py-1 text-xs border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors"
+                      >
+                        삭제
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -201,9 +313,34 @@ export default function HistoryPage() {
               {filteredHistory.map((movie) => (
                 <div
                   key={movie.id}
-                  className="p-6 hover:bg-neutral-800 transition-colors"
+                  className={`p-6 hover:bg-neutral-800 transition-colors ${
+                    isSelectionMode && selectedMovies.has(movie.id)
+                      ? "bg-neutral-800 border-l-4 border-blue-500"
+                      : ""
+                  }`}
                 >
                   <div className="flex items-start space-x-4">
+                    {isSelectionMode && (
+                      <button
+                        onClick={() => toggleMovieSelection(movie.id)}
+                        className="w-6 h-6 rounded border-2 border-gray-400 flex items-center justify-center transition-all"
+                      >
+                        {selectedMovies.has(movie.id) && (
+                          <svg
+                            className="w-4 h-4 text-blue-500"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    )}
+
                     {/* Movie Poster */}
                     <div className="relative w-24 h-36">
                       <Image
@@ -256,12 +393,14 @@ export default function HistoryPage() {
                             >
                               보러가기
                             </button>
-                            <button 
-                              onClick={() => removeFromWatchHistory(movie.id)}
-                              className="px-3 py-1 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors"
-                            >
-                              삭제
-                            </button>
+                            {!isSelectionMode && (
+                              <button
+                                onClick={() => removeFromWatchHistory(movie.id)}
+                                className="px-3 py-1 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700 transition-colors"
+                              >
+                                삭제
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
