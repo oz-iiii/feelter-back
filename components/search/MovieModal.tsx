@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import {
   BiPlayCircle,
   BiPlusCircle,
@@ -10,10 +10,10 @@ import {
   BiX,
   BiChevronDown,
   BiChevronUp,
-} from 'react-icons/bi';
-import { ContentItem } from '@/lib/data';
-import { useMovieStore } from '@/lib/stores';
-import { Movie } from '@/lib/types/movie';
+} from "react-icons/bi";
+import { ContentItem } from "@/lib/data";
+import { useMovieStore } from "@/lib/stores";
+import { Movie } from "@/lib/types/movie";
 
 interface MovieModalProps {
   content: ContentItem | null;
@@ -26,15 +26,15 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
 
   // ContentItem에서 해당하는 Movie 데이터 찾기
   const findMovieByTitle = (title: string): Movie | null => {
-    return movies.find(movie => movie.title === title) || null;
+    return movies.find((movie) => movie.title === title) || null;
   };
 
   const movieData = content ? findMovieByTitle(content.title) : null;
 
   const descriptionText =
-    movieData?.overview || 
+    movieData?.overview ||
     content?.description ||
-    '이 영화에 대한 설명이 아직 없습니다. 하지만 분명 멋진 영화일 겁니다!';
+    "이 영화에 대한 설명이 아직 없습니다. 하지만 분명 멋진 영화일 겁니다!";
 
   const showReadMore = descriptionText.length > 150;
 
@@ -80,7 +80,7 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
                     alt={content.title}
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    style={{ objectFit: 'cover' }}
+                    style={{ objectFit: "cover" }}
                     className="opacity-40 rounded-l-lg"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#181818] via-[#181818]/80 to-transparent" />
@@ -127,11 +127,13 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
                     </p>
                     {showReadMore && (
                       <button
-                        onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                        onClick={() =>
+                          setIsDescriptionExpanded(!isDescriptionExpanded)
+                        }
                         className="flex items-center gap-1 text-gray-400 hover:text-white mt-2 text-sm"
                       >
                         <span>
-                          {isDescriptionExpanded ? '간략히' : '상세보기'}
+                          {isDescriptionExpanded ? "간략히" : "상세보기"}
                         </span>
                         {isDescriptionExpanded ? (
                           <BiChevronUp />
@@ -146,12 +148,11 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
                   <div>
                     <h3 className="text-lg text-gray-400">출연진</h3>
                     <p className="text-xl text-gray-200">
-                      {movieData?.actor 
-                        ? (Array.isArray(movieData.actor) 
-                           ? movieData.actor.join(", ") 
-                           : movieData.actor)
-                        : "정보 없음"
-                      }
+                      {movieData?.actor
+                        ? Array.isArray(movieData.actor)
+                          ? movieData.actor.join(", ")
+                          : movieData.actor
+                        : "정보 없음"}
                     </p>
                   </div>
 
@@ -160,13 +161,12 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
                     <h3 className="text-lg text-gray-400">장르</h3>
                     <p className="text-xl text-gray-200">
                       {movieData?.genre
-                        ? (Array.isArray(movieData.genre)
-                           ? movieData.genre.join(", ")
-                           : movieData.genre)
-                        : (Array.isArray(content.genre)
-                           ? content.genre.join(", ")
-                           : content.genre || "기타")
-                      }
+                        ? Array.isArray(movieData.genre)
+                          ? movieData.genre.join(", ")
+                          : movieData.genre
+                        : Array.isArray(content.genre)
+                        ? content.genre.join(", ")
+                        : content.genre || "기타"}
                     </p>
                   </div>
 
@@ -174,12 +174,11 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
                   <div>
                     <h3 className="text-lg text-gray-400">감독</h3>
                     <p className="text-xl text-gray-200">
-                      {movieData?.director 
-                        ? (Array.isArray(movieData.director) 
-                           ? movieData.director.join(", ") 
-                           : movieData.director)
-                        : "정보 없음"
-                      }
+                      {movieData?.director
+                        ? Array.isArray(movieData.director)
+                          ? movieData.director.join(", ")
+                          : movieData.director
+                        : "정보 없음"}
                     </p>
                   </div>
 
@@ -187,14 +186,21 @@ const MovieModal: React.FC<MovieModalProps> = ({ content, onClose }) => {
                   <div>
                     <h3 className="text-lg text-gray-400">시리즈 특징</h3>
                     <p className="text-xl text-gray-200">
-                      {movieData 
+                      {movieData
                         ? [
-                            Array.isArray(movieData.feelterTime) ? movieData.feelterTime.join(", ") : movieData.feelterTime,
-                            Array.isArray(movieData.feelterPurpose) ? movieData.feelterPurpose.join(", ") : movieData.feelterPurpose,
-                            Array.isArray(movieData.feelterOccasion) ? movieData.feelterOccasion.join(", ") : movieData.feelterOccasion
-                          ].filter(Boolean).join(" • ")
-                        : "액션, 드라마, 스릴러"
-                      }
+                            Array.isArray(movieData.feelterTime)
+                              ? movieData.feelterTime.join(", ")
+                              : movieData.feelterTime,
+                            Array.isArray(movieData.feelterPurpose)
+                              ? movieData.feelterPurpose.join(", ")
+                              : movieData.feelterPurpose,
+                            Array.isArray(movieData.feelterOccasion)
+                              ? movieData.feelterOccasion.join(", ")
+                              : movieData.feelterOccasion,
+                          ]
+                            .filter(Boolean)
+                            .join(" • ")
+                        : "액션, 드라마, 스릴러"}
                     </p>
                   </div>
                 </div>
