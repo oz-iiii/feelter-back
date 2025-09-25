@@ -116,9 +116,9 @@ const ContentCard: React.FC<ContentCardProps> = ({
   };
 
   return (
-    <div className="group relative w-[260px] h-[480px] bg-[#141A28] rounded-2xl overflow-hidden shadow-lg transform transition-transform duration-300 hover:scale-105 cursor-pointer">
+    <div className="group relative w-full bg-[#141A28] rounded-2xl overflow-hidden shadow-lg transform transition-transform duration-300 hover:scale-105 cursor-pointer flex flex-col">
       {/* Thumbnail */}
-      <div className="relative w-full h-[75%]">
+      <div className="relative w-full aspect-[2/3] flex-shrink-0">
         <Image
           src={content.poster || "/among-us-poster.png"}
           alt={content.title}
@@ -159,7 +159,7 @@ const ContentCard: React.FC<ContentCardProps> = ({
       </div>
 
       {/* Meta Info */}
-      <div className="p-4 h-[25%] flex flex-col justify-between">
+      <div className="p-4 flex-grow flex flex-col justify-between min-h-0">
         <div>
           {searchQuery ? (
             <h3
