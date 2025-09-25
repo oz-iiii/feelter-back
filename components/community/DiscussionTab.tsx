@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import { useCommunityStore } from "@/lib/stores/communityStore";
 import { CommunityPost } from "@/lib/types/community";
+import ActivityCard, { ActivityCardProps } from "./ActivityCard";
+import EditPostModal from "./EditPostModal";
 
 interface Discussion {
   id: string;
@@ -123,33 +126,53 @@ const getTimeAgo = (date: Date | string): string => {
   return `${diffInDays}일 전`;
 };
 
-// 커뮤니티 포스트를 Discussion으로 변환하는 함수
-const convertPostToDiscussion = (post: CommunityPost): Discussion => {
+// 커뮤니티 포스트를 ActivityCard Props로 변환하는 함수
+const convertPostToActivityCard = (
+  post: CommunityPost,
+  currentUserId?: string,
+  onEdit?: (id: string) => void,
+  onDelete?: (id: string) => void
+): ActivityCardProps => {
   const timeAgo = getTimeAgo(post.createdAt);
 
   return {
     id: post.id,
     type: "discussion",
     avatar: "💭",
-    username: post.authorName,
-    timestamp: timeAgo,
+    username: `${post.authorName}님이 ${timeAgo}에`,
+    timestamp: "토론을 작성했습니다",
+    activityType: "토론",
     title: post.title,
-    preview: post.content,
+    preview:
+      post.content.length > 100
+        ? `${post.content.substring(0, 100)}...`
+        : post.content,
     likes: post.likes,
     comments: post.comments,
-    views: post.views,
-    isActive: post.isActive,
     tags: post.tags,
-    status: post.status,
+    authorId: post.authorId,
+    currentUserId,
+    onEdit,
+    onDelete,
   };
 };
 
 export default function DiscussionTab({ onCreatePost }: DiscussionTabProps) {
   const router = useRouter();
-  const { posts, postsLoading, postsError, searchPosts } = useCommunityStore();
+  const { user } = useAuth();
+  const {
+    posts,
+    postsLoading,
+    postsError,
+    searchPosts,
+    updatePost,
+    deletePost,
+  } = useCommunityStore();
 
-  const [discussionData, setDiscussionData] = useState<Discussion[]>([]);
+  const [discussionData, setDiscussionData] = useState<ActivityCardProps[]>([]);
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // 컴포넌트 마운트 시 토론 게시글만 가져오기
   useEffect(() => {
@@ -160,18 +183,33 @@ export default function DiscussionTab({ onCreatePost }: DiscussionTabProps) {
   useEffect(() => {
     const filteredPosts = posts.filter((post) => post.type === "discussion");
 
-    // 실제 데이터를 Discussion 형태로 변환
-    const realDiscussionData = filteredPosts.map(convertPostToDiscussion);
+    // 실제 데이터를 ActivityCard 형태로 변환
+    const realDiscussionData = filteredPosts.map((post) =>
+      convertPostToActivityCard(
+        post,
+        user?.id,
+        handleEditPost,
+        handleDeletePost
+      )
+    );
     let combinedData = [...realDiscussionData];
 
-    // 실제 데이터가 없을 때만 mock 데이터 사용
+    // 실제 데이터가 없을 때는 mock 데이터를 ActivityCard 형태로 변환
     if (realDiscussionData.length === 0) {
-      combinedData = [...mockDiscussionData];
-    }
-
-    // 타입 필터 적용
-    if (selectedType) {
-      combinedData = combinedData.filter((item) => item.type === selectedType);
+      const mockActivityData = mockDiscussionData.map((item) => ({
+        id: item.id,
+        type: "discussion" as const,
+        avatar: item.avatar,
+        username: `${item.username}님이 ${item.timestamp}에`,
+        timestamp: "토론을 작성했습니다",
+        activityType: "토론",
+        title: item.title,
+        preview: item.preview,
+        likes: item.likes,
+        comments: item.comments,
+        tags: item.tags,
+      }));
+      combinedData = [...mockActivityData];
     }
 
     // 최신순 정렬 적용
@@ -180,7 +218,7 @@ export default function DiscussionTab({ onCreatePost }: DiscussionTabProps) {
     });
 
     setDiscussionData(combinedData);
-  }, [posts, selectedType]);
+  }, [posts, selectedType, user]);
 
   const getStatusBadge = (status?: string) => {
     if (!status) return null;
@@ -222,6 +260,40 @@ export default function DiscussionTab({ onCreatePost }: DiscussionTabProps) {
   // 게시글 클릭 시 상세화면으로 이동
   const handleDiscussionClick = (discussionId: string) => {
     router.push(`/community/${discussionId}`);
+  };
+
+  const handleEditPost = async (postId: string) => {
+    const post = posts.find((p) => p.id === postId);
+    if (post) {
+      setEditingPost(post);
+      setShowEditModal(true);
+    }
+  };
+
+  const handleSaveEdit = async (
+    postId: string,
+    updates: Partial<CommunityPost>
+  ) => {
+    await updatePost(postId, updates);
+    setShowEditModal(false);
+    setEditingPost(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditingPost(null);
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+      try {
+        await deletePost(postId);
+        console.log("게시글 삭제 완료:", postId);
+      } catch (error) {
+        console.error("게시글 삭제 실패:", error);
+        alert("게시글 삭제에 실패했습니다.");
+      }
+    }
   };
 
   return (
@@ -309,111 +381,7 @@ export default function DiscussionTab({ onCreatePost }: DiscussionTabProps) {
       {/* Discussion Cards */}
       <div className="space-y-4">
         {discussionData.map((discussion) => (
-          <article
-            key={discussion.id}
-            onClick={() => handleDiscussionClick(discussion.id)}
-            className={`
-              bg-gray-800 backdrop-blur-lg border border-white/10 rounded-2xl p-6 shadow-sm
-              cursor-pointer transition-all duration-300 hover:-translate-y-1 
-              hover:shadow-lg ${
-                discussion.isActive ? "ring-2 ring-blue-500/30" : ""
-              }
-            `}
-          >
-            {/* Header */}
-            <header className="flex items-center gap-4 mb-4">
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center text-lg"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #CCFF00 0%, #99CC00 100%)",
-                  color: "#111111",
-                }}
-              >
-                {discussion.avatar}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-bold text-white">
-                    {discussion.username}
-                  </h3>
-                  {getStatusBadge(discussion.status)}
-                  {discussion.isActive && (
-                    <span
-                      className="px-2 py-1 rounded-full text-xs font-medium border"
-                      style={{
-                        backgroundColor: "rgba(204, 255, 0, 0.2)",
-                        color: "#CCFF00",
-                        borderColor: "rgba(204, 255, 0, 0.3)",
-                      }}
-                    >
-                      활발한 토론 중
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-gray-400">{discussion.timestamp}</p>
-              </div>
-            </header>
-
-            {/* Content */}
-            <div className="mb-4">
-              <h2 className="text-lg font-bold text-white mb-3 leading-tight">
-                {discussion.title}
-              </h2>
-              <p className="text-gray-300 leading-relaxed text-sm line-clamp-3 mb-3">
-                {discussion.preview}
-              </p>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {discussion.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="text-xs px-2 py-1 rounded-full"
-                    style={{
-                      backgroundColor: "rgba(204, 255, 0, 0.1)",
-                      color: "#CCFF00",
-                      border: "1px solid rgba(204, 255, 0, 0.3)",
-                    }}
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Stats */}
-            <footer className="flex items-center justify-between pt-4 border-t border-white/10">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <span>👍</span>
-                  <span>{discussion.likes}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <span>💬</span>
-                  <span>{discussion.comments}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <span>👥</span>
-                  <span>{discussion.views}</span>
-                </div>
-              </div>
-
-              {discussion.isActive && (
-                <div
-                  className="flex items-center gap-2 text-sm"
-                  style={{ color: "#CCFF00" }}
-                >
-                  <span
-                    className="w-2 h-2 rounded-full animate-pulse"
-                    style={{ backgroundColor: "#CCFF00" }}
-                  ></span>
-                  <span>실시간 토론</span>
-                </div>
-              )}
-            </footer>
-          </article>
+          <ActivityCard key={discussion.id} {...discussion} />
         ))}
       </div>
 
@@ -571,6 +539,14 @@ export default function DiscussionTab({ onCreatePost }: DiscussionTabProps) {
           ))}
         </div>
       </div>
+
+      {/* Edit Post Modal */}
+      <EditPostModal
+        isOpen={showEditModal}
+        onClose={handleCloseEditModal}
+        post={editingPost}
+        onSave={handleSaveEdit}
+      />
     </div>
   );
 }

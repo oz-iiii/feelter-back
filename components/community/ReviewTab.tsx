@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCommunityStore } from "@/lib/stores/communityStore";
 import { CommunityPost } from "@/lib/types/community";
 import ActivityCard, { ActivityCardProps } from "./ActivityCard";
+import EditPostModal from "./EditPostModal";
 
 interface ReviewTabProps {
   onCreatePost: () => void;
@@ -104,7 +105,12 @@ const getTimeAgo = (date: Date | string): string => {
 };
 
 // 커뮤니티 포스트를 ActivityCard Props로 변환하는 함수
-const convertPostToActivityCard = (post: CommunityPost): ActivityCardProps => {
+const convertPostToActivityCard = (
+  post: CommunityPost,
+  currentUserId?: string,
+  onEdit?: (id: string) => void,
+  onDelete?: (id: string) => void
+): ActivityCardProps => {
   const timeAgo = getTimeAgo(post.createdAt);
 
   return {
@@ -123,15 +129,28 @@ const convertPostToActivityCard = (post: CommunityPost): ActivityCardProps => {
     likes: post.likes,
     comments: post.comments,
     tags: post.tags,
+    authorId: post.authorId,
+    currentUserId,
+    onEdit,
+    onDelete,
   };
 };
 
 export default function ReviewTab({ onCreatePost }: ReviewTabProps) {
   const { user } = useAuth();
-  const { posts, postsLoading, postsError, searchPosts } = useCommunityStore();
+  const {
+    posts,
+    postsLoading,
+    postsError,
+    searchPosts,
+    updatePost,
+    deletePost,
+  } = useCommunityStore();
 
   const [reviewData, setReviewData] = useState<ActivityCardProps[]>([]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // 컴포넌트 마운트 시 리뷰 게시글만 가져오기
   useEffect(() => {
@@ -150,7 +169,14 @@ export default function ReviewTab({ onCreatePost }: ReviewTabProps) {
     }
 
     // mock 데이터와 실제 데이터 합치기
-    const realReviewData = filteredPosts.map(convertPostToActivityCard);
+    const realReviewData = filteredPosts.map((post) =>
+      convertPostToActivityCard(
+        post,
+        user?.id,
+        handleEditPost,
+        handleDeletePost
+      )
+    );
     let combinedData = [...realReviewData];
 
     // 실제 데이터가 없을 때만 mock 데이터 사용
@@ -165,7 +191,41 @@ export default function ReviewTab({ onCreatePost }: ReviewTabProps) {
     }
 
     setReviewData(combinedData);
-  }, [posts, selectedRating]);
+  }, [posts, selectedRating, user]);
+
+  const handleEditPost = async (postId: string) => {
+    const post = posts.find((p) => p.id === postId);
+    if (post) {
+      setEditingPost(post);
+      setShowEditModal(true);
+    }
+  };
+
+  const handleSaveEdit = async (
+    postId: string,
+    updates: Partial<CommunityPost>
+  ) => {
+    await updatePost(postId, updates);
+    setShowEditModal(false);
+    setEditingPost(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditingPost(null);
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+      try {
+        await deletePost(postId);
+        console.log("게시글 삭제 완료:", postId);
+      } catch (error) {
+        console.error("게시글 삭제 실패:", error);
+        alert("게시글 삭제에 실패했습니다.");
+      }
+    }
+  };
 
   const getRatingColor = (rating: number) => {
     if (rating >= 4) return "text-green-400";
@@ -312,6 +372,14 @@ export default function ReviewTab({ onCreatePost }: ReviewTabProps) {
           </button>
         </div>
       )}
+
+      {/* Edit Post Modal */}
+      <EditPostModal
+        isOpen={showEditModal}
+        onClose={handleCloseEditModal}
+        post={editingPost}
+        onSave={handleSaveEdit}
+      />
     </div>
   );
 }

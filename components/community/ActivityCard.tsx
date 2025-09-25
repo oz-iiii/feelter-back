@@ -18,6 +18,10 @@ export interface ActivityCardProps {
   shares?: number;
   tags?: string[];
   className?: string;
+  authorId?: string; // 작성자 ID 추가
+  currentUserId?: string; // 현재 사용자 ID 추가
+  onEdit?: (id: string) => void; // 수정 핸들러 추가
+  onDelete?: (id: string) => void; // 삭제 핸들러 추가
 }
 
 export default function ActivityCard({
@@ -34,6 +38,10 @@ export default function ActivityCard({
   comments,
   tags,
   className = "",
+  authorId,
+  currentUserId,
+  onEdit,
+  onDelete,
 }: ActivityCardProps) {
   const router = useRouter();
   const [likes, setLikes] = useState(initialLikes);
@@ -57,6 +65,20 @@ export default function ActivityCard({
 
   const handleButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // 카드 클릭 이벤트 방지
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (id && onEdit) {
+      onEdit(id);
+    }
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (id && onDelete) {
+      onDelete(id);
+    }
   };
 
   const getCardStyle = () => {
@@ -215,6 +237,28 @@ export default function ActivityCard({
             <span>🎉</span>
             <span>축하</span>
           </button>
+        )}
+
+        {/* Edit/Delete buttons for post author */}
+        {authorId && currentUserId && authorId === currentUserId && (
+          <div className="flex items-center gap-2 ml-auto">
+            <button
+              onClick={handleEdit}
+              className="flex items-center gap-1 px-3 py-1 rounded-full text-sm 
+                              text-gray-400 hover:text-white hover:bg-blue-500/20 transition-all duration-300"
+            >
+              <span>✏️</span>
+              <span>수정</span>
+            </button>
+            <button
+              onClick={handleDelete}
+              className="flex items-center gap-1 px-3 py-1 rounded-full text-sm 
+                              text-gray-400 hover:text-white hover:bg-red-500/20 transition-all duration-300"
+            >
+              <span>🗑️</span>
+              <span>삭제</span>
+            </button>
+          </div>
         )}
       </footer>
     </article>

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { useCommunityStore } from "@/lib/stores/communityStore";
 import { CommunityPost } from "@/lib/types/community";
 import ActivityCard, { ActivityCardProps } from "./ActivityCard";
+import EditPostModal from "./EditPostModal";
 
 interface FeedTabProps {
   onCreatePost: () => void;
@@ -66,7 +68,12 @@ const mockFeedData: ActivityCardProps[] = [
 ];
 
 // 커뮤니티 포스트를 ActivityCard Props로 변환하는 함수
-const convertPostToActivityCard = (post: CommunityPost): ActivityCardProps => {
+const convertPostToActivityCard = (
+  post: CommunityPost,
+  currentUserId?: string,
+  onEdit?: (id: string) => void,
+  onDelete?: (id: string) => void
+): ActivityCardProps => {
   let avatar = "📝";
   let activityType = "글";
 
@@ -108,6 +115,10 @@ const convertPostToActivityCard = (post: CommunityPost): ActivityCardProps => {
     likes: post.likes,
     comments: post.comments,
     tags: post.tags,
+    authorId: post.authorId,
+    currentUserId,
+    onEdit,
+    onDelete,
   };
 };
 
@@ -134,6 +145,7 @@ const getTimeAgo = (date: Date | string): string => {
 };
 
 export default function FeedTab({ onCreatePost }: FeedTabProps) {
+  const { user } = useAuth();
   const {
     posts,
     postsLoading,
@@ -141,9 +153,13 @@ export default function FeedTab({ onCreatePost }: FeedTabProps) {
     hasMorePosts,
     fetchPosts,
     loadMorePosts,
+    updatePost,
+    deletePost,
   } = useCommunityStore();
 
   const [feedData, setFeedData] = useState<ActivityCardProps[]>([]);
+  const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // 컴포넌트 마운트 시 게시글 가져오기
   useEffect(() => {
@@ -165,17 +181,58 @@ export default function FeedTab({ onCreatePost }: FeedTabProps) {
         );
       });
 
-      const activityData = filteredPosts.map(convertPostToActivityCard);
+      const activityData = filteredPosts.map((post) =>
+        convertPostToActivityCard(
+          post,
+          user?.id,
+          handleEditPost,
+          handleDeletePost
+        )
+      );
       setFeedData(activityData);
     } else {
       // posts가 비어있을 때 mock 데이터 사용 (처음 로드 시)
       setFeedData(mockFeedData);
     }
-  }, [posts]);
+  }, [posts, user]);
 
   const loadMoreContent = async () => {
     if (!postsLoading && hasMorePosts) {
       await loadMorePosts();
+    }
+  };
+
+  const handleEditPost = async (postId: string) => {
+    const post = posts.find((p) => p.id === postId);
+    if (post) {
+      setEditingPost(post);
+      setShowEditModal(true);
+    }
+  };
+
+  const handleSaveEdit = async (
+    postId: string,
+    updates: Partial<CommunityPost>
+  ) => {
+    await updatePost(postId, updates);
+    setShowEditModal(false);
+    setEditingPost(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditingPost(null);
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+      try {
+        await deletePost(postId);
+        console.log("게시글 삭제 완료:", postId);
+      } catch (error) {
+        console.error("게시글 삭제 실패:", error);
+        alert("게시글 삭제에 실패했습니다.");
+      }
     }
   };
 
@@ -285,6 +342,14 @@ export default function FeedTab({ onCreatePost }: FeedTabProps) {
           </button>
         </div>
       )}
+
+      {/* Edit Post Modal */}
+      <EditPostModal
+        isOpen={showEditModal}
+        onClose={handleCloseEditModal}
+        post={editingPost}
+        onSave={handleSaveEdit}
+      />
     </div>
   );
 }
