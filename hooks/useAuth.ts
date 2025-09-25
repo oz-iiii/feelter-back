@@ -128,7 +128,13 @@ export const useAuth = () => {
   }
 
   const signUp = async (email: string, password: string, nickname: string) => {
+    console.log('Starting signUp process for:', email, 'with nickname:', nickname)
+
     try {
+      // Supabase URL과 키 확인
+      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+      console.log('Supabase Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -140,14 +146,53 @@ export const useAuth = () => {
         }
       })
 
+      console.log('SignUp response data:', data)
+      console.log('SignUp response error:', error)
+
       if (error) {
-        throw new Error(`회원가입 실패: ${error.message}`)
+        console.error('Supabase signUp error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        })
+        throw error
       }
 
+      if (!data.user) {
+        throw new Error('회원가입은 완료되었지만 사용자 정보를 받지 못했습니다.')
+      }
+
+      console.log('SignUp successful for user:', data.user.id)
       return data
     } catch (error) {
       console.error('회원가입 오류:', error)
-      throw error instanceof Error ? error : new Error('회원가입 중 알 수 없는 오류가 발생했습니다.')
+
+      // 더 구체적인 오류 메시지 생성
+      let errorMessage = '회원가입 중 오류가 발생했습니다.'
+
+      if (error instanceof Error) {
+        console.log('Error name:', error.name)
+        console.log('Error message:', error.message)
+
+        // Supabase 특정 에러들 처리
+        if (error.message.includes('User already registered')) {
+          errorMessage = '이미 등록된 이메일입니다.'
+        } else if (error.message.includes('Invalid login credentials')) {
+          errorMessage = '잘못된 이메일 형식입니다.'
+        } else if (error.message.includes('Password should be at least 6 characters')) {
+          errorMessage = '비밀번호는 6자 이상이어야 합니다.'
+        } else if (error.message.includes('signup_disabled')) {
+          errorMessage = '현재 회원가입이 비활성화되어 있습니다. 관리자에게 문의하세요.'
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = '이메일 인증이 필요합니다.'
+        } else {
+          errorMessage = `회원가입 실패: ${error.message}`
+        }
+
+        throw new Error(errorMessage)
+      }
+
+      throw new Error(errorMessage)
     }
   }
 

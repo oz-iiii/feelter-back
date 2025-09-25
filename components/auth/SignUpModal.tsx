@@ -22,6 +22,7 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('SignUpModal handleSubmit started')
 
     // 유효성 검사
     if (!email.trim()) {
@@ -44,13 +45,22 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
       return
     }
 
+    console.log('Form validation passed. Starting signup process...')
+    console.log('Email:', email)
+    console.log('Nickname:', nickname)
+    console.log('Password length:', password.length)
+
     setIsLoading(true)
     setError('')
 
     try {
-      await signUp(email, password, nickname)
-      
+      console.log('Calling signUp function...')
+      const result = await signUp(email, password, nickname)
+      console.log('SignUp result:', result)
+
       setSuccess(true)
+      console.log('SignUp success - showing success message')
+
       // 회원가입 성공 후 3초 뒤 모달 닫기 (이메일 확인 시간 고려)
       setTimeout(() => {
         setSuccess(false)
@@ -58,24 +68,36 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
         onClose()
       }, 3000)
     } catch (err: unknown) {
-      
+      console.error('SignUp failed in modal:', err)
+
       // 구체적인 에러 메시지 처리
       let errorMessage = '회원가입 중 오류가 발생했습니다.'
-      
+
       if (err instanceof Error) {
+        console.log('Error details:', {
+          name: err.name,
+          message: err.message,
+          stack: err.stack
+        })
+
         if (err.message.includes('User already registered')) {
           errorMessage = '이미 등록된 이메일입니다.'
         } else if (err.message.includes('Invalid email') || err.message.includes('email_address_invalid')) {
           errorMessage = '올바른 이메일 주소를 입력해주세요. (예: user@gmail.com)'
         } else if (err.message.includes('Password should be at least 6 characters')) {
           errorMessage = '비밀번호는 6자 이상이어야 합니다.'
+        } else if (err.message.includes('signup_disabled')) {
+          errorMessage = '현재 회원가입이 비활성화되어 있습니다. 관리자에게 문의하세요.'
+        } else if (err.message.includes('Email rate limit exceeded')) {
+          errorMessage = '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.'
         } else {
           errorMessage = err.message
         }
       } else if (typeof err === 'object' && err !== null && 'code' in err && err.code === 'email_address_invalid') {
         errorMessage = '사용할 수 없는 이메일 도메인입니다. Gmail, Naver 등을 사용해주세요.'
       }
-      
+
+      console.log('Final error message:', errorMessage)
       setError(errorMessage)
     } finally {
       setIsLoading(false)
