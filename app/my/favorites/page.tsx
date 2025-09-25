@@ -32,7 +32,8 @@ export default function FavoritesPage() {
 	}, []);
 
 	const removeFavorite = (id: string | number) => {
-		removeFromFavorites(id);
+		console.log("Removing favorite with ID:", id, typeof id);
+		removeFromFavorites(Number(id));
 	};
 
 	const toggleMovieSelection = (movieId: string | number) => {

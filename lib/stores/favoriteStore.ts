@@ -22,7 +22,7 @@ export const useFavoriteStore = create<FavoriteState>()(
         addToFavorites: (movie: Movie) => {
           const { favorites } = get();
           const isAlreadyFavorite = favorites.some(
-            (fav) => fav.id === movie.id
+            (fav) => Number(fav.id) === Number(movie.id)
           );
 
           if (!isAlreadyFavorite) {
@@ -33,15 +33,24 @@ export const useFavoriteStore = create<FavoriteState>()(
         },
 
         removeFromFavorites: (movieId: string | number) => {
-          set((state) => ({
-            favorites: state.favorites.filter((movie) => movie.id !== movieId),
-          }));
+          console.log("Store removeFromFavorites called with:", movieId, typeof movieId);
+          set((state) => {
+            const before = state.favorites.length;
+            const filtered = state.favorites.filter((movie) => {
+              const movieIdNum = Number(movie.id);
+              const inputIdNum = Number(movieId);
+              console.log("Comparing:", movieIdNum, "!==", inputIdNum, "result:", movieIdNum !== inputIdNum);
+              return movieIdNum !== inputIdNum;
+            });
+            console.log("Favorites count:", before, "->", filtered.length);
+            return { favorites: filtered };
+          });
         },
 
         toggleFavorite: (movie: Movie) => {
           const { favorites, addToFavorites, removeFromFavorites } = get();
           const isAlreadyFavorite = favorites.some(
-            (fav) => fav.id === movie.id
+            (fav) => Number(fav.id) === Number(movie.id)
           );
 
           if (isAlreadyFavorite) {
@@ -53,7 +62,7 @@ export const useFavoriteStore = create<FavoriteState>()(
 
         isFavorite: (movieId: string | number) => {
           const { favorites } = get();
-          return favorites.some((fav) => fav.id === movieId);
+          return favorites.some((fav) => Number(fav.id) === Number(movieId));
         },
 
         clearFavorites: () => {
