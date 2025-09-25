@@ -262,7 +262,6 @@ export default function CreatePage() {
               {postType === "emotion" ? "영화 제목" : "영화/드라마 제목"}
             </label>
             <MovieSearchInput
-              value={movieTitle}
               onChange={setMovieTitle}
               placeholder="영화 또는 드라마 제목을 검색하세요"
               required
