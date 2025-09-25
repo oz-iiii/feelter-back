@@ -26,10 +26,11 @@ export default function FavoritesPage() {
 	const [newCategoryName, setNewCategoryName] = useState("");
 	const [mounted, setMounted] = useState(false);
 
-	// 클라이언트 사이드 렌더링 확인
+	// 클라이언트 사이드 렌더링 확인 및 사용자별 즐겨찾기 로드
 	useEffect(() => {
 		setMounted(true);
 	}, []);
+
 
 	const removeFavorite = (id: string | number) => {
 		console.log("Removing favorite with ID:", id, typeof id);

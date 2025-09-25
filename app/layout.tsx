@@ -4,6 +4,7 @@ import "./globals.css";
 /* 원래있던 거 E*/
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
+import UserInitializer from "@/components/common/UserInitializer";
 
 export const metadata: Metadata = {
   title: "Feelter - 당신의 지금, 그 순간에",
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="bg-gray-100 max-w-6xl mx-auto text-gray-900">
+        <UserInitializer />
         <Header />
         {children}
         <Footer />
